@@ -2141,7 +2141,6 @@ function renderResults() {
   document.getElementById('deficit-count').textContent = deficit;
   document.getElementById('surplus-count').textContent = surplus;
   document.getElementById('balanced-count').textContent = balanced;
-  updateMobileStatusBtn();
 }
 
 function filterEquip(btn, val) {
@@ -2654,6 +2653,8 @@ function updateFactoryAuthBar() {
     balEl.textContent = (balance >= 0 ? '+' : '') + fmt(balance);
     balEl.className = 'auth-status-val ' + (balance >= 0 ? 'positive' : 'negative');
   }
+  // 모바일 버튼은 항상 최신 관리권 수치로 갱신
+  updateMobileStatusBtn();
 }
 
 // ========== 전체 현황 탭 ==========
@@ -3922,22 +3923,34 @@ function updateMobileStatusBtn() {
   if (rightPanel) rightPanel.style.display = isMobile ? 'none' : '';
   if (!isMobile) return;
 
-  const balEl    = document.getElementById('fab-outpost-balance');
-  const balance  = balEl?.textContent || '—';
-  const isNeg    = balEl?.className?.includes('negative');
+  // DOM 읽기 대신 직접 계산
+  const oId          = activeOutpostId;
+  const authTotal    = calcOutpostAuthTotal(oId);
+  const factoryRates = getAuthProductRatesFromFactory(oId);
+  let   factoryConsume = 0;
+  Object.entries(AUTH_VALUE).forEach(([name, val]) => {
+    factoryConsume += val * (factoryRates[name] || 0);
+  });
+  const balance  = authTotal - factoryConsume;
+  const isNeg    = balance < 0;
   const balColor = isNeg ? 'var(--danger)' : 'var(--success)';
-  const summary  = document.getElementById('mobile-auth-summary');
+  const balText  = (balance >= 0 ? '+' : '') + fmt(balance);
+
+  const summary = document.getElementById('mobile-auth-summary');
   if (summary) {
-    summary.innerHTML = `관리권 잔여 <span style="color:${balColor};font-weight:700;font-family:'Share Tech Mono',monospace;">${balance}/분</span>`;
+    summary.innerHTML = `관리권 잔여 <span style="color:${balColor};font-weight:700;font-family:'Share Tech Mono',monospace;">${balText}/분</span>`;
   }
 
-  const deficitCount = document.querySelectorAll('#results-grid .compact-dot.deficit').length;
+  // 재료 부족 수는 결과 계산에서 직접 집계
+  const totals = calcTotals(oId);
+  const deficitCount = Object.values(totals).filter(v => v.balance < -0.001).length;
   const badge = document.getElementById('mobile-deficit-badge');
   if (badge) {
     badge.style.display = deficitCount > 0 ? '' : 'none';
     badge.textContent   = `⚠ ${deficitCount}개 부족`;
   }
 
+  // 드로어가 열려있으면 데이터 동기화
   const overlay = document.getElementById('status-drawer-overlay');
   if (overlay?.style.display !== 'none') syncDrawerData();
 }
