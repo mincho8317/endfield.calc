@@ -22,6 +22,39 @@
     --panel-bg: rgba(17,24,39,0.95);
   }
 
+  body.light-theme {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #e8eef5;
+    --border: #c5d4e8;
+    --accent: #0088bb;
+    --accent2: #e05a20;
+    --accent3: #00aa66;
+    --text: #1a2a3a;
+    --text-muted: #5a7a9a;
+    --danger: #cc2222;
+    --warning: #cc8800;
+    --success: #00885a;
+    --panel-bg: rgba(255,255,255,0.97);
+  }
+  body.light-theme {
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(0,136,187,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(224,90,32,0.06) 0%, transparent 50%),
+      linear-gradient(180deg, #f0f4f8 0%, #e8eef5 100%);
+  }
+  body.light-theme::before {
+    background-image:
+      linear-gradient(rgba(0,136,187,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,136,187,0.04) 1px, transparent 1px);
+  }
+  body.light-theme header {
+    background: linear-gradient(180deg, rgba(240,244,248,0.98) 0%, rgba(240,244,248,0.92) 100%);
+  }
+  body.light-theme .tab-bar {
+    background: rgba(240,244,248,0.9);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -82,11 +115,11 @@
 
   .tab-bar {
     display: flex;
+    flex-wrap: wrap;
     gap: 2px;
     padding: 0 20px;
     border-top: 1px solid var(--border);
     background: rgba(10,14,26,0.8);
-    overflow-x: auto;
     max-width: 1400px;
     margin: 0 auto;
   }
@@ -354,11 +387,153 @@
   .page-view { display: none; }
   .page-view.active { display: block; }
 
-  /* Responsive */
+  .skill-grid  { grid-template-columns: repeat(4,1fr); }
+  .talent-grid { grid-template-columns: repeat(3,1fr); }
+
+  /* ===== 반응형 ===== */
+
+  /* 태블릿 (900px 이하) */
   @media (max-width: 900px) {
     .calc-layout { grid-template-columns: 1fr; }
-    .auth-layout { grid-template-columns: 1fr; }
-    .base-row { grid-template-columns: 120px 90px 90px 90px 90px; font-size: 11px; }
+    .auth-layout  { grid-template-columns: 1fr; }
+    .base-row { grid-template-columns: 120px 80px 90px 90px 90px; font-size: 11px; }
+    .factory-right-fixed { position: static; max-height: none; }
+    .factory-sticky-wrap { position: static; max-height: none; }
+  }
+
+  @media (max-width: 600px) {
+    .factory-sticky-wrap { top: 120px; }
+    /* 헤더 */
+    .header-inner { padding: 10px 12px; gap: 10px; }
+    .header-title { font-size: 14px; }
+    .header-sub   { display: none; }
+    .logo-mark    { width: 28px; height: 28px; }
+
+    /* 탭바 */
+    .tab-bar { padding: 0 8px; }
+    .tab { padding: 8px 12px; font-size: 12px; }
+
+    /* main */
+    main { padding: 12px; }
+    .container { padding: 0 12px; }
+
+    /* 공장 레이아웃 — 완전 세로 */
+    .calc-layout {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .factory-sticky-wrap { position: static; max-height: none; overflow: visible; }
+    .factory-right-fixed { position: static; max-height: none; overflow: visible; }
+
+    /* 관리권 탭 */
+    /* 구역 카드 — 좌우 분할 → 세로 */
+    .zone-card-inner { flex-direction: column !important; }
+    .zone-card-right { width: 100% !important; border-left: none !important; border-top: 1px solid rgba(30,58,95,0.5); padding-left: 0 !important; padding-top: 10px !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; }
+
+    /* 관리권 생산품 테이블 — 가로 스크롤 */
+    .auth-product-table { font-size: 11px; }
+    .auth-product-table th,
+    .auth-product-table td { padding: 6px 8px; }
+    .panel { overflow-x: auto; }
+
+    /* 오퍼레이터 탭 — 목록 상단 고정, 설정 하단 */
+    #tab-operator > div {
+      flex-direction: column !important;
+    }
+    #tab-operator > div > div:first-child {
+      width: 100% !important;
+    }
+    #tab-operator > div > div:first-child .panel {
+      max-height: 200px;
+    }
+    #tab-operator > div > div:first-child #operator-list {
+      max-height: 160px !important;
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    /* 목록 아이템 가로 스크롤 */
+    #operator-list > div {
+      min-width: 140px;
+      border-bottom: none !important;
+      border-right: 1px solid var(--border);
+    }
+
+    /* 스킬 레벨 — 2열 */
+    .skill-grid { grid-template-columns: repeat(2,1fr) !important; }
+
+    /* 재능 노드 — 2열 */
+    .talent-grid { grid-template-columns: 1fr 1fr !important; }
+
+    /* 전체 현황 — 카드 1열 */
+    #overview-body > div > div:nth-child(3) {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* 모달 — 전체화면 */
+    #modal-equip   > div,
+    #modal-preset  > div,
+    #modal-preset-edit > div,
+    #modal-operator-select > div,
+    #modal-icons   > div {
+      top: 0 !important;
+      left: 0 !important;
+      transform: none !important;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 0 !important;
+      max-height: 100vh !important;
+    }
+
+    /* 설비 추가 모달 탭 — 더 작게 */
+    #modal-equip-tabs button { font-size: 10px !important; padding: 5px 8px !important; }
+
+    /* 오퍼레이터 선택 모달 그리드 — 3열 */
+    #operator-select-grid > div { grid-template-columns: repeat(3,1fr) !important; }
+
+    /* 버튼 패딩 */
+    .btn { padding: 5px 10px; font-size: 11px; }
+
+    /* 워크스페이스 그룹 헤더 버튼 줄임 */
+    .ws-group-header .btn { font-size: 10px; padding: 2px 6px; }
+
+    /* 요약바 */
+    .summary-bar { gap: 12px; padding: 8px 12px; }
+    .summary-value { font-size: 13px; }
+
+    /* 파밍 가이드 요약 — 1열 */
+    #farming-guide-body > div:first-child > div:nth-child(2) {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* 공장 거점 탭 */
+    #factory-outpost-tabs { flex-wrap: wrap; gap: 6px; }
+
+    /* 관리권 거점 탭 */
+    #auth-outpost-tabs { flex-wrap: wrap; gap: 4px; }
+    #auth-outpost-tabs button { font-size: 11px; padding: 5px 12px; }
+
+    /* 전체현황 거점 카드 3열 → 1열 */
+    #overview-body > div div[style*="grid-template-columns:repeat(3"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* 숫자 큰 곳 줄이기 */
+    .auth-status-val { font-size: 13px; }
+    .summary-value   { font-size: 12px; }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity:0; transform:translateX(-50%) translateY(10px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+  /* 아주 작은 화면 (400px 이하) */
+  @media (max-width: 400px) {
+    .tab { padding: 8px 8px; font-size: 11px; }
+    #operator-select-grid > div { grid-template-columns: repeat(2,1fr) !important; }
+    .ws-group-header { flex-wrap: wrap; }
   }
 
   /* % 입력 래퍼 */
@@ -688,8 +863,67 @@
       <div class="logo-mark"></div>
       <div>
         <div class="header-title">엔드필드 공장 계산기</div>
-        <div class="header-sub">ARKNIGHTS ENDFIELD · FACTORY OPTIMIZER v1.0</div>
+        <div class="header-sub">ARKNIGHTS ENDFIELD · FACTORY OPTIMIZER v1.0
+          <span id="last-saved-badge" style="margin-left:8px;color:var(--success);font-size:10px;opacity:0;transition:opacity 0.5s;"></span>
+        </div>
       </div>
+    </div>
+    <!-- 유틸리티 버튼 -->
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+
+      <!-- 테마 전환 -->
+      <button onclick="toggleTheme()" id="theme-btn" title="테마 전환"
+        style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:6px;display:flex;align-items:center;transition:color 0.2s;"
+        onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
+        <svg id="theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg id="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+
+      <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+
+      <!-- 다운로드 (데이터 저장 — 화살표 아래로) -->
+      <button onclick="exportData()" title="데이터 다운로드 (.json)"
+        style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:6px;display:flex;align-items:center;transition:color 0.2s;"
+        onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+
+      <!-- 업로드 (데이터 불러오기 — 화살표 위로) -->
+      <label title="데이터 업로드 (.json)" style="cursor:pointer;display:flex;">
+        <input type="file" accept=".json" onchange="importData(this)" style="display:none;">
+        <span style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:6px;display:flex;align-items:center;transition:color 0.2s;"
+          onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </span>
+      </label>
+
+      <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+
+      <!-- 공유 링크 -->
+      <button onclick="shareLink()" title="공유 링크 복사"
+        style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:6px;display:flex;align-items:center;transition:color 0.2s;"
+        onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+      </button>
+
     </div>
   </div>
   <div class="tab-bar">
@@ -715,6 +949,73 @@
 
       <!-- 거점 선택 탭 (계산기 상단) -->
       <div style="display:flex;gap:6px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px;" id="factory-outpost-tabs"></div>
+
+      <!-- 모바일 전용: 현황 보기 버튼 -->
+      <div id="mobile-status-btn-wrap" style="display:none;margin-bottom:12px;">
+        <button onclick="openStatusDrawer()"
+          style="width:100%;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;
+            color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+            display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--accent2);font-weight:700;">◈</span>
+            <span id="mobile-auth-summary" style="color:var(--text-muted);">관리권 현황</span>
+          </span>
+          <span style="display:flex;align-items:center;gap:10px;">
+            <span id="mobile-deficit-badge" style="display:none;font-size:11px;color:var(--danger);font-weight:700;"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- 모바일 드로어 오버레이 -->
+      <div id="status-drawer-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);" onclick="if(event.target===this)closeStatusDrawer()">
+        <div id="status-drawer" style="position:absolute;bottom:0;left:0;right:0;
+          background:var(--surface);border-radius:16px 16px 0 0;border-top:1px solid var(--border);
+          max-height:80vh;display:flex;flex-direction:column;overflow:hidden;
+          transform:translateY(100%);transition:transform 0.3s ease;">
+          <!-- 드로어 헤더 -->
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+            <span style="font-size:13px;font-weight:700;color:var(--accent);">📊 생산 현황</span>
+            <button onclick="closeStatusDrawer()" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;">×</button>
+          </div>
+          <!-- 드로어 콘텐츠 (PC 우측 패널과 동일한 id 사용 불가 → 복사본) -->
+          <div style="overflow-y:auto;flex:1;padding:0;">
+
+            <!-- 관리권 현황 -->
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+              <div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">◈ 생산</div>
+                <div style="font-size:16px;font-weight:700;font-family:'Share Tech Mono',monospace;color:var(--accent);" id="drawer-produce">0</div>
+                <div style="font-size:10px;color:var(--text-muted);">/분</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">소모</div>
+                <div style="font-size:16px;font-weight:700;font-family:'Share Tech Mono',monospace;color:var(--danger);" id="drawer-consume">0</div>
+                <div style="font-size:10px;color:var(--text-muted);">/분</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">잔여</div>
+                <div style="font-size:16px;font-weight:700;font-family:'Share Tech Mono',monospace;" id="drawer-balance">0</div>
+                <div style="font-size:10px;color:var(--text-muted);">/분</div>
+              </div>
+            </div>
+
+            <!-- 재료 필터 -->
+            <div style="display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--border);">
+              <button class="filter-btn active" onclick="filterDrawerResult(this,'all')"    style="flex:1;padding:4px 0;font-size:11px;">전체</button>
+              <button class="filter-btn"        onclick="filterDrawerResult(this,'deficit')" style="flex:1;padding:4px 0;">🔴 부족</button>
+              <button class="filter-btn"        onclick="filterDrawerResult(this,'surplus')" style="flex:1;padding:4px 0;">🟢 잉여</button>
+              <button class="filter-btn"        onclick="filterDrawerResult(this,'balanced')" style="flex:1;padding:4px 0;">🔵</button>
+            </div>
+
+            <!-- 재료 목록 -->
+            <div id="drawer-results-grid" class="compact-results" style="max-height:50vh;overflow-y:auto;"></div>
+
+          </div>
+        </div>
+      </div>
 
       <div class="calc-layout">
 
@@ -1840,6 +2141,7 @@ function renderResults() {
   document.getElementById('deficit-count').textContent = deficit;
   document.getElementById('surplus-count').textContent = surplus;
   document.getElementById('balanced-count').textContent = balanced;
+  updateMobileStatusBtn();
 }
 
 function filterEquip(btn, val) {
@@ -2037,16 +2339,7 @@ function renderAuthOutpostPanel(oId) {
       <div style="padding:8px 12px 4px;font-size:10px;color:var(--text-muted);letter-spacing:0.05em;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.1);">
         목표 분당 생산량을 입력하면 관리권 소모량과 달성 가능 여부를 계산합니다
       </div>
-      <table class="auth-product-table">
-        <thead><tr>
-          <th>품명</th><th>관리권/개</th>
-          <th>현재 생산<br><span style="color:var(--accent);font-size:9px;">공장 연동</span></th>
-          <th>목표 생산<br><span style="color:var(--warning);font-size:9px;">직접 입력</span></th>
-          <th>필요 관리권<br><span style="font-size:9px;">/분</span></th>
-          <th>달성 여부</th>
-        </tr></thead>
-        <tbody id="auth-product-body-${oId}"></tbody>
-      </table>
+      <div id="auth-product-body-${oId}" style="padding:8px;display:flex;flex-direction:column;gap:6px;"></div>
     </div>
   `;
   renderOutpostBaseConfig(oId);
@@ -2139,7 +2432,7 @@ function renderOutpostBaseConfig(oId) {
 
     const totalPct = Math.round((eff.opper + eff.defense + eff.event) * 100);
 
-    return `<div style="border:1px solid rgba(30,58,95,0.6);border-radius:8px;padding:12px 14px;background:rgba(255,255,255,0.02);display:flex;gap:16px;align-items:stretch;">
+    return `<div style="border:1px solid rgba(30,58,95,0.6);border-radius:8px;padding:12px 14px;background:rgba(255,255,255,0.02);display:flex;gap:16px;align-items:stretch;" class="zone-card-inner">
       <!-- 왼쪽: 컨트롤 영역 -->
       <div style="flex:1;min-width:0;">
         <!-- 구역명 -->
@@ -2170,7 +2463,7 @@ function renderOutpostBaseConfig(oId) {
         </div>
       </div>
       <!-- 우측: 분당 관리권 -->
-      <div style="width:90px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid rgba(30,58,95,0.5);padding-left:14px;gap:4px;">
+      <div class="zone-card-right" style="width:90px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid rgba(30,58,95,0.5);padding-left:14px;gap:4px;">
         <div style="font-size:10px;color:var(--text-muted);text-align:center;letter-spacing:0.04em;">분당<br>관리권</div>
         <div style="font-size:22px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;text-align:center;line-height:1;" id="rate_${oId}_${zid}">
           ${rate > 0 ? fmt(rate) : '—'}
@@ -2225,40 +2518,101 @@ function updateOutpostAuthSummary(oId) {
 
 function renderOutpostProducts(oId) {
   const factoryRates = getAuthProductRatesFromFactory(oId);
-  const authTotal = calcOutpostAuthTotal(oId);
-  const tr = outpostData[oId]?.targetRates || {};
+  const authTotal    = calcOutpostAuthTotal(oId);
+  const tr           = outpostData[oId]?.targetRates || {};
+  const el           = document.getElementById(`auth-product-body-${oId}`);
+  if (!el) return;
 
-  let html = '';
-  Object.entries(AUTH_VALUE).forEach(([name, val]) => {
+  const isMobile = window.innerWidth < 768;
+  isMobile ? renderProductsCards(el, oId, factoryRates, authTotal, tr)
+           : renderProductsTable(el, oId, factoryRates, authTotal, tr);
+}
+
+function getAchieveHtml(factoryRate, targetRate, authTotal, val) {
+  if (targetRate <= 0) return `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
+  const needed      = val * targetRate;
+  const canProduce  = factoryRate >= targetRate - 0.001;
+  const canAfford   = authTotal   >= needed     - 0.001;
+  if (canProduce && canAfford)
+    return `<span style="color:var(--success);font-weight:700;">✓ 가능</span>`;
+  const r = [];
+  if (!canProduce) r.push('생산 부족');
+  if (!canAfford)  r.push('관리권 부족');
+  return `<span style="color:var(--danger);font-size:10px;" title="${r.join(', ')}">✗ ${r[0]}</span>`;
+}
+
+// ── PC: 테이블 ──────────────────────────────────────────
+function renderProductsTable(el, oId, factoryRates, authTotal, tr) {
+  el.style.padding = '0';
+  el.style.gap = '0';
+  el.innerHTML = `
+    <table class="auth-product-table">
+      <thead><tr>
+        <th>품명</th><th>관리권/개</th>
+        <th>현재 생산<br><span style="color:var(--accent);font-size:9px;">공장 연동</span></th>
+        <th>목표 생산<br><span style="color:var(--warning);font-size:9px;">직접 입력</span></th>
+        <th>필요 관리권<br><span style="font-size:9px;">/분</span></th>
+        <th>달성 여부</th>
+      </tr></thead>
+      <tbody>${
+        Object.entries(AUTH_VALUE).map(([name, val]) => {
+          const factoryRate = factoryRates[name] || 0;
+          const targetRate  = tr[name] || 0;
+          const needed      = val * targetRate;
+          return `<tr>
+            <td>${name}</td>
+            <td><span class="badge badge-orange">◈${val}</span></td>
+            <td style="color:${factoryRate>0?'var(--accent)':'var(--text-muted)'};">${fmt(factoryRate)}</td>
+            <td><input class="auth-rate-input" type="number" min="0" step="0.1"
+              value="${targetRate > 0 ? targetRate : ''}" placeholder="0"
+              onchange="updateTargetRate('${oId}','${name}',this.value)" style="width:65px;"></td>
+            <td style="color:${needed>0?'var(--warning)':'var(--text-muted)'};">${needed > 0 ? fmt(needed) : '—'}</td>
+            <td>${getAchieveHtml(factoryRate, targetRate, authTotal, val)}</td>
+          </tr>`;
+        }).join('')
+      }</tbody>
+    </table>`;
+}
+
+// ── 모바일: 카드 ─────────────────────────────────────────
+function renderProductsCards(el, oId, factoryRates, authTotal, tr) {
+  el.style.padding = '8px';
+  el.style.gap = '6px';
+  el.innerHTML = Object.entries(AUTH_VALUE).map(([name, val]) => {
     const factoryRate = factoryRates[name] || 0;
     const targetRate  = tr[name] || 0;
     const needed      = val * targetRate;
-    let achieveHtml = '<span style="color:var(--text-muted);font-size:11px;">—</span>';
-    if (targetRate > 0) {
-      const canProduce = factoryRate >= targetRate - 0.001;
-      const canAfford  = authTotal  >= needed - 0.001;
-      if (canProduce && canAfford) {
-        achieveHtml = '<span style="color:var(--success);font-size:11px;font-weight:700;">✓ 가능</span>';
-      } else {
-        const reasons = [];
-        if (!canProduce) reasons.push(`생산 부족`);
-        if (!canAfford)  reasons.push(`관리권 부족`);
-        achieveHtml = `<span style="color:var(--danger);font-size:10px;" title="${reasons.join(', ')}">✗ 불가</span>`;
-      }
-    }
-    html += `<tr>
-      <td>${name}</td>
-      <td><span class="badge badge-orange">◈${val}</span></td>
-      <td style="color:${factoryRate>0?'var(--accent)':'var(--text-muted)'};">${fmt(factoryRate)}</td>
-      <td><input class="auth-rate-input" type="number" min="0" step="0.1"
-        value="${targetRate > 0 ? targetRate : ''}" placeholder="0"
-        oninput="updateTargetRate('${oId}','${name}',this.value)" style="width:65px;"></td>
-      <td style="color:${needed>0?'var(--warning)':'var(--text-muted)'};">${needed > 0 ? fmt(needed) : '—'}</td>
-      <td>${achieveHtml}</td>
-    </tr>`;
-  });
-  const el = document.getElementById(`auth-product-body-${oId}`);
-  if (el) el.innerHTML = html;
+    return `<div style="border:1px solid rgba(30,58,95,0.6);border-radius:8px;padding:10px 12px;background:rgba(255,255,255,0.02);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">${name}</span>
+          <span class="badge badge-orange">◈${val}</span>
+        </div>
+        ${getAchieveHtml(factoryRate, targetRate, authTotal, val)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
+        <div style="background:rgba(0,0,0,0.15);border-radius:6px;padding:6px 4px;">
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">현재 생산<br><span style="color:var(--accent);">공장 연동</span></div>
+          <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${factoryRate>0?'var(--accent)':'var(--text-muted)'};">${fmt(factoryRate)}</div>
+          <div style="font-size:9px;color:var(--text-muted);">/분</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.15);border-radius:6px;padding:6px 4px;">
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">목표 생산<br><span style="color:var(--warning);">직접 입력</span></div>
+          <input type="number" min="0" step="0.1"
+            value="${targetRate > 0 ? targetRate : ''}" placeholder="0"
+            onchange="updateTargetRate('${oId}','${name}',this.value)"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;
+              color:var(--text);font-size:12px;font-family:'Share Tech Mono',monospace;
+              text-align:center;padding:2px 4px;outline:none;box-sizing:border-box;">
+        </div>
+        <div style="background:rgba(0,0,0,0.15);border-radius:6px;padding:6px 4px;">
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">필요 관리권<br>&nbsp;</div>
+          <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${needed>0?'var(--warning)':'var(--text-muted)'};">${needed > 0 ? fmt(needed) : '—'}</div>
+          <div style="font-size:9px;color:var(--text-muted);">/분</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function updateTargetRate(oId, name, val) {
@@ -2514,6 +2868,7 @@ function saveData() {
     });
     const data = { outpostData: savedOutpostData, baseEff, presets, activeOutpostId, operators, nextOperatorId };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    markSaved();
   } catch(e) { console.warn('저장 실패:', e); }
 }
 
@@ -2991,7 +3346,7 @@ function renderOperatorConfig() {
     <!-- 스킬 레벨 -->
     <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
       <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:8px;">스킬 레벨</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div style="display:grid;gap:8px;" class="skill-grid" style="grid-template-columns:repeat(4,1fr)">
         ${SKILL_TYPES.map((type, i) => {
           const sk = op.skills?.[i] || { currentLv:1, targetLv:9 };
           return `<div style="text-align:center;">
@@ -3013,7 +3368,7 @@ function renderOperatorConfig() {
     <!-- 재능 노드 -->
     <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
       <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:6px;">어빌리티 매트릭스 (재능/스킬 노드)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;">
+      <div style="display:grid;gap:2px;" class="talent-grid" style="grid-template-columns:1fr 1fr 1fr">
         ${talentHtml}
       </div>
     </div>
@@ -3298,13 +3653,315 @@ function renderFarmingGuide() {
   el.innerHTML = summary + `<div style="display:flex;flex-direction:column;gap:8px;">${cards}</div>`;
 }
 
+// ========== 테마 토글 ==========
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  document.getElementById('theme-icon-dark').style.display  = isLight ? 'none'  : '';
+  document.getElementById('theme-icon-light').style.display = isLight ? ''      : 'none';
+  localStorage.setItem('endfield_theme', isLight ? 'light' : 'dark');
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('endfield_theme');
+  if (saved === 'light') {
+    document.body.classList.add('light-theme');
+    const d = document.getElementById('theme-icon-dark');
+    const l = document.getElementById('theme-icon-light');
+    if (d) d.style.display = 'none';
+    if (l) l.style.display = '';
+  }
+}
+
+// ========== 변경 이력 ==========
+let lastSavedTime = null;
+
+function markSaved() {
+  lastSavedTime = new Date();
+  const badge = document.getElementById('last-saved-badge');
+  if (!badge) return;
+  const h = lastSavedTime.getHours().toString().padStart(2,'0');
+  const m = lastSavedTime.getMinutes().toString().padStart(2,'0');
+  const s = lastSavedTime.getSeconds().toString().padStart(2,'0');
+  badge.textContent = `✓ ${h}:${m}:${s} 저장됨`;
+  badge.style.opacity = '1';
+  clearTimeout(badge._fadeTimer);
+  badge._fadeTimer = setTimeout(() => { badge.style.opacity = '0'; }, 3000);
+}
+
+// ========== 내보내기 ==========
+function exportData() {
+  const savedOutpostData = {};
+  OUTPOSTS.forEach(o => {
+    savedOutpostData[o.id] = {
+      resourceRates: outpostData[o.id].resourceRates,
+      groups:        outpostData[o.id].groups,
+      targetRates:   outpostData[o.id].targetRates,
+      nextGroupId:   outpostData[o.id].nextGroupId,
+    };
+  });
+  const payload = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    outpostData: savedOutpostData,
+    baseEff,
+    presets,
+    activeOutpostId,
+    operators,
+    nextOperatorId,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href     = url;
+  a.download = `endfield_${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 데이터를 내보냈어요!');
+}
+
+// ========== 가져오기 ==========
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      applyImportedData(data);
+      showToast('📥 데이터를 불러왔어요!', 'success');
+    } catch(err) {
+      showToast('❌ 파일을 읽는데 실패했어요', 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function applyImportedData(data) {
+  if (data.outpostData) {
+    OUTPOSTS.forEach(o => {
+      const saved = data.outpostData[o.id];
+      if (!saved) return;
+      if (saved.resourceRates) Object.assign(outpostData[o.id].resourceRates, saved.resourceRates);
+      if (saved.groups)        outpostData[o.id].groups      = saved.groups;
+      if (saved.targetRates)   Object.assign(outpostData[o.id].targetRates, saved.targetRates);
+      if (saved.nextGroupId)   outpostData[o.id].nextGroupId = saved.nextGroupId;
+    });
+  }
+  if (data.baseEff) {
+    OUTPOSTS.forEach(o => {
+      if (data.baseEff[o.id]) {
+        Object.entries(data.baseEff[o.id]).forEach(([zoneName, saved]) => {
+          if (baseEff[o.id]?.[zoneName]) Object.assign(baseEff[o.id][zoneName], saved);
+        });
+      }
+    });
+  }
+  if (data.presets)       presets        = data.presets;
+  if (data.activeOutpostId) activeOutpostId = data.activeOutpostId;
+  if (data.operators)     operators      = data.operators;
+  if (data.nextOperatorId) nextOperatorId = data.nextOperatorId;
+
+  // UI 전체 갱신
+  renderFactoryOutpostTabs();
+  renderResourceInputs();
+  renderWorkspace();
+  renderResults();
+  updateFactoryAuthBar();
+  renderAuthOutpostTabs();
+  switchAuthView('outpost', activeAuthOutpostId);
+  renderOperatorList();
+  renderOperatorConfig();
+  renderOperatorTotal();
+  saveData();
+}
+
+// ========== 공유 링크 ==========
+function shareLink() {
+  try {
+    const savedOutpostData = {};
+    OUTPOSTS.forEach(o => {
+      savedOutpostData[o.id] = {
+        resourceRates: outpostData[o.id].resourceRates,
+        groups:        outpostData[o.id].groups,
+        targetRates:   outpostData[o.id].targetRates,
+        nextGroupId:   outpostData[o.id].nextGroupId,
+      };
+    });
+    const payload = {
+      v: 2,
+      outpostData: savedOutpostData,
+      baseEff,
+      presets,
+      activeOutpostId,
+      operators,
+      nextOperatorId,
+    };
+    const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+    const url = `${location.origin}${location.pathname}?d=${encoded}`;
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('🔗 링크를 클립보드에 복사했어요!');
+      });
+    } else {
+      // 폴백: 텍스트 선택
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('🔗 링크를 클립보드에 복사했어요!');
+    }
+  } catch(e) {
+    showToast('❌ 공유 링크 생성에 실패했어요', 'error');
+  }
+}
+
+// URL 파라미터로 공유 데이터 불러오기
+function loadFromURL() {
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d');
+  if (!d) return false;
+  try {
+    const data = JSON.parse(decodeURIComponent(atob(d)));
+    applyImportedData(data);
+    // URL 파라미터 제거 (깔끔하게)
+    history.replaceState(null, '', location.pathname);
+    showToast('🔗 공유 링크로 데이터를 불러왔어요!', 'success');
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// ========== 토스트 알림 ==========
+function showToast(msg, type = 'info') {
+  const existing = document.getElementById('toast-msg');
+  if (existing) existing.remove();
+
+  const colors = { info: 'var(--accent)', success: 'var(--success)', error: 'var(--danger)' };
+  const toast = document.createElement('div');
+  toast.id = 'toast-msg';
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--surface);border:1px solid ${colors[type]};
+    color:var(--text);padding:10px 20px;border-radius:8px;
+    font-size:13px;font-family:'Noto Sans KR',sans-serif;
+    z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    animation:fadeInUp 0.2s ease;white-space:nowrap;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2500);
+}
+
+// ========== 모바일 현황 드로어 ==========
+let drawerCurrentFilter = 'all';
+
+function openStatusDrawer() {
+  syncDrawerData();
+  const overlay = document.getElementById('status-drawer-overlay');
+  const drawer  = document.getElementById('status-drawer');
+  overlay.style.display = 'block';
+  requestAnimationFrame(() => { drawer.style.transform = 'translateY(0)'; });
+}
+
+function closeStatusDrawer() {
+  const drawer  = document.getElementById('status-drawer');
+  const overlay = document.getElementById('status-drawer-overlay');
+  drawer.style.transform = 'translateY(100%)';
+  setTimeout(() => { overlay.style.display = 'none'; }, 300);
+}
+
+function syncDrawerData() {
+  const produce = document.getElementById('fab-outpost-produce')?.textContent || '0';
+  const consume = document.getElementById('fab-outpost-consume')?.textContent || '0';
+  const balance = document.getElementById('fab-outpost-balance')?.textContent || '0';
+  const balEl   = document.getElementById('fab-outpost-balance');
+
+  const dp = document.getElementById('drawer-produce');
+  const dc = document.getElementById('drawer-consume');
+  const db = document.getElementById('drawer-balance');
+  if (dp) dp.textContent = produce;
+  if (dc) dc.textContent = consume;
+  if (db) {
+    db.textContent = balance;
+    db.style.color = balEl?.style.color || 'var(--text)';
+  }
+
+  const src  = document.getElementById('results-grid');
+  const dest = document.getElementById('drawer-results-grid');
+  if (src && dest) dest.innerHTML = src.innerHTML;
+  applyDrawerFilter(drawerCurrentFilter);
+}
+
+function filterDrawerResult(btn, type) {
+  drawerCurrentFilter = type;
+  document.querySelectorAll('#status-drawer-overlay .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyDrawerFilter(type);
+}
+
+function applyDrawerFilter(type) {
+  const dest = document.getElementById('drawer-results-grid');
+  if (!dest) return;
+  dest.querySelectorAll('.compact-item').forEach(item => {
+    const dot  = item.querySelector('.compact-dot');
+    const show = type === 'all' || (dot && dot.classList.contains(type));
+    item.style.display = show ? '' : 'none';
+  });
+}
+
+function updateMobileStatusBtn() {
+  const isMobile   = window.innerWidth < 768;
+  const btn        = document.getElementById('mobile-status-btn-wrap');
+  const rightPanel = document.querySelector('.factory-right-fixed');
+  if (btn)        btn.style.display        = isMobile ? '' : 'none';
+  if (rightPanel) rightPanel.style.display = isMobile ? 'none' : '';
+  if (!isMobile) return;
+
+  const balEl    = document.getElementById('fab-outpost-balance');
+  const balance  = balEl?.textContent || '—';
+  const isNeg    = balEl?.className?.includes('negative');
+  const balColor = isNeg ? 'var(--danger)' : 'var(--success)';
+  const summary  = document.getElementById('mobile-auth-summary');
+  if (summary) {
+    summary.innerHTML = `관리권 잔여 <span style="color:${balColor};font-weight:700;font-family:'Share Tech Mono',monospace;">${balance}/분</span>`;
+  }
+
+  const deficitCount = document.querySelectorAll('#results-grid .compact-dot.deficit').length;
+  const badge = document.getElementById('mobile-deficit-badge');
+  if (badge) {
+    badge.style.display = deficitCount > 0 ? '' : 'none';
+    badge.textContent   = `⚠ ${deficitCount}개 부족`;
+  }
+
+  const overlay = document.getElementById('status-drawer-overlay');
+  if (overlay?.style.display !== 'none') syncDrawerData();
+}
+
+// 화면 크기 변경 시 재렌더
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    renderOutpostProducts(activeAuthOutpostId);
+    updateMobileStatusBtn();
+  }, 200);
+});
+
+loadTheme();
 loadData();
+loadFromURL(); // URL 공유 파라미터가 있으면 덮어씀
 loadCustomIcons();
 renderFactoryOutpostTabs();
 renderResourceInputs();
 renderWorkspace();
 renderResults();
 updateFactoryAuthBar();
+updateMobileStatusBtn();
 renderAuthOutpostTabs();
 switchAuthView('outpost', activeAuthOutpostId);
 renderOperatorList();
