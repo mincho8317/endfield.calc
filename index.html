@@ -384,6 +384,69 @@
   .filter-btn:hover, .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
   .filter-label { font-size: 11px; color: var(--text-muted); margin-right: 4px; }
 
+  /* ===== 온보딩 투어 ===== */
+  .tour-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    pointer-events: none;
+  }
+  .tour-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 10000; pointer-events: all;
+  }
+  .tour-highlight {
+    position: fixed; z-index: 10001;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: 0 0 0 4px rgba(0,200,255,0.2), 0 0 30px rgba(0,200,255,0.3);
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    background: transparent;
+  }
+  .tour-card {
+    position: fixed; z-index: 10002;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 18px;
+    width: 280px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+    pointer-events: all;
+  }
+  .tour-card-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--accent); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tour-card-body {
+    font-size: 12px; color: var(--text);
+    line-height: 1.7; margin-bottom: 14px;
+  }
+  .tour-card-footer {
+    display: flex; justify-content: space-between;
+    align-items: center;
+  }
+  .tour-step-indicator {
+    font-size: 11px; color: var(--text-muted);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .tour-btn-group { display: flex; gap: 6px; }
+  .tour-btn {
+    padding: 5px 14px; border-radius: 6px;
+    font-size: 12px; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .tour-btn:hover { color: var(--text); border-color: var(--text-muted); }
+  .tour-btn.primary {
+    background: var(--accent); border-color: var(--accent);
+    color: var(--bg); font-weight: 600;
+  }
+  .tour-btn.primary:hover { opacity: 0.9; }
+
+  /* ===== 빈 화면 ===== */
   .page-view { display: none; }
   .page-view.active { display: block; }
 
@@ -436,33 +499,68 @@
     .auth-product-table td { padding: 6px 8px; }
     .panel { overflow-x: auto; }
 
-    /* 오퍼레이터 탭 — 목록 상단 고정, 설정 하단 */
+    /* 오퍼레이터 탭 — 모바일 완전 재설계 */
     #tab-operator > div {
       flex-direction: column !important;
+      gap: 0 !important;
     }
+    /* 왼쪽 패널(목록) → 상단 칩 바 */
     #tab-operator > div > div:first-child {
       width: 100% !important;
     }
     #tab-operator > div > div:first-child .panel {
-      max-height: 200px;
+      max-height: none !important;
+      border-radius: 0 !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-top: none !important;
     }
-    #tab-operator > div > div:first-child #operator-list {
-      max-height: 160px !important;
-      display: flex;
-      flex-direction: row;
-      overflow-x: auto;
-      overflow-y: hidden;
+    /* 목록 헤더 */
+    #tab-operator > div > div:first-child .panel > div:first-child {
+      padding: 8px 12px !important;
     }
-    /* 목록 아이템 가로 스크롤 */
+    /* 오른쪽 패널 전체 너비 */
+    #tab-operator > div > div:last-child {
+      width: 100% !important;
+      flex: none !important;
+    }
+    /* 목록을 wrap 칩으로 */
+    #operator-list {
+      max-height: none !important;
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      overflow: visible !important;
+      gap: 6px !important;
+      padding: 8px 12px 10px !important;
+    }
+    /* 각 오퍼레이터 칩 */
     #operator-list > div {
-      min-width: 140px;
+      min-width: 0 !important;
+      width: auto !important;
+      flex-shrink: 0 !important;
       border-bottom: none !important;
-      border-right: 1px solid var(--border);
+      border-right: none !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 20px !important;
+      padding: 5px 12px !important;
+      white-space: nowrap !important;
     }
-
+    #operator-list > div[style*="border-left:3px"] {
+      border-color: var(--accent) !important;
+      background: rgba(0,200,255,0.08) !important;
+    }
+    /* 칩 내부 텍스트 — 이름만 한 줄 */
+    #operator-list > div > div:last-child { display: none !important; }
+    #operator-list > div > div:first-child {
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+    }
+    /* 오른쪽 패널 탭 왼쪽 정렬 */
+    #op-inner-tabs { justify-content: flex-start; }
     /* 스킬 레벨 — 2열 */
     .skill-grid { grid-template-columns: repeat(2,1fr) !important; }
-
     /* 재능 노드 — 2열 */
     .talent-grid { grid-template-columns: 1fr 1fr !important; }
 
@@ -511,7 +609,7 @@
     #factory-outpost-tabs { flex-wrap: wrap; gap: 6px; }
 
     /* 관리권 거점 탭 */
-    #auth-outpost-tabs { flex-wrap: wrap; gap: 4px; }
+    #auth-outpost-tabs { flex-wrap: wrap; gap: 4px; padding-bottom: 8px !important; }
     #auth-outpost-tabs button { font-size: 11px; padding: 5px 12px; }
 
     /* 전체현황 거점 카드 3열 → 1열 */
@@ -912,18 +1010,6 @@
         </span>
       </label>
 
-      <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
-
-      <!-- 공유 링크 -->
-      <button onclick="shareLink()" title="공유 링크 복사"
-        style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:6px;display:flex;align-items:center;transition:color 0.2s;"
-        onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-        </svg>
-      </button>
-
     </div>
   </div>
   <div class="tab-bar">
@@ -931,6 +1017,7 @@
     <div class="tab active" onclick="switchTab('authority')">◈ 관리권 계산기</div>
     <div class="tab" onclick="switchTab('factory')">⚙ 공장 계산기</div>
     <div class="tab" onclick="switchTab('operator')">👤 오퍼레이터 육성</div>
+    <div class="tab" onclick="switchTab('essence')">💎 기질 파밍</div>
   </div>
 </header>
 
@@ -1128,10 +1215,31 @@
     </div><!-- end tab-factory -->
     <div id="tab-authority" class="page-view active">
 
-      <!-- 거점 선택 탭 (계산기 상단) -->
-      <div style="display:flex;gap:6px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px;" id="auth-outpost-tabs"></div>
+      <!-- 거점 선택 탭 — sticky 고정 -->
+      <div style="position:sticky;top:0;z-index:10;background:var(--bg);padding-bottom:10px;padding-top:4px;border-bottom:1px solid var(--border);margin-bottom:0;" id="auth-outpost-tabs"></div>
 
-      <div class="panel">
+      <!-- 관리권 요약 바 — 항상 표시 (탭과 무관) -->
+      <div id="auth-summary-fixed" style="background:var(--panel-bg);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--text-muted);">총 생산</span>
+          <span style="font-size:14px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;" id="auth-summary-produce">—</span>
+          <span style="font-size:10px;color:var(--text-muted);">/분</span>
+        </div>
+        <div style="width:1px;height:14px;background:var(--border);"></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--text-muted);">소모</span>
+          <span style="font-size:14px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;" id="auth-summary-consume">0</span>
+          <span style="font-size:10px;color:var(--text-muted);">/분</span>
+        </div>
+        <div style="width:1px;height:14px;background:var(--border);"></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--text-muted);">잔여</span>
+          <span style="font-size:14px;font-weight:700;font-family:'Share Tech Mono',monospace;" id="auth-summary-balance">—</span>
+          <span style="font-size:10px;color:var(--text-muted);">/분</span>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:0;border-top:none;border-radius:0 0 8px 8px;">
         <!-- 거점별 관리권 패널 (JS로 렌더링) -->
         <div id="auth-outpost-panel"></div>
       </div>
@@ -1148,16 +1256,22 @@
               <span style="font-size:12px;font-weight:600;color:var(--accent);">오퍼레이터 목록</span>
               <button class="btn btn-primary" style="font-size:11px;padding:3px 10px;" onclick="addOperator()">+ 추가</button>
             </div>
-            <div id="operator-list" style="max-height:calc(100vh - 240px);overflow-y:auto;">
-              <div class="empty-state" style="padding:24px;font-size:12px;">
-                <div class="icon">👤</div>오퍼레이터를<br>추가하세요
-              </div>
-            </div>
+            <div id="operator-list" style="max-height:calc(100vh - 240px);overflow-y:auto;"></div>
           </div>
         </div>
 
         <!-- 오른쪽: 설정 + 재료 + 파밍 가이드 -->
         <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+
+          <!-- 모바일 전용: 전체 재료 요약 바 -->
+          <div id="op-mobile-total-bar" style="display:none;border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:8px 12px;background:rgba(0,200,255,0.04);cursor:pointer;" onclick="toggleOpTotalBar()">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:600;color:var(--accent);">📦 전체 필요 재료 합산</span>
+              <svg id="op-total-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div id="op-mobile-total-preview" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;"></div>
+            <div id="op-mobile-total-full" style="display:none;margin-top:8px;"></div>
+          </div>
 
           <!-- 내부 탭: 육성 설정 / 파밍 가이드 -->
           <div style="display:flex;border-bottom:1px solid var(--border);gap:0;" id="op-inner-tabs">
@@ -1172,7 +1286,7 @@
                 <div class="icon">👤</div>오퍼레이터를 선택하거나<br>추가하세요
               </div>
             </div>
-            <!-- 전체 필요 재료 합산 -->
+            <!-- PC 전용: 전체 필요 재료 합산 -->
             <div id="operator-total-panel" style="display:none;">
               <div class="panel" style="padding:0;overflow:hidden;">
                 <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(0,200,255,0.03);">
@@ -1193,6 +1307,74 @@
           </div>
 
         </div>
+      </div>
+    </div>
+
+    <!-- ===== 기질 파밍 탭 ===== -->
+    <div id="tab-essence" class="page-view">
+      <div style="max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+
+        <!-- 안내 배너 -->
+        <div style="border:1px solid rgba(0,200,255,0.2);border-radius:10px;padding:12px 16px;background:rgba(0,200,255,0.04);font-size:11px;color:var(--text-muted);line-height:1.8;">
+          💎 <b style="color:var(--accent);">기질(Essence)</b>은 무기에 장착하는 강화 아이템이에요.
+          각 무기는 <b>주속성 1 · 보조속성 1 · 스킬 1</b> 고유 조합을 가지며,
+          기질의 특성이 무기 특성과 일치할수록 강화 효과가 높아요.<br>
+          스킬 특성은 파밍 장소마다 8종씩 고정 드롭되니, 목표 무기에 맞는 장소를 골라야 해요.
+        </div>
+
+        <!-- 내부 탭 -->
+        <div style="display:flex;border-bottom:1px solid var(--border);" id="essence-inner-tabs">
+          <div class="inner-tab active" id="etab-check"  onclick="switchEssenceTab('check')">🔍 기질 체커</div>
+          <div class="inner-tab"       id="etab-weapon" onclick="switchEssenceTab('weapon')">⚔ 무기별 파밍처</div>
+        </div>
+
+        <!-- ① 기질 체커 -->
+        <div id="epanel-check">
+          <div class="panel" style="padding:14px 16px;">
+            <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;">보유한 기질의 특성 3가지를 선택하면 장착 가능한 무기를 알려드려요</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">주속성 (Primary)</div>
+                <select id="ec-primary" onchange="renderEssenceCheck()"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:12px;outline:none;">
+                  <option value="">— 선택 —</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">보조속성 (Secondary)</div>
+                <select id="ec-secondary" onchange="renderEssenceCheck()"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:12px;outline:none;">
+                  <option value="">— 선택 —</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">스킬 (Skill)</div>
+                <select id="ec-skill" onchange="renderEssenceCheck()"
+                  style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:12px;outline:none;">
+                  <option value="">— 선택 —</option>
+                </select>
+              </div>
+            </div>
+            <div id="ec-result">
+              <div class="empty-state" style="padding:32px;"><div class="icon">💎</div>특성을 선택하면 매칭 무기가 표시됩니다</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 무기별 파밍처 + 한번에 파밍 통합 -->
+        <div id="epanel-weapon" style="display:none;">
+          <div class="panel" style="padding:14px 16px;">
+            <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;">무기를 선택하면 필요 기질과 파밍처, 한번에 파밍 가능한 무기를 알려드려요</div>
+            <select id="ew-select" onchange="renderWeaponFarming()"
+              style="width:100%;max-width:400px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;margin-bottom:14px;">
+              <option value="">— 무기 선택 —</option>
+            </select>
+            <div id="ew-result">
+              <div class="empty-state" style="padding:32px;"><div class="icon">⚔</div>무기를 선택하면 파밍처가 표시됩니다</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1234,6 +1416,16 @@
     </div>
     <!-- 오퍼레이터 그리드 -->
     <div style="overflow-y:auto;flex:1;padding:10px;" id="operator-select-grid"></div>
+  </div>
+</div>
+
+<!-- 커스텀 다이얼로그 모달 -->
+<div id="modal-dialog" style="display:none;position:fixed;inset:0;z-index:50000;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;width:320px;padding:20px 20px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <div id="dialog-title" style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;"></div>
+    <div id="dialog-message" style="font-size:12px;color:var(--text);line-height:1.7;margin-bottom:16px;"></div>
+    <input id="dialog-input" type="text" style="display:none;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:12px;box-sizing:border-box;outline:none;margin-bottom:12px;">
+    <div style="display:flex;justify-content:flex-end;gap:8px;" id="dialog-buttons"></div>
   </div>
 </div>
 
@@ -1367,6 +1559,7 @@ let pendingGroupId = null;
 // ========== RECIPE RATE CALC ==========
 // 숫자 포맷: 소수점 있을 때만 표시, 최대 2자리
 function fmt(n) {
+  if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '0';
   if (n === 0) return '0';
   const r = Math.round(n * 100) / 100;
   return r % 1 === 0 ? r.toString() : r.toFixed(2).replace(/\.?0+$/, '');
@@ -1511,7 +1704,15 @@ function renderWorkspace() {
   if (!ws) return;
   const gs = od().groups;
   if (gs.length === 0) {
-    ws.innerHTML = `<div class="empty-state" style="padding:32px;"><div class="icon">🏭</div>그룹을 추가해서<br>설비를 구성하세요</div>`;
+    ws.innerHTML = `<div class="empty-state" style="padding:32px;">
+    <div class="icon">🏭</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비가 없어요</div>
+    <div style="font-size:11px;color:var(--text-muted);line-height:1.8;text-align:left;display:inline-block;">
+      1️⃣ <b>+ 그룹 추가</b> 버튼으로 그룹을 만들고<br>
+      2️⃣ 그룹 안의 <b>+ 설비 추가</b>로 설비를 선택한 뒤<br>
+      3️⃣ 설비 <b>수량을 입력</b>하면 생산량이 계산돼요
+    </div>
+  </div>`;
     updateActiveCount();
     return;
   }
@@ -1604,7 +1805,11 @@ function addGroup() {
   scheduleSave();
 }
 
-function removeGroup(gid) {
+async function removeGroup(gid) {
+  const g = od().groups.find(g => g.id === gid);
+  if (!g) return;
+  const ok = await dialogConfirm(`"${g.name}" 그룹을 삭제할까요?`);
+  if (!ok) return;
   od().groups = od().groups.filter(g => g.id !== gid);
   renderWorkspace();
   renderResults();
@@ -1722,7 +1927,7 @@ function renderEquipModalTabs(g, equipTypes) {
 
 function selectEquipTab(equip) {
   modalSelectedEquip = equip;
-  const g = groups.find(g => g.id === pendingGroupId);
+  const g = od().groups.find(g => g.id === pendingGroupId);
   const equipTypes = [...new Set(RECIPES.map(r => r.equip))];
   if (presetEditMode) {
     renderEquipModalTabs({ equips: editingPresetEquips }, equipTypes);
@@ -1825,13 +2030,14 @@ function closeEquipModal() {
   if (presetEditMode) { presetEditMode = false; presetEditChangeIdx = null; }
 }
 
-function saveGroupAsPreset(gid) {
+async function saveGroupAsPreset(gid) {
   const g = od().groups.find(g => g.id === gid);
-  if (!g || g.equips.length === 0) { alert('설비가 없는 그룹은 저장할 수 없어요'); return; }
-  const name = prompt('프리셋 이름을 입력하세요', g.name) || g.name;
-  presets.push({ id: Date.now(), name, equips: g.equips.map(e => ({ recipeId: e.recipeId, count: e.count })) });
+  if (!g || g.equips.length === 0) { await dialogAlert('설비가 없는 그룹은 저장할 수 없어요'); return; }
+  const name = await dialogPrompt('프리셋 이름을 입력하세요', g.name);
+  if (name === null) return;
+  presets.push({ id: Date.now(), name: name || g.name, equips: g.equips.map(e => ({ recipeId: e.recipeId, count: e.count })) });
   scheduleSave();
-  alert(`"${name}" 프리셋이 저장됐어요!`);
+  await dialogAlert(`"${name || g.name}" 프리셋이 저장됐어요!`);
 }
 
 function openPresetModal() {
@@ -1878,7 +2084,11 @@ function loadPreset(pid) {
   scheduleSave();
 }
 
-function deletePreset(pid) {
+async function deletePreset(pid) {
+  const p = presets.find(p => p.id === pid);
+  if (!p) return;
+  const ok = await dialogConfirm(`"${p.name}" 프리셋을 삭제할까요?`);
+  if (!ok) return;
   presets = presets.filter(p => p.id !== pid);
   renderPresetModal();
   scheduleSave();
@@ -1931,7 +2141,7 @@ function renderPresetEditBody() {
       </div>
       <input type="number" min="0" value="${e.count||''}" placeholder="0"
         class="ws-count-input"
-        oninput="updatePresetEquipCount(${idx}, this.value)">
+        onchange="updatePresetEquipCount(${idx}, this.value)">
       <button class="ws-del-btn" onclick="removePresetEquip(${idx})" title="제거" style="font-size:14px;padding-top:4px;">×</button>
     </div>`;
   }).join('');
@@ -2088,21 +2298,18 @@ function handleIconUpload(name, input) {
 
 document.getElementById('modal-equip').addEventListener('click', function(e) { if (e.target===this) closeEquipModal(); });
 
-function resetAll() {
-  groups = [];
-  renderWorkspace();
-  renderResults();
-  renderAuthProducts();
-  scheduleSave();
-}
-
 // ========== RENDER RESULTS ==========
 let currentResultFilter = 'all';
 function renderResults() {
   const totals = calcTotals();
   const keys = Object.keys(totals);
   if (keys.length === 0) {
-    document.getElementById('results-grid').innerHTML = '<div class="empty-state" style="padding:24px;"><div class="icon">🏭</div>설비 수량을 입력하면<br>현황이 표시됩니다</div>';
+    document.getElementById('results-grid').innerHTML = `<div class="empty-state" style="padding:24px;">
+      <div class="icon">🏭</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
+        공업생산품 탭에서<br>설비를 추가하고 수량을 입력하면<br>재료 수지가 여기에 표시돼요
+      </div>
+    </div>`;
     document.getElementById('summary-bar').style.display = 'none';
     return;
   }
@@ -2157,47 +2364,36 @@ function filterResult(btn, val) {
   renderResults();
 }
 
-function resetAll() {
-  RECIPES.forEach(r => equipCounts[r.id] = 0);
-  renderRecipes();
-  renderResults();
-}
-
 // ========== AUTHORITY TAB ==========
 // 거점별 관리권 구역 정의 (배포자가 추가)
 const BASE_DATA = {
   valley4: [
-    { name:'천왕평지 (1)', baseAmt:0, hasDefense:true, traits:[
-      { type:'authority', value:'로도스 아일랜드' },   // 소속
-      { type:'exchange',  value:'창작' },              // 취미
-      { type:'exp',       value:'정세 분석' },          // 특기
+    { name:'유랑자 임시 거주지', baseAmt:0, hasDefense:true, traits:[
+      { type:'authority', value:'로도스 아일랜드' }, // 관리권생산효율 — 소속 매칭
+      { type:'exchange',  value:'창의' },             // 관리권교환효율 — 취미 매칭
+      { type:'exp',       value:'전황 분석' },        // 경험치효율 — 특기 매칭
     ]},
-    { name:'천왕평지 (2)', baseAmt:0, hasDefense:true, traits:[
-      { type:'authority', value:'로도스 아일랜드' },
-      { type:'exchange',  value:'창작' },
-      { type:'exp',       value:'정세 분석' },
+    { name:'기초 건설 주둔지', baseAmt:0, hasDefense:true, traits:[
+      { type:'authority', value:'엔드필드 공업' },    // 관리권생산효율 — 소속 매칭
+      { type:'exchange',  value:'과학기술' },          // 관리권교환효율 — 취미 매칭
+      { type:'exp',       value:'창의적인 생각' },    // 경험치효율 — 특기 매칭
     ]},
-    { name:'천왕평지 (3)', baseAmt:0, hasDefense:true, traits:[
-      { type:'authority', value:'로도스 아일랜드' },
-      { type:'exchange',  value:'창작' },
-      { type:'exp',       value:'정세 분석' },
-    ]},
-    { name:'천왕평지 (4)', baseAmt:0, hasDefense:true, traits:[
-      { type:'authority', value:'로도스 아일랜드' },
-      { type:'exchange',  value:'창작' },
-      { type:'exp',       value:'정세 분석' },
+    { name:'재건 지휘부', baseAmt:0, hasDefense:false, traits:[
+      { type:'authority', value:'로도스 아일랜드' },  // 관리권생산효율 — 소속 매칭
+      { type:'exchange',  value:'문화' },              // 관리권교환효율 — 취미 매칭
+      { type:'exp',       value:'오리지늄 아츠' },    // 경험치효율 — 특기 매칭
     ]},
   ],
   wuling: [
-    { name:'천왕평지',   baseAmt:0, hasDefense:true, traits:[
-      { type:'authority', value:'천사문' },
-      { type:'exchange',  value:'요리' },
-      { type:'exp',       value:'관리' },
+    { name:'천왕평지', baseAmt:0, hasDefense:true, traits:[
+      { type:'authority', value:'민첩' },             // 관리권생산효율 — 특기 매칭
+      { type:'exchange',  value:'자연' },              // 관리권교환효율 — 취미 매칭
+      { type:'exp',       value:'작전 기술' },        // 경험치효율 — 특기 매칭
     ]},
     { name:'심장수복실', baseAmt:0, hasDefense:false, traits:[
-      { type:'authority', value:'엔드필드 인더스트리' },
-      { type:'exchange',  value:'의학' },
-      { type:'exp',       value:'생명과학' },
+      { type:'authority', value:'홍산 과학원' },      // 관리권생산효율 — 소속 매칭
+      { type:'exchange',  value:'공익' },              // 관리권교환효율 — 취미 매칭
+      { type:'exp',       value:'조직 관리' },        // 경험치효율 — 특기 매칭
     ]},
   ],
 };
@@ -2224,9 +2420,10 @@ const DEFENSE_EFF = [0, 0.10, 0.20, 0.30, 0.40];
 // 특성 타입 한글 (구버전 호환 + 뱃지용)
 const TRAIT_TYPE_KR = { faction:'소속', hobby:'취미', expertise:'특기' };
 
-// 오퍼레이터가 슬롯 value와 일치하는지 확인 (faction/hobby/expertise 중 하나라도 일치)
+// 오퍼레이터가 슬롯 value와 일치하는지 확인 (faction/hobby/hobby2/expertise/expertise2 중 하나라도 일치)
 function opMatchesValue(op, value) {
-  return op.faction === value || op.hobby === value || op.expertise === value;
+  return op.faction === value || op.hobby === value || op.hobby2 === value
+      || op.expertise === value || op.expertise2 === value;
 }
 
 // 구역 효율 계산 헬퍼
@@ -2304,6 +2501,9 @@ function switchAuthView(type, oId) {
   renderAuthOutpostTabs();
   document.getElementById('auth-outpost-panel').style.display = '';
   renderAuthOutpostPanel(oId);
+  // 마지막으로 열었던 내부 탭 복원
+  const savedTab = authInnerTabState[oId] || 'base';
+  if (savedTab !== 'base') switchOutpostInnerTab(savedTab, oId);
 }
 
 function renderAuthOutpostPanel(oId) {
@@ -2316,23 +2516,6 @@ function renderAuthOutpostPanel(oId) {
     </div>
     <div id="auth-inner-base-${oId}">
       <div id="base-config-${oId}"></div>
-      <div class="summary-bar">
-        <div class="summary-item">
-          <span class="summary-label">총 생산</span>
-          <span class="summary-value accent" id="auth-total-${oId}">—</span>
-          <span class="summary-label">/분</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">소모</span>
-          <span class="summary-value negative" id="auth-consume-total-${oId}">0</span>
-          <span class="summary-label">/분</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">잔여</span>
-          <span class="summary-value" id="auth-balance-${oId}">—</span>
-          <span class="summary-label">/분</span>
-        </div>
-      </div>
     </div>
     <div id="auth-inner-product-${oId}" style="display:none;">
       <div style="padding:8px 12px 4px;font-size:10px;color:var(--text-muted);letter-spacing:0.05em;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.1);">
@@ -2346,7 +2529,11 @@ function renderAuthOutpostPanel(oId) {
   updateOutpostAuthSummary(oId);
 }
 
+// 거점별 마지막 내부 탭 기억
+const authInnerTabState = {};
+
 function switchOutpostInnerTab(tab, oId) {
+  authInnerTabState[oId] = tab; // 상태 저장
   document.getElementById(`auth-inner-base-${oId}`).style.display    = tab === 'base'    ? '' : 'none';
   document.getElementById(`auth-inner-product-${oId}`).style.display = tab === 'product' ? '' : 'none';
   document.getElementById(`atab-base-${oId}`).classList.toggle('active', tab === 'base');
@@ -2389,17 +2576,25 @@ function renderOutpostBaseConfig(oId) {
         ✓ ${m.label}</span>`;
     }).join('');
 
-    // 구역 요구 특성 뱃지
+    // 구역 요구 특성 뱃지 — 슬롯 타입 + 조건값 + 매칭 여부
     const traitTags = (z.traits || []).map(slot => {
       const isMatch = eff.opMatches.some(m => m.value === slot.value && m.type === slot.type);
       const label   = SLOT_TYPE_LABEL[slot.type] || slot.type;
-      const isAuth  = slot.type === 'authority';
-      return `<span style="font-size:9px;padding:2px 6px;border-radius:10px;
-        background:${isMatch ? (isAuth ? 'rgba(0,200,255,0.15)' : 'rgba(255,255,255,0.08)') : 'rgba(255,255,255,0.04)'};
-        color:${isMatch ? (isAuth ? 'var(--accent)' : 'var(--text)') : 'var(--text-muted)'};
-        border:1px solid ${isMatch ? (isAuth ? 'rgba(0,200,255,0.3)' : 'rgba(255,255,255,0.2)') : 'rgba(255,255,255,0.08)'};
-        cursor:default;" title="${slot.value}">
-        ${isMatch ? '✓ ' : ''}${label}</span>`;
+      const typeColor = {
+        authority: isMatch ? '#00c8ff' : '#4a6a8a',
+        exchange:  isMatch ? '#ffaa00' : '#6a5a3a',
+        exp:       isMatch ? '#00ff9d' : '#3a6a5a',
+      }[slot.type] || 'var(--text-muted)';
+      const bgColor = {
+        authority: isMatch ? 'rgba(0,200,255,0.15)' : 'rgba(0,200,255,0.04)',
+        exchange:  isMatch ? 'rgba(255,170,0,0.15)'  : 'rgba(255,170,0,0.04)',
+        exp:       isMatch ? 'rgba(0,255,157,0.12)'  : 'rgba(0,255,157,0.04)',
+      }[slot.type] || 'rgba(255,255,255,0.04)';
+      return `<span style="font-size:9px;padding:3px 7px;border-radius:10px;
+        background:${bgColor};color:${typeColor};
+        border:1px solid ${isMatch ? typeColor+'99' : 'rgba(255,255,255,0.08)'};
+        cursor:default;display:inline-flex;align-items:center;gap:3px;">
+        ${isMatch ? '✓' : '○'} <b>${label}</b> · ${slot.value}</span>`;
     }).join('');
 
     // 방어 단계 버튼
@@ -2501,17 +2696,17 @@ function updateOutpostAuthSummary(oId) {
   });
   const balance = authTotal - totalConsume;
 
-  const totalEl   = document.getElementById(`auth-total-${oId}`);
-  const consumeEl = document.getElementById(`auth-consume-total-${oId}`);
-  const balEl     = document.getElementById(`auth-balance-${oId}`);
-  if (totalEl)   totalEl.textContent   = authTotal > 0 ? fmt(authTotal) : '—';
+  // 상단 고정 요약 바 업데이트
+  const produceEl = document.getElementById('auth-summary-produce');
+  const consumeEl = document.getElementById('auth-summary-consume');
+  const balEl     = document.getElementById('auth-summary-balance');
+  if (produceEl) produceEl.textContent = authTotal > 0 ? fmt(authTotal) : '—';
   if (consumeEl) consumeEl.textContent = fmt(totalConsume);
   if (balEl) {
     balEl.textContent = authTotal > 0 ? (balance >= 0 ? '+' : '') + fmt(balance) : '—';
-    balEl.className = 'summary-value ' + (balance >= 0 ? 'positive' : 'negative');
+    balEl.style.color = balance >= 0 ? 'var(--success)' : 'var(--danger)';
   }
 
-  // 공장 우측 바도 갱신 (현재 활성 공장 거점 기준)
   updateFactoryAuthBar();
 }
 
@@ -2662,6 +2857,7 @@ function renderOverviewTab() {
   const el = document.getElementById('overview-body');
   if (!el) return;
 
+  const isMobile = window.innerWidth < 768;
   let totalAuthProduce = 0, totalAuthConsume = 0;
   let html = '';
 
@@ -2677,97 +2873,107 @@ function renderOverviewTab() {
     totalAuthConsume += outpostConsume;
     const authBalance = authTotal - outpostConsume;
 
-    // 공장 생산/소모 수지 기준 품목 집계
     const totals = calcTotals(o.id);
+    const authItems    = Object.entries(totals).filter(([k,v]) =>  AUTH_VALUE[k] && v.balance > 0.001).map(([k,v]) => ({ name:k, rate:v.balance, authCost:AUTH_VALUE[k] }));
+    const factoryItems = Object.entries(totals).filter(([k,v]) => !AUTH_VALUE[k] && v.produce > 0.001 && v.balance > 0.001).map(([k,v]) => ({ name:k, balance:v.balance }));
+    const deficitItems = Object.entries(totals).filter(([k,v]) => v.balance < -0.001).map(([k,v]) => ({ name:k, balance:v.balance }));
 
-    // 관리권 교환 품목 (순생산 > 0)
-    const authItems = Object.entries(totals)
-      .filter(([k, v]) => AUTH_VALUE[k] && v.balance > 0.001)
-      .map(([k, v]) => ({ name: k, rate: v.balance, authCost: AUTH_VALUE[k] }));
+    const makeItems = (items, valueKey, color, emptyLabel) => items.length > 0
+      ? items.map(item => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(30,58,95,0.2);gap:8px;">
+            <span style="color:var(--text);font-size:11px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${itemIcon(item.name,14)}${item.name}</span>
+            <span style="color:${color};font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${fmt(item[valueKey] ?? item.rate)}/분</span>
+          </div>`).join('')
+      : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">없음</div>`;
 
-    // 일반 생산 품목 (순생산 > 0, 관리권 교환 아닌 것)
-    const factoryItems = Object.entries(totals)
-      .filter(([k, v]) => !AUTH_VALUE[k] && v.produce > 0.001 && v.balance > 0.001)
-      .map(([k, v]) => ({ name: k, produce: v.produce, balance: v.balance }));
-
-    // 부족 품목
-    const deficitItems = Object.entries(totals)
-      .filter(([k, v]) => v.balance < -0.001)
-      .map(([k, v]) => ({ name: k, balance: v.balance }));
-
-    html += `<div style="border:1px solid rgba(30,58,95,0.7);border-radius:10px;overflow:hidden;">
-      <!-- 거점 헤더 -->
-      <div style="padding:12px 16px;background:rgba(0,200,255,0.05);border-bottom:1px solid rgba(30,58,95,0.5);display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:14px;font-weight:700;color:var(--accent);">◈ ${o.name}</span>
-        <div style="display:flex;gap:16px;font-family:'Share Tech Mono',monospace;font-size:11px;">
-          <span style="color:var(--success);">생산 ${authTotal > 0 ? fmt(authTotal) : '—'}/분</span>
-          <span style="color:var(--danger);">소모 ${fmt(outpostConsume)}/분</span>
-          <span style="color:${authBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">잔여 ${authTotal > 0 ? (authBalance >= 0 ? '+' : '') + fmt(authBalance) : '—'}/분</span>
+    if (isMobile) {
+      // ── 모바일: 수치 3열 → 세로, 품목 섹션 → 세로 ──
+      html += `<div style="border:1px solid rgba(30,58,95,0.7);border-radius:10px;overflow:hidden;">
+        <!-- 헤더 -->
+        <div style="padding:10px 14px;background:rgba(0,200,255,0.05);border-bottom:1px solid rgba(30,58,95,0.5);">
+          <span style="font-size:13px;font-weight:700;color:var(--accent);">◈ ${o.name}</span>
         </div>
-      </div>
-      <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-
-        <!-- 관리권 교환 품목 -->
-        <div>
-          <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,95,0.4);">관리권 교환 품목</div>
-          ${authItems.length > 0
-            ? authItems.map(item => `
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:11px;">
-                <span style="color:var(--text);">${itemIcon(item.name, 16)}${item.name}</span>
-                <div style="display:flex;gap:6px;align-items:center;font-family:'Share Tech Mono',monospace;">
-                  <span style="color:var(--accent);font-size:10px;">${fmt(item.rate)}/분</span>
-                  <span style="color:var(--accent2);font-size:10px;">◈${item.authCost}</span>
-                </div>
-              </div>`).join('')
-            : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">없음</div>`}
+        <!-- 관리권 수치 3열 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 12px;gap:6px;border-bottom:1px solid rgba(30,58,95,0.3);text-align:center;">
+          <div>
+            <div style="font-size:9px;color:var(--text-muted);">생산</div>
+            <div style="font-size:13px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${authTotal > 0 ? fmt(authTotal) : '—'}</div>
+            <div style="font-size:9px;color:var(--text-muted);">/분</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--text-muted);">소모</div>
+            <div style="font-size:13px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(outpostConsume)}</div>
+            <div style="font-size:9px;color:var(--text-muted);">/분</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--text-muted);">잔여</div>
+            <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${authBalance>=0?'var(--success)':'var(--danger)'};">${authTotal>0?(authBalance>=0?'+':'')+fmt(authBalance):'—'}</div>
+            <div style="font-size:9px;color:var(--text-muted);">/분</div>
+          </div>
         </div>
-
-        <!-- 일반 생산 품목 -->
-        <div>
-          <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,95,0.4);">생산 품목</div>
-          ${factoryItems.length > 0
-            ? factoryItems.map(item => `
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:11px;">
-                <span style="color:var(--text);">${itemIcon(item.name, 16)}${item.name}</span>
-                <span style="color:var(--success);font-family:'Share Tech Mono',monospace;font-size:10px;">${fmt(item.balance)}/분</span>
-              </div>`).join('')
-            : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">없음</div>`}
+        <!-- 품목 섹션 세로 나열 -->
+        <div style="padding:10px 14px;display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:4px;">관리권 교환 품목</div>
+            ${makeItems(authItems, 'rate', 'var(--accent)', '없음')}
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;">생산 품목</div>
+            ${makeItems(factoryItems, 'balance', 'var(--success)', '없음')}
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--danger);margin-bottom:4px;">부족 품목</div>
+            ${makeItems(deficitItems, 'balance', 'var(--danger)', '없음')}
+          </div>
         </div>
-
-        <!-- 부족 품목 -->
-        <div>
-          <div style="font-size:10px;font-weight:700;color:var(--danger);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,95,0.4);">부족 품목</div>
-          ${deficitItems.length > 0
-            ? deficitItems.map(item => `
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:11px;">
-                <span style="color:var(--text);">${itemIcon(item.name, 16)}${item.name}</span>
-                <span style="color:var(--danger);font-family:'Share Tech Mono',monospace;font-size:10px;">${fmt(item.balance)}/분</span>
-              </div>`).join('')
-            : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">없음</div>`}
+      </div>`;
+    } else {
+      // ── PC: 기존 레이아웃 ──
+      html += `<div style="border:1px solid rgba(30,58,95,0.7);border-radius:10px;overflow:hidden;">
+        <div style="padding:12px 16px;background:rgba(0,200,255,0.05);border-bottom:1px solid rgba(30,58,95,0.5);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:700;color:var(--accent);">◈ ${o.name}</span>
+          <div style="display:flex;gap:16px;font-family:'Share Tech Mono',monospace;font-size:11px;">
+            <span style="color:var(--success);">생산 ${authTotal > 0 ? fmt(authTotal) : '—'}/분</span>
+            <span style="color:var(--danger);">소모 ${fmt(outpostConsume)}/분</span>
+            <span style="color:${authBalance>=0?'var(--success)':'var(--danger)'};">잔여 ${authTotal>0?(authBalance>=0?'+':'')+fmt(authBalance):'—'}/분</span>
+          </div>
         </div>
-
-      </div>
-    </div>`;
+        <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,95,0.4);">관리권 교환 품목</div>
+            ${makeItems(authItems, 'rate', 'var(--accent)', '없음')}
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,95,0.4);">생산 품목</div>
+            ${makeItems(factoryItems, 'balance', 'var(--success)', '없음')}
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--danger);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(30,58,95,0.4);">부족 품목</div>
+            ${makeItems(deficitItems, 'balance', 'var(--danger)', '없음')}
+          </div>
+        </div>
+      </div>`;
+    }
   });
 
-  // 전체 합산 카드
+  // 전체 합산 카드 (공통)
   const totalBalance = totalAuthProduce - totalAuthConsume;
   html += `<div style="border:1px solid rgba(0,200,255,0.3);border-radius:10px;padding:14px 16px;background:rgba(0,200,255,0.03);">
     <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">📊 전체 합산 — 관리권</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
       <div>
         <div style="font-size:10px;color:var(--text-muted);">총 생산</div>
-        <div style="font-size:20px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${totalAuthProduce > 0 ? fmt(totalAuthProduce) : '—'}</div>
+        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${totalAuthProduce > 0 ? fmt(totalAuthProduce) : '—'}</div>
         <div style="font-size:10px;color:var(--text-muted);">/분</div>
       </div>
       <div>
         <div style="font-size:10px;color:var(--text-muted);">총 목표 소모</div>
-        <div style="font-size:20px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(totalAuthConsume)}</div>
+        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(totalAuthConsume)}</div>
         <div style="font-size:10px;color:var(--text-muted);">/분</div>
       </div>
       <div>
         <div style="font-size:10px;color:var(--text-muted);">총 잔여</div>
-        <div style="font-size:20px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${totalBalance>=0?'var(--success)':'var(--danger)'};">
+        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${totalBalance>=0?'var(--success)':'var(--danger)'};">
           ${totalAuthProduce > 0 ? (totalBalance >= 0 ? '+' : '') + fmt(totalBalance) : '—'}
         </div>
         <div style="font-size:10px;color:var(--text-muted);">/분</div>
@@ -2828,13 +3034,6 @@ function renderAuthOutpostTabs() {
       ${o.name}
     </button>`;
   }).join('');
-}
-
-function switchAuthView(type, oId) {
-  activeAuthOutpostId = oId;
-  renderAuthOutpostTabs();
-  document.getElementById('auth-outpost-panel').style.display = '';
-  renderAuthOutpostPanel(oId);
 }
 
 function resetAll() {
@@ -2924,18 +3123,15 @@ function loadData() {
 // 돌파(승격) 재료 - Elite 1~4
 // Elite N: 레벨캡 20→40→60→80→90
 const PROMOTION_COST = [
-  // Elite 1 (Lv20 → 40)
-  { label: 'Elite 1', capFrom: 20, capTo: 40,
-    mats: [{ name: '프로토디스크', qty: 8 }, { name: '핑크 볼레테', qty: 3 }, { name: 'T-크레딧', qty: 1600 }] },
-  // Elite 2 (Lv40 → 60)
-  { label: 'Elite 2', capFrom: 40, capTo: 60,
-    mats: [{ name: '프로토디스크', qty: 25 }, { name: '레드 볼레테', qty: 5 }, { name: 'T-크레딧', qty: 6500 }] },
-  // Elite 3 (Lv60 → 80)
-  { label: 'Elite 3', capFrom: 60, capTo: 80,
-    mats: [{ name: '프로토셋', qty: 24 }, { name: '루비 볼레테', qty: 5 }, { name: 'T-크레딧', qty: 18000 }] },
-  // Elite 4 (Lv80 → 90) — 캐릭터별 고유 재료 별도 입력
-  { label: 'Elite 4', capFrom: 80, capTo: 90,
-    mats: [{ name: '프로토셋', qty: 36 }, { name: '메타디아스티마 광방출관', qty: 20 }, { name: '블러드캡', qty: 8 }, { name: 'T-크레딧', qty: 100000 }] },
+  { label: '정예 1', capFrom: 20, capTo: 40,
+    mats: [{ name: '탈로시안 화폐', qty: 1600 }, { name: '프로토콜 디스크', qty: 8 }, { name: '연한 기둥 버섯', qty: 3 }] },
+  { label: '정예 2', capFrom: 40, capTo: 60,
+    mats: [{ name: '탈로시안 화폐', qty: 6500 }, { name: '프로토콜 디스크', qty: 25 }, { name: '보통 기둥 버섯', qty: 5 }] },
+  { label: '정예 3', capFrom: 60, capTo: 80,
+    mats: [{ name: '탈로시안 화폐', qty: 18000 }, { name: '프로토콜 디스크 세트', qty: 24 }, { name: '진한 기둥 버섯', qty: 5 }] },
+  { label: '정예 4', capFrom: 80, capTo: 90,
+    mats: [{ name: '탈로시안 화폐', qty: 100000 }, { name: '프로토콜 디스크 세트', qty: 36 }] },
+  // 정예 4 고유 재료는 캐릭터별로 OPERATOR_ROSTER 또는 별도 로직에서 처리
 ];
 
 // EXP 누적 필요량 (레벨 구간별)
@@ -2950,34 +3146,38 @@ const EXP_TABLE = [
 // 스킬 레벨업 재료 (레벨 1→9, 각 레벨 업그레이드 비용)
 // 스킬 4종(기본공격/배틀스킬/콤보스킬/궁극기) 모두 동일 비용
 const SKILL_LEVEL_COST = [
-  { from: 1, to: 2, mats: [{ name: '프로토프리즘', qty: 2 }, { name: 'T-크레딧', qty: 400 }] },
-  { from: 2, to: 3, mats: [{ name: '프로토프리즘', qty: 4 }, { name: 'T-크레딧', qty: 800 }] },
-  { from: 3, to: 4, mats: [{ name: '프로토프리즘', qty: 6 }, { name: 'T-크레딧', qty: 1200 }] },
-  { from: 4, to: 5, mats: [{ name: '프로토프리즘', qty: 10 }, { name: 'T-크레딧', qty: 2000 }] },
-  { from: 5, to: 6, mats: [{ name: '프로토프리즘', qty: 15 }, { name: 'T-크레딧', qty: 3000 }] },
-  { from: 6, to: 7, mats: [{ name: '프로토헤드론', qty: 6 }, { name: 'T-크레딧', qty: 6000 }] },
-  { from: 7, to: 8, mats: [{ name: '프로토헤드론', qty: 10 }, { name: 'T-크레딧', qty: 10000 }] },
-  { from: 8, to: 9, mats: [{ name: '프로토헤드론', qty: 15 }, { name: 'T-크레딧', qty: 18000 }] },
+  { from: 1,  to: 2,  mats: [{ name: '탈로시안 화폐', qty: 1000  }, { name: '프로토콜 프리즘', qty: 6  }, { name: '칼코덴드라', qty: 1 }] },
+  { from: 2,  to: 3,  mats: [{ name: '탈로시안 화폐', qty: 2700  }, { name: '프로토콜 프리즘', qty: 12 }, { name: '칼코덴드라', qty: 2 }] },
+  { from: 3,  to: 4,  mats: [{ name: '탈로시안 화폐', qty: 3200  }, { name: '프로토콜 프리즘', qty: 16 }, { name: '크리소덴드라', qty: 1 }] },
+  { from: 4,  to: 5,  mats: [{ name: '탈로시안 화폐', qty: 4200  }, { name: '프로토콜 프리즘', qty: 21 }, { name: '크리소덴드라', qty: 1 }] },
+  { from: 5,  to: 6,  mats: [{ name: '탈로시안 화폐', qty: 5400  }, { name: '프로토콜 프리즘', qty: 27 }, { name: '크리소덴드라', qty: 2 }] },
+  { from: 6,  to: 7,  mats: [{ name: '탈로시안 화폐', qty: 8200  }, { name: '프로토콜 프리즘', qty: 6  }, { name: '비트로덴드라', qty: 1 }] },
+  { from: 7,  to: 8,  mats: [{ name: '탈로시안 화폐', qty: 10500 }, { name: '프로토콜 프리즘 세트', qty: 8  }, { name: '비트로덴드라', qty: 1 }] },
+  { from: 8,  to: 9,  mats: [{ name: '탈로시안 화폐', qty: 18000 }, { name: '프로토콜 프리즘 세트', qty: 15 }, { name: '비트로덴드라', qty: 2 }] },
+  // Lv9→12 마스터리 — 존속의 흔적 + 캐릭터별 고유 재료 (opSkillMats1/2 로 참조)
+  { from: 9,  to: 10, mats: [{ name: '탈로시안 화폐', qty: 24000 }, { name: '프로토콜 프리즘 세트', qty: 15 }, { name: '존속의 흔적', qty: 1 }], usesSkillMats: true, skillMatsQty: [6, 3]  },
+  { from: 10, to: 11, mats: [{ name: '탈로시안 화폐', qty: 30000 }, { name: '프로토콜 프리즘 세트', qty: 24 }, { name: '존속의 흔적', qty: 2 }], usesSkillMats: true, skillMatsQty: [16, 6] },
+  { from: 11, to: 12, mats: [{ name: '탈로시안 화폐', qty: 65000 }, { name: '프로토콜 프리즘 세트', qty: 50 }, { name: '존속의 흔적', qty: 3 }], usesSkillMats: true, skillMatsQty: [36, 12] },
 ];
 
 // 어빌리티 매트릭스(재능 노드) 비용
 // 구조: [{label, requireElite, mats}]
 const TALENT_NODE_COST = [
-  { label: '특성 증가 R1', requireElite: 1, mats: [{ name: 'T-크레딧', qty: 1000 }, { name: '프로토프리즘', qty: 5 }] },
-  { label: '특성 증가 R2', requireElite: 2, mats: [{ name: 'T-크레딧', qty: 1800 }, { name: '프로토프리즘', qty: 10 }] },
-  { label: '특성 증가 R3', requireElite: 3, mats: [{ name: 'T-크레딧', qty: 6000 }, { name: '프로토헤드론', qty: 10 }] },
-  { label: '특성 증가 R4', requireElite: 3, mats: [{ name: 'T-크레딧', qty: 12000 }, { name: '프로토헤드론', qty: 20 }] },
-  { label: '재능1 R1',    requireElite: 1, mats: [{ name: 'T-크레딧', qty: 2400 }, { name: '프로토프리즘', qty: 12 }] },
-  { label: '재능1 R2',    requireElite: 2, mats: [{ name: 'T-크레딧', qty: 8600 }, { name: '프로토프리즘', qty: 40 }] },
-  { label: '재능2 R1',    requireElite: 2, mats: [{ name: 'T-크레딧', qty: 10000 }, { name: '프로토프리즘', qty: 48 }] },
-  { label: '재능2 R2',    requireElite: 3, mats: [{ name: 'T-크레딧', qty: 24000 }, { name: '프로토헤드론', qty: 28 }] },
-  { label: '기본스킬1 R1', requireElite: 1, mats: [{ name: 'T-크레딧', qty: 1600 }, { name: '프로토프리즘', qty: 6 }] },
-  { label: '기본스킬1 R2', requireElite: 3, mats: [{ name: 'T-크레딧', qty: 8000 }, { name: '프로토헤드론', qty: 12 }] },
-  { label: '기본스킬2 R1', requireElite: 2, mats: [{ name: 'T-크레딧', qty: 3000 }, { name: '프로토프리즘', qty: 12 }] },
-  { label: '기본스킬2 R2', requireElite: 4, mats: [{ name: 'T-크레딧', qty: 20000 }, { name: '프로토헤드론', qty: 20 }] },
-  { label: '장비 I',       requireElite: 1, mats: [{ name: 'T-크레딧', qty: 1800 }] },
-  { label: '장비 II',      requireElite: 2, mats: [{ name: 'T-크레딧', qty: 6500 }] },
-  { label: '장비 III',     requireElite: 3, mats: [{ name: 'T-크레딧', qty: 18000 }] },
+  { label: '능력치 R1',      requireElite: 1, mats: [{ name: '탈로시안 화폐', qty: 1000  }, { name: '프로토콜 프리즘', qty: 5  }] },
+  { label: '능력치 R2',      requireElite: 2, mats: [{ name: '탈로시안 화폐', qty: 1800  }, { name: '프로토콜 프리즘', qty: 10 }] },
+  { label: '능력치 R3',      requireElite: 3, mats: [{ name: '탈로시안 화폐', qty: 6000  }, { name: '프로토콜 프리즘 세트', qty: 10 }] },
+  { label: '능력치 R4',      requireElite: 3, mats: [{ name: '탈로시안 화폐', qty: 18000 }, { name: '프로토콜 프리즘 세트', qty: 20 }] },
+  { label: '재능1 R1',       requireElite: 1, mats: [{ name: '탈로시안 화폐', qty: 2400  }, { name: '프로토콜 프리즘', qty: 12 }] },
+  { label: '재능1 R2',       requireElite: 2, mats: [{ name: '탈로시안 화폐', qty: 8600  }, { name: '프로토콜 프리즘', qty: 40 }] },
+  { label: '재능2 R1',       requireElite: 2, mats: [{ name: '탈로시안 화폐', qty: 10800 }, { name: '프로토콜 프리즘', qty: 48 }] },
+  { label: '재능2 R2',       requireElite: 3, mats: [{ name: '탈로시안 화폐', qty: 24600 }, { name: '프로토콜 프리즘 세트', qty: 28 }] },
+  { label: '인프라스킬1 R1', requireElite: 1, mats: [{ name: '탈로시안 화폐', qty: 1600  }, { name: '프로토콜 프리즘', qty: 6  }] },
+  { label: '인프라스킬1 R2', requireElite: 3, mats: [{ name: '탈로시안 화폐', qty: 8000  }, { name: '프로토콜 프리즘 세트', qty: 12 }] },
+  { label: '인프라스킬2 R1', requireElite: 2, mats: [{ name: '탈로시안 화폐', qty: 3000  }, { name: '프로토콜 프리즘', qty: 12 }] },
+  { label: '인프라스킬2 R2', requireElite: 4, mats: [{ name: '탈로시안 화폐', qty: 20000 }, { name: '프로토콜 프리즘 세트', qty: 20 }] },
+  { label: '장비 조합 I',    requireElite: 1, mats: [{ name: '탈로시안 화폐', qty: 1800  }] },
+  { label: '장비 조합 II',   requireElite: 2, mats: [{ name: '탈로시안 화폐', qty: 6500  }] },
+  { label: '장비 조합 III',  requireElite: 3, mats: [{ name: '탈로시안 화폐', qty: 25600 }] },
 ];
 
 // 스킬 종류
@@ -2986,36 +3186,113 @@ const SKILL_TYPES = ['기본 공격', '배틀 스킬', '콤보 스킬', '궁극�
 // 전체 오퍼레이터 목록 (이름, 레어리티, 클래스, 원소)
 const OPERATOR_ROSTER = [
   // 6성
-  { name:'아르델리아',      rarity:6, class:'Supporter', element:'Nature',   faction:'로도스 아일랜드',     hobby:'자연 탐험',  expertise:'생명과학'    },
-  { name:'엠버',            rarity:6, class:'Striker',   element:'Heat',     faction:'강철맹세 기사단',     hobby:'단련',       expertise:'화기 제어'   },
-  { name:'엔드미니스트레이터', rarity:6, class:'Guard',   element:'Physical', faction:'엔드필드 인더스트리', hobby:'창작',       expertise:'정세 분석'   },
-  { name:'길베르타',        rarity:6, class:'Defender',  element:'Electric', faction:'엔드필드 인더스트리', hobby:'단련',       expertise:'중장비 조작' },
-  { name:'라에바테인',      rarity:6, class:'Striker',   element:'Heat',     faction:'로도스 아일랜드',     hobby:'창작',       expertise:'정세 분석'   },
-  { name:'라스트 라이트',   rarity:6, class:'Caster',    element:'Physical', faction:'엔드필드 인더스트리', hobby:'독서',       expertise:'법학'        },
-  { name:'리펑',            rarity:6, class:'Guard',     element:'Physical', faction:'천사문',              hobby:'단련',       expertise:'관리'        },
-  { name:'포그라니치니크',  rarity:6, class:'Defender',  element:'Cryo',     faction:'엔드필드 인더스트리', hobby:'단련',       expertise:'중장비 조작' },
-  { name:'로씨',            rarity:6, class:'Striker',   element:'Electric', faction:'로도스 아일랜드',     hobby:'공예',       expertise:'기계 수리'   },
-  { name:'탕탕',            rarity:6, class:'Guard',     element:'Nature',   faction:'엔드필드 인더스트리', hobby:'요리',       expertise:'생명과학'    },
-  { name:'이본',            rarity:6, class:'Caster',    element:'Cryo',     faction:'엔드필드 인더스트리', hobby:'독서',       expertise:'생명과학'    },
-  { name:'장방이',          rarity:6, class:'Vanguard',  element:'Physical', faction:'천사문',              hobby:'독서',       expertise:'관리'        },
+  { name:'아델리아',      rarity:6, class:'Supporter', element:'Nature',   faction:'로도스 아일랜드',    hobby:'생활',      hobby2:'자연',      expertise:'자연 상식',      expertise2:'모험',
+    weapon:'바다와 별의 꿈',   e4mat1:'스타게이트 버섯', e4mat2:'정합용 유체',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'타키온 차폐 구조체',    skillMatB2:'바위아겔로스 잎' },
+  { name:'엠버',          rarity:6, class:'Defender',  element:'Heat',     faction:'철의 서약군',        hobby:'운동',      hobby2:'과학기술',  expertise:'작전 기술',      expertise2:'체력 단련',
+    weapon:'천둥의 흔적',      e4mat1:'스타게이트 버섯', e4mat2:'D96강 시제품 4번',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'침식된 옥 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'침식된 옥 잎' },
+  { name:'관리자',        rarity:6, class:'Guard',     element:'Physical', faction:'엔드필드 공업',      hobby:'',          hobby2:'',          expertise:'',               expertise2:'',
+    weapon:'장대한 염원',      e4mat1:'피버섯',          e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'D96강 시제품 4번',      skillMatB2:'바위아겔로스 잎' },
+  { name:'질베르타',      rarity:6, class:'Supporter', element:'Nature',   faction:'로도스 아일랜드',    hobby:'패션',      hobby2:'문화',      expertise:'모험',           expertise2:'오리지늄 아츠',
+    weapon:'사명의 길',        e4mat1:'피버섯',          e4mat2:'타키온 차폐 구조체',
+    skillMatA1:'정합용 유체',           skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'3상 나노플레이크 칩',   skillMatB2:'바위아겔로스 잎' },
+  { name:'레바테인',      rarity:6, class:'Striker',   element:'Heat',     faction:'로도스 아일랜드',    hobby:'창의',      hobby2:'생활',      expertise:'오리지늄 아츠',  expertise2:'전황 분석',
+    weapon:'용조의 불꽃',      e4mat1:'스타게이트 버섯', e4mat2:'D96강 시제품 4번',
+    skillMatA1:'3상 나노플레이크 칩',   skillMatA2:'침식된 옥 잎',
+    skillMatB1:'초거리 빛 반사 파이프', skillMatB2:'침식된 옥 잎' },
+  { name:'라스트 라이트', rarity:6, class:'Striker',   element:'Cryo',     faction:'쉐시카',             hobby:'지능 훈련', hobby2:'공익',      expertise:'작전 기술',      expertise2:'체력 단련',
+    weapon:'해라펜거',         e4mat1:'피버섯',          e4mat2:'3상 나노플레이크 칩',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'침식된 옥 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'침식된 옥 잎' },
+  { name:'여풍',          rarity:6, class:'Guard',     element:'Physical', faction:'홍산 과학원',        hobby:'운동',      hobby2:'자연',      expertise:'민첩',           expertise2:'자연 상식',
+    weapon:'산의 지배자',      e4mat1:'피버섯',          e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'정합용 유체',           skillMatA2:'침식된 옥 잎',
+    skillMatB1:'3상 나노플레이크 칩',   skillMatB2:'침식된 옥 잎' },
+  { name:'포그라니치니크',rarity:6, class:'Vanguard',  element:'Physical', faction:'로도스 아일랜드',    hobby:'문화',      hobby2:'지능 훈련', expertise:'전략 수립',      expertise2:'조직 관리',
+    weapon:'끝없는 방랑',      e4mat1:'스타게이트 버섯', e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'3상 나노플레이크 칩',   skillMatA2:'침식된 옥 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'침식된 옥 잎' },
+  { name:'로시',          rarity:6, class:'Guard',     element:'Physical', faction:'엔드필드 공업',      hobby:'자연',      hobby2:'운동',      expertise:'전황 분석',      expertise2:'교섭',
+    weapon:'늑대의 혈흔',      e4mat1:'스타게이트 버섯', e4mat2:'정합용 유체',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'초거리 빛 반사 파이프', skillMatB2:'바위아겔로스 잎' },
+  { name:'탕탕',          rarity:6, class:'Caster',    element:'Cryo',     faction:'엔드필드 공업',      hobby:'자연',      hobby2:'창의',      expertise:'작전 기술',      expertise2:'민첩',
+    weapon:'반항',             e4mat1:'피버섯',          e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'침식된 옥 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'침식된 옥 잎' },
+  { name:'이본',          rarity:6, class:'Striker',   element:'Cryo',     faction:'엔드필드 공업',      hobby:'패션',      hobby2:'과학기술',  expertise:'창의적인 생각',  expertise2:'조직관리',
+    weapon:'예술의 폭군',      e4mat1:'피버섯',          e4mat2:'타키온 차폐 구조체',
+    skillMatA1:'초거리 빛 반사 파이프', skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'D96강 시제품 4번',      skillMatB2:'바위아겔로스 잎' },
+  { name:'장방이',        rarity:6, class:'Striker',   element:'Electric', faction:'홍산 과학원',        hobby:'공익',      hobby2:'문화',      expertise:'박학다식',       expertise2:'조직 관리',
+    weapon:'고독한 나룻배',    e4mat1:'스타게이트 버섯', e4mat2:'3상 나노플레이크 칩',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'침식된 옥 잎',
+    skillMatB1:'타키온 차폐 구조체',    skillMatB2:'침식된 옥 잎' },
   // 5성
-  { name:'알레쉬',          rarity:5, class:'Vanguard',  element:'Cryo',     faction:'독립',                hobby:'낚시',       expertise:'정보 수집'   },
-  { name:'아크라이트',      rarity:5, class:'Striker',   element:'Electric', faction:'독립',                hobby:'탐험',       expertise:'기계 수리'   },
-  { name:'아비웬나',        rarity:5, class:'Supporter', element:'Nature',   faction:'독립',                hobby:'자연 탐험',  expertise:'생명과학'    },
-  { name:'첸 치엔위',       rarity:5, class:'Defender',  element:'Heat',     faction:'천사문',              hobby:'요리',       expertise:'중장비 조작' },
-  { name:'다판',            rarity:5, class:'Guard',     element:'Physical', faction:'엔드필드 인더스트리', hobby:'요리',       expertise:'관리'        },
-  { name:'페르리카',        rarity:5, class:'Caster',    element:'Electric', faction:'엔드필드 인더스트리', hobby:'독서',       expertise:'정세 분석'   },
-  { name:'스노우샤인',      rarity:5, class:'Supporter', element:'Cryo',     faction:'독립',                hobby:'예술',       expertise:'의료'        },
-  { name:'울프가르트',      rarity:5, class:'Striker',   element:'Physical', faction:'독립',                hobby:'단련',       expertise:'사냥'        },
-  { name:'시아이',          rarity:5, class:'Vanguard',  element:'Heat',     faction:'천사문',              hobby:'공예',       expertise:'화기 제어'   },
+  { name:'알레쉬',        rarity:5, class:'Vanguard',  element:'Cryo',     faction:'연맹 공단',          hobby:'문화',      hobby2:'운동',      expertise:'야외 생존',      expertise2:'전략 수립',
+    weapon:'린수를 찾아서 3.0', e4mat1:'피버섯',         e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'정합용 유체',           skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'3상 나노플레이크 칩',   skillMatB2:'바위아겔로스 잎' },
+  { name:'아크라이트',    rarity:5, class:'Vanguard',  element:'Electric', faction:'만물의 대지',        hobby:'자연',      hobby2:'운동',      expertise:'도구 제작',      expertise2:'자연 상식',
+    weapon:'십이문',           e4mat1:'스타게이트 버섯', e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'타키온 차폐 구조체',    skillMatB2:'바위아겔로스 잎' },
+  { name:'아비웨나',      rarity:5, class:'Striker',   element:'Electric', faction:'탈로스 상인연합회',  hobby:'생활',      hobby2:'패션',      expertise:'교섭',           expertise2:'민첩',
+    weapon:'중심력',           e4mat1:'피버섯',          e4mat2:'타키온 차폐 구조체',
+    skillMatA1:'정합용 유체',           skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'3상 나노플레이크 칩',   skillMatB2:'바위아겔로스 잎' },
+  { name:'진천우',        rarity:5, class:'Guard',     element:'Physical', faction:'엔드필드 공업',      hobby:'문화',      hobby2:'공익',      expertise:'박학다식',       expertise2:'창의적인 생각',
+    weapon:'숭배의 시선',      e4mat1:'스타게이트 버섯', e4mat2:'정합용 유체',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'침식된 옥 잎',
+    skillMatB1:'타키온 차폐 구조체',    skillMatB2:'침식된 옥 잎' },
+  { name:'판',            rarity:5, class:'Striker',   element:'Physical', faction:'홍산 과학원',        hobby:'생활',      hobby2:'공익',      expertise:'요리',           expertise2:'도구 제작',
+    weapon:'고대의 강줄기',    e4mat1:'피버섯',          e4mat2:'3상 나노플레이크 칩',
+    skillMatA1:'초거리 빛 반사 파이프', skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'D96강 시제품 4번',      skillMatB2:'바위아겔로스 잎' },
+  { name:'펠리카',        rarity:5, class:'Caster',    element:'Electric', faction:'엔드필드 공업',      hobby:'생활',      hobby2:'창의',      expertise:'조직 관리',      expertise2:'오리지늄 아츠',
+    weapon:'망각',             e4mat1:'피버섯',          e4mat2:'타키온 차폐 구조체',
+    skillMatA1:'초거리 빛 반사 파이프', skillMatA2:'침식된 옥 잎',
+    skillMatB1:'D96강 시제품 4번',      skillMatB2:'침식된 옥 잎' },
+  { name:'스노우샤인',    rarity:5, class:'Defender',  element:'Cryo',     faction:'로도스 아일랜드',    hobby:'운동',      hobby2:'공익',      expertise:'야외 생존',      expertise2:'의료 기술',
+    weapon:'최후의 메아리',    e4mat1:'피버섯',          e4mat2:'정합용 유체',
+    skillMatA1:'3상 나노플레이크 칩',   skillMatA2:'침식된 옥 잎',
+    skillMatB1:'초거리 빛 반사 파이프', skillMatB2:'침식된 옥 잎' },
+  { name:'울프가드',      rarity:5, class:'Caster',    element:'Heat',     faction:'엔드필드 공업',      hobby:'자연',      hobby2:'창의',      expertise:'작전 기술',      expertise2:'잠복',
+    weapon:'이성적인 작별',    e4mat1:'스타게이트 버섯', e4mat2:'3상 나노플레이크 칩',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'바위아겔로스 잎' },
+  { name:'자이히',        rarity:5, class:'Supporter', element:'Cryo',     faction:'고요한 수도회',      hobby:'과학기술',  hobby2:'지능 훈련', expertise:'박학다식',       expertise2:'정보 기술',
+    weapon:'선교의 자유',      e4mat1:'피버섯',          e4mat2:'D96강 시제품 4번',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'침식된 옥 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'침식된 옥 잎' },
   // 4성
-  { name:'아케쿠리',        rarity:4, class:'Vanguard',  element:'Nature',   faction:'독립',                hobby:'자연 탐험',  expertise:'사냥'        },
-  { name:'안탈',            rarity:4, class:'Defender',  element:'Physical', faction:'엔드필드 인더스트리', hobby:'단련',       expertise:'중장비 조작' },
-  { name:'캐처',            rarity:4, class:'Guard',     element:'Electric', faction:'독립',                hobby:'공예',       expertise:'기계 수리'   },
-  { name:'에스텔라',        rarity:4, class:'Supporter', element:'Heat',     faction:'로도스 아일랜드',     hobby:'창작',       expertise:'의료'        },
-  { name:'플루오라이트',    rarity:4, class:'Caster',    element:'Cryo',     faction:'독립',                hobby:'독서',       expertise:'생명과학'    },
+  { name:'아케쿠리',      rarity:4, class:'Vanguard',  element:'Heat',     faction:'엔드필드 공업',      hobby:'공익',      hobby2:'운동',      expertise:'조직 관리',      expertise2:'요리',
+    weapon:'O.B.J. 엣지 오브 라이트', e4mat1:'스타게이트 버섯', e4mat2:'D96강 시제품 4번',
+    skillMatA1:'3상 나노플레이크 칩',   skillMatA2:'침식된 옥 잎',
+    skillMatB1:'초거리 빛 반사 파이프', skillMatB2:'침식된 옥 잎' },
+  { name:'안탈',          rarity:4, class:'Supporter', element:'Electric', faction:'엔드필드 공업',      hobby:'지능 훈련', hobby2:'창의',      expertise:'도구 제작',      expertise2:'전황 분석',
+    weapon:'O.B.J. 아츠 아이덴티티', e4mat1:'스타게이트 버섯', e4mat2:'초거리 빛 반사 파이프',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'침식된 옥 잎',
+    skillMatB1:'타키온 차폐 구조체',    skillMatB2:'침식된 옥 잎' },
+  { name:'카치르',        rarity:4, class:'Defender',  element:'Physical', faction:'엔드필드 공업',      hobby:'생활',      hobby2:'운동',      expertise:'도구 제작',      expertise2:'요리',
+    weapon:'O.B.J. 헤비 버든', e4mat1:'피버섯',          e4mat2:'타키온 차폐 구조체',
+    skillMatA1:'초거리 빛 반사 파이프', skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'D96강 시제품 4번',      skillMatB2:'바위아겔로스 잎' },
+  { name:'에스텔라',      rarity:4, class:'Guard',     element:'Cryo',     faction:'엔드필드 공업',      hobby:'예술',      hobby2:'지능 훈련', expertise:'전략 수립',      expertise2:'잠복',
+    weapon:'O.B.J. 스파이크',  e4mat1:'스타게이트 버섯', e4mat2:'정합용 유체',
+    skillMatA1:'D96강 시제품 4번',      skillMatA2:'바위아겔로스 잎',
+    skillMatB1:'타키온 차폐 구조체',    skillMatB2:'바위아겔로스 잎' },
+  { name:'플루라이트',    rarity:4, class:'Caster',    element:'Nature',   faction:'엔드필드 공업',      hobby:'자연',      hobby2:'창의',      expertise:'야외 생존',      expertise2:'교섭',
+    weapon:'O.B.J. 벨로시투스', e4mat1:'스타게이트 버섯', e4mat2:'3상 나노플레이크 칩',
+    skillMatA1:'타키온 차폐 구조체',    skillMatA2:'침식된 옥 잎',
+    skillMatB1:'정합용 유체',           skillMatB2:'침식된 옥 잎' },
 ];
-
 const ELEMENT_COLOR = {
   Nature: '#4caf50', Electric: '#ab47bc', Heat: '#ef5350',
   Cryo: '#29b6f6', Physical: '#90a4ae',
@@ -3078,24 +3355,28 @@ function renderOperatorSelectGrid() {
     return;
   }
 
+  const addedNames = new Set(operators.map(o => o.name));
+
   grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
     ${list.map(op => {
       const rc = RARITY_COLOR[op.rarity];
       const ec = ELEMENT_COLOR[op.element];
-      return `<div onclick="selectOperatorFromRoster('${op.name}')"
-        style="border:1px solid rgba(30,58,95,0.7);border-radius:8px;padding:10px 8px;
-          background:rgba(255,255,255,0.02);cursor:pointer;text-align:center;
+      const isAdded = addedNames.has(op.name);
+      return `<div onclick="${isAdded ? '' : `selectOperatorFromRoster('${op.name}')`}"
+        style="border:1px solid ${isAdded ? 'rgba(0,200,255,0.4)' : 'rgba(30,58,95,0.7)'};border-radius:8px;padding:10px 8px;
+          background:${isAdded ? 'rgba(0,200,255,0.06)' : 'rgba(255,255,255,0.02)'};
+          cursor:${isAdded ? 'default' : 'pointer'};text-align:center;
+          opacity:${isAdded ? '0.5' : '1'};
           transition:border-color 0.15s,background 0.15s;"
-        onmouseenter="this.style.borderColor='var(--accent)';this.style.background='rgba(0,200,255,0.06)'"
-        onmouseleave="this.style.borderColor='rgba(30,58,95,0.7)';this.style.background='rgba(255,255,255,0.02)'">
-        <!-- 레어리티 배지 + 원소 닷 -->
+        ${isAdded ? '' : `onmouseenter="this.style.borderColor='var(--accent)';this.style.background='rgba(0,200,255,0.06)'"
+          onmouseleave="this.style.borderColor='rgba(30,58,95,0.7)';this.style.background='rgba(255,255,255,0.02)'"` }>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>
-          <span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"></span>
+          ${isAdded
+            ? `<span style="font-size:9px;color:var(--accent);">추가됨</span>`
+            : `<span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"></span>`}
         </div>
-        <!-- 이름 -->
         <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;">${op.name}</div>
-        <!-- 클래스 -->
         <div style="font-size:10px;color:var(--text-muted);">${CLASS_KR[op.class] || op.class}</div>
       </div>`;
     }).join('')}
@@ -3103,6 +3384,11 @@ function renderOperatorSelectGrid() {
 }
 
 function selectOperatorFromRoster(name) {
+  // 중복 추가 방지
+  if (operators.find(o => o.name === name)) {
+    showToast(`"${name}"은(는) 이미 목록에 있어요`, 'error');
+    return;
+  }
   const roster = OPERATOR_ROSTER.find(o => o.name === name);
   const op = getDefaultOperator(nextOperatorId++);
   op.name = name;
@@ -3131,24 +3417,29 @@ function getDefaultOperator(id) {
   };
 }
 
-// 필요 재료 계산
 function calcOperatorMats(op) {
-  const result = {}; // name → qty
-  const add = (name, qty) => { result[name] = (result[name] || 0) + qty; };
+  const result = {};
+  const add = (name, qty) => { if (name) result[name] = (result[name] || 0) + qty; };
 
   const curElite = op.currentElite || 0;
-  const tgtElite = op.targetElite || 0;
+  const tgtElite = op.targetElite  || 0;
+  const roster   = OPERATOR_ROSTER.find(r => r.name === op.name);
 
-  // 1. 돌파 재료
+  // 1. 정예화 재료
   for (let e = curElite; e < tgtElite; e++) {
     const cost = PROMOTION_COST[e];
     if (!cost) continue;
     cost.mats.forEach(m => add(m.name, m.qty));
+    // 정예 4 고유 재료
+    if (e === 3 && roster) {
+      if (roster.e4mat1) add(roster.e4mat1, 8);
+      if (roster.e4mat2) add(roster.e4mat2, 20);
+    }
   }
 
   // 2. EXP (레벨업)
   const curLv = op.currentLevel || 1;
-  const tgtLv = op.targetLevel || 1;
+  const tgtLv = op.targetLevel  || 1;
   let totalExp = 0;
   EXP_TABLE.forEach(row => {
     const overlapFrom = Math.max(curLv, row.from);
@@ -3158,7 +3449,6 @@ function calcOperatorMats(op) {
     totalExp += Math.ceil(row.exp * ratio);
   });
   if (totalExp > 0) {
-    // 전투기록 환산: 고급(10000), 중급(3000), 초급(1000)
     const adv = Math.floor(totalExp / 10000);
     const rem1 = totalExp % 10000;
     const mid = Math.floor(rem1 / 3000);
@@ -3169,13 +3459,25 @@ function calcOperatorMats(op) {
     if (bas > 0) add('초급 전투기록', bas);
   }
 
-  // 3. 스킬 레벨업
-  (op.skills || []).forEach(sk => {
+  // 3. 스킬 레벨업 — A 그룹(기본공격/배틀스킬), B 그룹(콤보스킬/궁극기) 구분
+  (op.skills || []).forEach((sk, i) => {
     const from = sk.currentLv || 1;
     const to   = sk.targetLv  || 1;
+    const isGroupA = i < 2; // 0=기본공격, 1=배틀스킬 → A
     SKILL_LEVEL_COST.forEach(cost => {
       if (cost.from >= from && cost.to <= to) {
         cost.mats.forEach(m => add(m.name, m.qty));
+        // 마스터리 고유 재료 (Lv9~12)
+        if (cost.usesSkillMats && roster) {
+          const [q1, q2] = cost.skillMatsQty;
+          if (isGroupA) {
+            if (roster.skillMatA1) add(roster.skillMatA1, q1);
+            if (roster.skillMatA2) add(roster.skillMatA2, q2);
+          } else {
+            if (roster.skillMatB1) add(roster.skillMatB1, q1);
+            if (roster.skillMatB2) add(roster.skillMatB2, q2);
+          }
+        }
       }
     });
   });
@@ -3185,7 +3487,7 @@ function calcOperatorMats(op) {
     if (!tn.enabled) return;
     const node = TALENT_NODE_COST[tn.idx];
     if (!node) return;
-    if (node.requireElite > tgtElite) return; // 목표 Elite 미만은 제외
+    if (node.requireElite > tgtElite) return;
     node.mats.forEach(m => add(m.name, m.qty));
   });
 
@@ -3206,34 +3508,62 @@ function calcTotalMats() {
 function renderOperatorList() {
   const el = document.getElementById('operator-list');
   if (!el) return;
+  const isMobile = window.innerWidth < 768;
+
   if (operators.length === 0) {
-    el.innerHTML = `<div class="empty-state" style="padding:24px;font-size:12px;"><div class="icon">👤</div>오퍼레이터를<br>추가하세요</div>`;
+    el.innerHTML = isMobile
+      ? `<div style="padding:8px 4px;color:var(--text-muted);font-size:11px;white-space:nowrap;">+ 추가로 오퍼레이터를 선택하세요</div>`
+      : `<div class="empty-state" style="padding:24px;font-size:12px;">
+          <div class="icon">👤</div>
+          <div style="line-height:1.8;"><b>+ 추가</b> 버튼을 눌러<br>오퍼레이터를 선택하세요</div>
+        </div>`;
     return;
   }
-  el.innerHTML = operators.map(op => {
-    const isActive = op.id === activeOperatorId;
-    const mats = calcOperatorMats(op);
-    const matCount = Object.keys(mats).length;
-    const rc = RARITY_COLOR[op.rarity] || 'var(--text-muted)';
-    return `<div onclick="selectOperator(${op.id})"
-      style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);
-        background:${isActive ? 'rgba(0,200,255,0.08)' : 'transparent'};
-        border-left:3px solid ${isActive ? 'var(--accent)' : 'transparent'};
-        transition:background 0.15s;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
-          <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
+
+  if (isMobile) {
+    // 모바일 — 가로 칩 (flex-wrap)
+    el.innerHTML = operators.map(op => {
+      const isActive = op.id === activeOperatorId;
+      const rc = RARITY_COLOR[op.rarity] || 'var(--text-muted)';
+      return `<div onclick="selectOperator(${op.id})"
+        style="display:inline-flex;align-items:center;gap:5px;
+          padding:5px 8px 5px 10px;cursor:pointer;flex-shrink:0;
+          border-radius:20px;border:1px solid ${isActive ? 'var(--accent)' : 'rgba(30,58,95,0.6)'};
+          background:${isActive ? 'rgba(0,200,255,0.12)' : 'rgba(255,255,255,0.02)'};
+          transition:all 0.15s;">
+        ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
+        <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
+        <button onmousedown="deleteOperatorChip(event,${op.id})"
+          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;">×</button>
+      </div>`;
+    }).join('');
+  } else {
+    // PC — 세로 목록
+    el.innerHTML = operators.map(op => {
+      const isActive = op.id === activeOperatorId;
+      const mats = calcOperatorMats(op);
+      const matCount = Object.keys(mats).length;
+      const rc = RARITY_COLOR[op.rarity] || 'var(--text-muted)';
+      return `<div onclick="selectOperator(${op.id})"
+        style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);
+          background:${isActive ? 'rgba(0,200,255,0.08)' : 'transparent'};
+          border-left:3px solid ${isActive ? 'var(--accent)' : 'transparent'};
+          transition:background 0.15s;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
+            <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
+          </div>
+        <button onmousedown="deleteOperatorChip(event,${op.id})"
+            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;">×</button>
         </div>
-        <button onclick="event.stopPropagation();deleteOperator(${op.id})"
-          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;">×</button>
-      </div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">
-        E${op.currentElite}→E${op.targetElite} · Lv${op.currentLevel}→${op.targetLevel}
-        ${matCount > 0 ? `· <span style="color:var(--accent2);">재료 ${matCount}종</span>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+        <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">
+          E${op.currentElite}→E${op.targetElite} · Lv${op.currentLevel}→${op.targetLevel}
+          ${matCount > 0 ? `· <span style="color:var(--accent2);">재료 ${matCount}종</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 function selectOperator(id) {
@@ -3246,7 +3576,12 @@ function addOperator() {
   openOperatorSelectModal();
 }
 
-function deleteOperator(id) {
+async function deleteOperatorChip(e, id) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const op = operators.find(o => o.id === id);
+  if (!op) return;
+  const ok = await dialogConfirm(`"${op.name}"을(를) 목록에서 제거할까요?`);
+  if (!ok) return;
   operators = operators.filter(o => o.id !== id);
   if (activeOperatorId === id) {
     activeOperatorId = operators.length > 0 ? operators[operators.length - 1].id : null;
@@ -3257,6 +3592,10 @@ function deleteOperator(id) {
   saveData();
 }
 
+function deleteOperator(id) {
+  deleteOperatorChip(null, id);
+}
+
 function getActiveOp() { return operators.find(o => o.id === activeOperatorId); }
 
 function renderOperatorConfig() {
@@ -3264,7 +3603,14 @@ function renderOperatorConfig() {
   if (!panel) return;
   const op = getActiveOp();
   if (!op) {
-    panel.innerHTML = `<div class="empty-state" style="padding:48px;"><div class="icon">👤</div>오퍼레이터를 선택하거나<br>추가하세요</div>`;
+    panel.innerHTML = `<div class="empty-state" style="padding:48px;">
+      <div class="icon">👤</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
+        왼쪽에서 오퍼레이터를 선택하거나<br>
+        <b>+ 추가</b> 버튼으로 새로 추가하세요<br><br>
+        <span style="font-size:11px;">현재→목표를 설정하면<br>필요 재료가 자동 계산됩니다</span>
+      </div>
+    </div>`;
     return;
   }
 
@@ -3383,20 +3729,59 @@ function renderOperatorConfig() {
 }
 
 function renderOperatorTotal() {
-  const totalPanel = document.getElementById('operator-total-panel');
-  const body = document.getElementById('operator-total-body');
-  if (!totalPanel || !body) return;
-  if (operators.length === 0) { totalPanel.style.display = 'none'; return; }
-  totalPanel.style.display = '';
+  const isMobile = window.innerWidth < 768;
   const mats = calcTotalMats();
-  if (Object.keys(mats).length === 0) { body.innerHTML = `<div style="color:var(--text-muted);font-size:11px;">재료 없음</div>`; return; }
-  body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px;">
-    ${Object.entries(mats).sort((a,b) => b[1]-a[1]).map(([name, qty]) =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(30,58,95,0.4);border-radius:6px;font-size:11px;">
-        <span style="color:var(--text);">${itemIcon(name, 14)}${name}</span>
-        <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}</span>
-      </div>`).join('')}
-  </div>`;
+  const hasMats = operators.length > 0 && Object.keys(mats).length > 0;
+  const sorted = Object.entries(mats).sort((a,b) => b[1]-a[1]);
+
+  if (isMobile) {
+    // 모바일: 상단 접이식 바
+    const bar = document.getElementById('op-mobile-total-bar');
+    const preview = document.getElementById('op-mobile-total-preview');
+    const full = document.getElementById('op-mobile-total-full');
+    if (!bar) return;
+    bar.style.display = hasMats ? '' : 'none';
+    if (!hasMats) return;
+    // 미리보기: 상위 3개만 뱃지로
+    preview.innerHTML = sorted.slice(0, 3).map(([name, qty]) =>
+      `<span style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text);">
+        ${name} <b style="color:var(--accent);">${qty.toLocaleString()}</b>
+      </span>`
+    ).join('') + (sorted.length > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${sorted.length-3}종</span>` : '');
+    // 전체
+    full.innerHTML = `<div style="display:flex;flex-direction:column;gap:3px;">
+      ${sorted.map(([name, qty]) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,58,95,0.2);font-size:11px;">
+          <span style="color:var(--text);">${itemIcon(name,14)}${name}</span>
+          <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}</span>
+        </div>`).join('')}
+    </div>`;
+  } else {
+    // PC: 기존 패널
+    const totalPanel = document.getElementById('operator-total-panel');
+    const body = document.getElementById('operator-total-body');
+    if (!totalPanel || !body) return;
+    totalPanel.style.display = hasMats ? '' : 'none';
+    if (!hasMats) return;
+    body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px;">
+      ${sorted.map(([name, qty]) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(30,58,95,0.4);border-radius:6px;font-size:11px;">
+          <span style="color:var(--text);">${itemIcon(name, 14)}${name}</span>
+          <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+}
+
+let opTotalExpanded = false;
+function toggleOpTotalBar() {
+  opTotalExpanded = !opTotalExpanded;
+  const full = document.getElementById('op-mobile-total-full');
+  const chevron = document.getElementById('op-total-chevron');
+  const preview = document.getElementById('op-mobile-total-preview');
+  if (full)    full.style.display    = opTotalExpanded ? '' : 'none';
+  if (preview) preview.style.display = opTotalExpanded ? 'none' : '';
+  if (chevron) chevron.style.transform = opTotalExpanded ? 'rotate(180deg)' : '';
 }
 
 function updateOpName(id, val) {
@@ -3408,6 +3793,17 @@ function updateOpField(id, field, val) {
   const op = operators.find(o => o.id === id);
   if (!op) return;
   op[field] = val;
+
+  // 역전 방지
+  if (field === 'currentElite' && op.currentElite > op.targetElite)  op.targetElite  = op.currentElite;
+  if (field === 'targetElite'  && op.targetElite  < op.currentElite) op.currentElite = op.targetElite;
+  if (field === 'currentLevel' && op.currentLevel > op.targetLevel)  op.targetLevel  = op.currentLevel;
+  if (field === 'targetLevel'  && op.targetLevel  < op.currentLevel) op.currentLevel = op.targetLevel;
+
+  // 범위 제한
+  op.currentLevel = Math.max(1, Math.min(90, op.currentLevel || 1));
+  op.targetLevel  = Math.max(1, Math.min(90, op.targetLevel  || 1));
+
   renderOperatorList();
   renderOperatorConfig();
   renderOperatorTotal();
@@ -3418,6 +3814,13 @@ function updateSkillLv(id, idx, field, val) {
   const op = operators.find(o => o.id === id);
   if (!op || !op.skills[idx]) return;
   op.skills[idx][field] = Math.max(1, Math.min(12, val));
+
+  // 역전 방지
+  if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv)
+    op.skills[idx].targetLv = op.skills[idx].currentLv;
+  if (field === 'targetLv'  && op.skills[idx].targetLv  < op.skills[idx].currentLv)
+    op.skills[idx].currentLv = op.skills[idx].targetLv;
+
   renderOperatorList();
   renderOperatorConfig();
   renderOperatorTotal();
@@ -3439,7 +3842,7 @@ const SANITY_PER_MIN = 1 / 7.2;
 const SANITY_PER_DAY = 240; // 자연회복 200 + 일일 퀘스트 이성회복제 40
 
 const FARMING_DATA = {
-  '프로토프리즘': {
+  '프로토콜 프리즘': {
     icon:'🔷',
     sources:[
       {name:'프로토콜 스페이스: 스킬업', detail:'위협 등급 1~2', sanityPerRun:40, itemPerRun:5},
@@ -3447,7 +3850,7 @@ const FARMING_DATA = {
     ],
     notes:'스킬업 프로토콜 스페이스 전용. 탐색 상자에서도 소량 획득 가능.',
   },
-  '프로토헤드론': {
+  '프로토콜 프리즘 세트': {
     icon:'🔶',
     sources:[
       {name:'프로토콜 스페이스: 스킬업', detail:'위협 등급 3~4', sanityPerRun:60, itemPerRun:4},
@@ -3455,23 +3858,23 @@ const FARMING_DATA = {
     ],
     notes:'고위협 등급 해금 필요. 프리즘보다 희귀해 우선 소모 자제 권장.',
   },
-  '프로토디스크': {
+  '프로토콜 디스크': {
     icon:'💿',
     sources:[
       {name:'프로토콜 스페이스: 승격', detail:'위협 등급 1~2', sanityPerRun:40, itemPerRun:8},
       {name:'프로토콜 스페이스: 승격', detail:'위협 등급 3~4 (권장)', sanityPerRun:60, itemPerRun:14},
     ],
-    notes:'E1·E2 정예화 핵심 재료. AIC 쿼터 구매 가능 (개당 16쿼터).',
+    notes:'정예 1·2 핵심 재료.',
   },
-  '프로토셋': {
+  '프로토콜 디스크 세트': {
     icon:'📀',
     sources:[
       {name:'프로토콜 스페이스: 승격', detail:'위협 등급 3~4', sanityPerRun:60, itemPerRun:5},
       {name:'프로토콜 스페이스: 승격', detail:'위협 등급 5 (딥다이브)', sanityPerRun:80, itemPerRun:8},
     ],
-    notes:'E3·E4 정예화 핵심 재료. 탐색 레벨 5 이상 해금 필요.',
+    notes:'정예 3·4 핵심 재료. 탐색 레벨 5 이상 해금 필요.',
   },
-  '핑크 볼레테': {
+  '연한 기둥 버섯': {
     icon:'🍄',
     sources:[
       {name:'탐색: 협곡 패스 일대', detail:'희귀 채집 포인트, 1일 1~2개', sanityPerRun:0, itemPerRun:1},
@@ -3479,26 +3882,26 @@ const FARMING_DATA = {
     ],
     notes:'이성 불필요. 성장실 재배가 가장 안정적.',
   },
-  '레드 볼레테': {
+  '보통 기둥 버섯': {
     icon:'🍄',
     sources:[
       {name:'탐색: 협곡 IV 일대', detail:'희귀 채집 포인트, 1일 1~2개', sanityPerRun:0, itemPerRun:1},
       {name:'OMV 디지앙: 성장실', detail:'성장실 해금 후 재배', sanityPerRun:0, itemPerRun:0},
     ],
-    notes:'이성 불필요. 협곡 IV 탐색 중 발견.',
+    notes:'이성 불필요.',
   },
-  '루비 볼레테': {
+  '진한 기둥 버섯': {
     icon:'🍄',
     sources:[
       {name:'탐색: 트레드웨이 인근', detail:'최초 방문 10개, 이후 1일 1개', sanityPerRun:0, itemPerRun:1},
       {name:'OMV 디지앙: 성장실', detail:'성장실 해금 후 재배', sanityPerRun:0, itemPerRun:0},
     ],
-    notes:'이성 불필요. E3 정예화 병목 재료.',
+    notes:'이성 불필요. 정예 3 병목 재료.',
   },
-  'T-크레딧': {
+  '탈로시안 화폐': {
     icon:'💰',
     sources:[
-      {name:'프로토콜 스페이스: T-크레딧', detail:'전용 프로토콜 스페이스', sanityPerRun:40, itemPerRun:4000},
+      {name:'프로토콜 스페이스: 탈로시안 화폐', detail:'전용 프로토콜 스페이스', sanityPerRun:40, itemPerRun:4000},
       {name:'퀘스트·탐색·일일 보상', detail:'자연 획득', sanityPerRun:0, itemPerRun:0},
     ],
     notes:'퀘스트·탐색으로 자연 획득이 충분한 경우가 많음.',
@@ -3507,16 +3910,15 @@ const FARMING_DATA = {
     icon:'📘',
     sources:[
       {name:'프로토콜 스페이스: 오퍼레이터 EXP', detail:'위협 등급 3~5 (권장)', sanityPerRun:60, itemPerRun:3},
-      {name:'OMV 디지앙: 제조실', detail:'제조실에서 생산 가능', sanityPerRun:0, itemPerRun:0},
     ],
-    notes:'10,000 EXP/개. 위협 등급 3+ 이상 권장.',
+    notes:'10,000 EXP/개.',
   },
   '중급 전투기록': {
     icon:'📗',
     sources:[
       {name:'프로토콜 스페이스: 오퍼레이터 EXP', detail:'위협 등급 1~2', sanityPerRun:40, itemPerRun:5},
     ],
-    notes:'3,000 EXP/개. 초반 레벨업용.',
+    notes:'3,000 EXP/개.',
   },
   '초급 전투기록': {
     icon:'📕',
@@ -3524,22 +3926,14 @@ const FARMING_DATA = {
       {name:'프로토콜 스페이스: 오퍼레이터 EXP', detail:'위협 등급 1', sanityPerRun:40, itemPerRun:10},
       {name:'탐색·퀘스트', detail:'자연 획득', sanityPerRun:0, itemPerRun:0},
     ],
-    notes:'1,000 EXP/개. 자연 획득으로도 충분.',
+    notes:'1,000 EXP/개.',
   },
-  '메타디아스티마 광방출관': {
-    icon:'⚗️',
+  '존속의 흔적': {
+    icon:'✨',
     sources:[
-      {name:'프로토콜 스페이스: 승격', detail:'딥다이브 모드 (탐색 레벨 5+)', sanityPerRun:80, itemPerRun:2},
-      {name:'위기 훈련 (크라이시스 드릴)', detail:'고난도 컨텐츠', sanityPerRun:0, itemPerRun:0},
+      {name:'프로토콜 스페이스: 스킬업', detail:'위협 등급 5 (딥다이브)', sanityPerRun:80, itemPerRun:1},
     ],
-    notes:'E4 공통 재료 중 가장 희귀. 딥다이브 모드 해금 후 파밍.',
-  },
-  '블러드캡': {
-    icon:'🔴',
-    sources:[
-      {name:'탐색: 협곡 IV 일대', detail:'희귀 채집 포인트', sanityPerRun:0, itemPerRun:0},
-    ],
-    notes:'E4 공통 재료. 정확한 파밍처는 게임 내 도감 확인 권장.',
+    notes:'마스터리(Lv9~12) 필수 재료. 딥다이브 모드 해금 필요.',
   },
 };
 
@@ -3654,7 +4048,289 @@ function renderFarmingGuide() {
   el.innerHTML = summary + `<div style="display:flex;flex-direction:column;gap:8px;">${cards}</div>`;
 }
 
-// ========== 테마 토글 ==========
+// ========== 기질(Essence) 파밍 데이터 ==========
+
+const ESSENCE_PRIMARY = ['민첩 강화','힘 강화','의지 강화','지성 강화','주속성 강화'];
+const ESSENCE_SECONDARY = ['공격 강화','HP 강화','물리피해 강화','열 피해 강화','전기 피해 강화',
+  '냉기 피해 강화','자연 피해 강화','치명타율 강화','기예강도 강화','궁극기 획득 강화','기예피해 강화','치료효율 강화'];
+const ESSENCE_SKILLS = ['강습','억압','추격','분쇄','고무','전투','잔혹','주입','치료','파열','기폭','황혼','흐름','효능'];
+
+// 파밍처 (강화 에너지 충적지) — 스킬만 장소마다 고정, 주속성·보조속성은 전체 공통
+const ALLUVIUMS = [
+  { id:'science_park', region:'4번 협곡', name:'오리지늄 사이언스 파크',
+    skills:['강습','억압','추격','분쇄','전투','기폭','흐름','효능'] },
+  { id:'lodespring',   region:'4번 협곡', name:'오리진 로드스프링',
+    skills:['억압','추격','고무','전투','주입','치료','파열','효능'] },
+  { id:'power_plateau',region:'4번 협곡', name:'파워 플래토',
+    skills:['강습','억압','전투','잔혹','주입','기폭','황혼','효능'] },
+  { id:'the_hub',      region:'4번 협곡', name:'더 허브',
+    skills:['추격','분쇄','고무','잔혹','주입','치료','파열','흐름'] },
+  { id:'wuling_city',  region:'무릉',     name:'우링 시티',
+    skills:['강습','분쇄','잔혹','치료','파열','기폭','황혼','흐름'] },
+];
+
+// 무기 데이터 — primary/secondary/skill 은 각 배열의 값 사용
+// 데이터 미확인 항목은 null 처리 (사용자가 엑셀로 채워 넣어야 함)
+const WEAPON_DATA = [
+  { name:'해라펜거',               rarity:6, type:'대검',    operator:'라스트 라이트',  primary:'힘 강화',   secondary:'냉기 피해 강화', skill:'기폭' },
+  { name:'용조의 불꽃',            rarity:6, type:'검',      operator:'레바테인',       primary:'민첩 강화', secondary:'열 피해 강화',   skill:'기폭' },
+  { name:'바다와 별의 꿈',         rarity:6, type:'검',      operator:'아델리아',       primary:null, secondary:null, skill:null },
+  { name:'천둥의 흔적',            rarity:6, type:'대검',    operator:'엠버',           primary:null, secondary:null, skill:null },
+  { name:'사명의 길',              rarity:6, type:'창',      operator:'질베르타',       primary:null, secondary:null, skill:null },
+  { name:'장대한 염원',            rarity:6, type:'핸드캐논',operator:'관리자',         primary:null, secondary:null, skill:null },
+  { name:'예술의 폭군',            rarity:6, type:'아츠',    operator:'이본',           primary:null, secondary:null, skill:null },
+  { name:'망각',                   rarity:6, type:'아츠',    operator:'펠리카',         primary:null, secondary:null, skill:null },
+  { name:'산의 지배자',            rarity:6, type:'검',      operator:'여풍',           primary:null, secondary:null, skill:null },
+  { name:'끝없는 방랑',            rarity:6, type:'대검',    operator:'포그라니치니크', primary:null, secondary:null, skill:null },
+  { name:'늑대의 혈흔',            rarity:6, type:'창',      operator:'로시',           primary:null, secondary:null, skill:null },
+  { name:'반항',                   rarity:6, type:'검',      operator:'탕탕',           primary:null, secondary:null, skill:null },
+  { name:'고독한 나룻배',          rarity:6, type:'핸드캐논',operator:'장방이',         primary:null, secondary:null, skill:null },
+  { name:'린수를 찾아서 3.0',      rarity:5, type:'뱅가드',  operator:'알레쉬',         primary:null, secondary:null, skill:null },
+  { name:'십이문',                 rarity:5, type:'핸드캐논',operator:'아크라이트',     primary:null, secondary:null, skill:null },
+  { name:'중심력',                 rarity:5, type:'아츠',    operator:'아비웨나',       primary:null, secondary:null, skill:null },
+  { name:'숭배의 시선',            rarity:5, type:'대검',    operator:'진천우',         primary:null, secondary:null, skill:null },
+  { name:'고대의 강줄기',          rarity:5, type:'검',      operator:'판',             primary:null, secondary:null, skill:null },
+  { name:'최후의 메아리',          rarity:5, type:'아츠',    operator:'스노우샤인',     primary:null, secondary:null, skill:null },
+  { name:'이성적인 작별',          rarity:5, type:'창',      operator:'울프가드',       primary:null, secondary:null, skill:null },
+  { name:'선교의 자유',            rarity:5, type:'핸드캐논',operator:'자이히',         primary:null, secondary:null, skill:null },
+  { name:'O.B.J. 엣지 오브 라이트',rarity:4, type:'검',      operator:'아케쿠리',       primary:null, secondary:null, skill:null },
+  { name:'O.B.J. 아츠 아이덴티티', rarity:4, type:'대검',    operator:'안탈',           primary:null, secondary:null, skill:null },
+  { name:'O.B.J. 헤비 버든',       rarity:4, type:'창',      operator:'카치르',         primary:null, secondary:null, skill:null },
+  { name:'O.B.J. 스파이크',        rarity:4, type:'핸드캐논',operator:'에스텔라',       primary:null, secondary:null, skill:null },
+  { name:'O.B.J. 벨로시투스',      rarity:4, type:'아츠',    operator:'플루라이트',     primary:null, secondary:null, skill:null },
+];
+
+// 파밍처에서 특정 스킬을 드롭하는 장소 찾기
+function getAlluviumsBySkill(skill) {
+  return ALLUVIUMS.filter(a => a.skills.includes(skill));
+}
+
+// 무기와 매칭되는 파밍처 찾기
+function getBestAlluviumsForWeapon(weapon) {
+  if (!weapon.skill) return [];
+  return getAlluviumsBySkill(weapon.skill);
+}
+
+// ========== 기질 탭 전환 ==========
+let currentEssenceTab = 'check';
+function switchEssenceTab(tab) {
+  currentEssenceTab = tab;
+  ['check','weapon'].forEach(t => {
+    document.getElementById(`epanel-${t}`).style.display = t === tab ? '' : 'none';
+    document.getElementById(`etab-${t}`).classList.toggle('active', t === tab);
+  });
+}
+
+// ========== 기질 파밍 탭 초기화 ==========
+function initEssenceTab() {
+  const primEl = document.getElementById('ec-primary');
+  const secEl  = document.getElementById('ec-secondary');
+  const skEl   = document.getElementById('ec-skill');
+  if (!primEl) return;
+
+  ESSENCE_PRIMARY.forEach(p => {
+    const o = document.createElement('option'); o.value=p; o.textContent=p; primEl.appendChild(o);
+  });
+  ESSENCE_SECONDARY.forEach(s => {
+    const o = document.createElement('option'); o.value=s; o.textContent=s; secEl.appendChild(o);
+  });
+  ESSENCE_SKILLS.forEach(s => {
+    const o = document.createElement('option'); o.value=s; o.textContent=s; skEl.appendChild(o);
+  });
+
+  const ewEl = document.getElementById('ew-select');
+  WEAPON_DATA.forEach((w,i) => {
+    const label = `★${w.rarity} ${w.operator}${w.name !== '(미확인)' ? ' · '+w.name : ''} (${w.type})`;
+    if (ewEl) { const o=document.createElement('option'); o.value=i; o.textContent=label; ewEl.appendChild(o); }
+  });
+}
+
+// ========== ① 기질 체커 ==========
+function renderEssenceCheck() {
+  const pri = document.getElementById('ec-primary')?.value;
+  const sec = document.getElementById('ec-secondary')?.value;
+  const sk  = document.getElementById('ec-skill')?.value;
+  const el  = document.getElementById('ec-result');
+  if (!el) return;
+
+  if (!pri && !sec && !sk) {
+    el.innerHTML = `<div class="empty-state" style="padding:32px;"><div class="icon">💎</div>특성을 선택하면 매칭 무기가 표시됩니다</div>`;
+    return;
+  }
+
+  const matched = WEAPON_DATA.filter(w => {
+    const pMatch = !pri || w.primary === pri;
+    const sMatch = !sec || w.secondary === sec;
+    const kMatch = !sk  || w.skill === sk;
+    return pMatch && sMatch && kMatch;
+  });
+
+  if (matched.length === 0) {
+    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">🔍</div>매칭되는 무기가 없어요<br><span style="font-size:11px;color:var(--text-muted);">특성 조합을 바꿔보세요</span></div>`;
+    return;
+  }
+
+  const matchCount = [pri,sec,sk].filter(Boolean).length;
+  el.innerHTML = `
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+      ${matchCount}개 특성 선택 →
+      <b style="color:var(--accent);">${matched.length}개</b> 무기 매칭
+      ${matchCount===3 ? '<span style="color:var(--success);margin-left:4px;">✓ 완벽 매칭!</span>' : ''}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      ${matched.map(w => weaponCard(w, pri, sec, sk)).join('')}
+    </div>`;
+}
+
+// ========== ② 무기별 파밍처 + 한번에 파밍 통합 ==========
+function renderWeaponFarming() {
+  const idx = document.getElementById('ew-select')?.value;
+  const el  = document.getElementById('ew-result');
+  if (!el || idx === '') return;
+  const w = WEAPON_DATA[parseInt(idx)];
+  if (!w) return;
+
+  if (!w.primary && !w.secondary && !w.skill) {
+    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">⚠</div>이 무기의 기질 데이터가 아직 미확인이에요<br><span style="font-size:11px;color:var(--text-muted);">엑셀 DB에 입력 후 반영해주세요</span></div>`;
+    return;
+  }
+
+  // 1. 무기 기질 3가지 표시
+  const statsHtml = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 12px;border:1px solid rgba(79,195,247,0.3);">
+        <div style="font-size:9px;color:#4FC3F7;margin-bottom:4px;font-weight:700;">주속성</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.primary || '<span style="color:var(--text-muted);">미확인</span>'}</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 12px;border:1px solid rgba(255,213,128,0.3);">
+        <div style="font-size:9px;color:#FFD580;margin-bottom:4px;font-weight:700;">보조속성</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.secondary || '<span style="color:var(--text-muted);">미확인</span>'}</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 12px;border:1px solid rgba(128,255,128,0.3);">
+        <div style="font-size:9px;color:#80FF80;margin-bottom:4px;font-weight:700;">스킬</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.skill || '<span style="color:var(--text-muted);">미확인</span>'}</div>
+      </div>
+    </div>`;
+
+  // 2. 파밍처 리스트 (스킬 기준, 모든 파밍처 표시 + 추천 표시)
+  const alluviums = w.skill ? getBestAlluviumsForWeapon(w) : ALLUVIUMS;
+  const notFoundSkill = w.skill && alluviums.length === 0;
+
+  const alluviumsHtml = (notFoundSkill
+    ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬을 드롭하는 파밍처가 없어요 — 데이터를 확인해주세요</div>`
+    : alluviums.map(a => {
+        // 한번에 파밍 가능한 무기: 같은 파밍처에서 스킬이 드롭되는 다른 무기
+        const bundleWeapons = WEAPON_DATA.filter(bw =>
+          bw !== w &&
+          bw.skill &&
+          a.skills.includes(bw.skill)
+        );
+
+        const bundleHtml = bundleWeapons.length > 0
+          ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(30,58,95,0.5);">
+              <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:6px;">
+                📦 한번에 파밍 가능한 무기 (${bundleWeapons.length}개)
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                ${bundleWeapons.map(bw => weaponCard(bw, null, null, bw.skill)).join('')}
+              </div>
+            </div>`
+          : `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);">이 장소에서 함께 파밍 가능한 다른 무기 없음</div>`;
+
+        const isRecommended = bundleWeapons.length > 0;
+
+        return `<div style="border:1px solid ${isRecommended ? 'rgba(0,200,255,0.4)' : 'rgba(30,58,95,0.5)'};border-radius:10px;overflow:hidden;margin-bottom:8px;background:${isRecommended ? 'rgba(0,200,255,0.03)' : 'rgba(255,255,255,0.01)'};">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <span style="font-size:13px;font-weight:700;color:var(--accent);">📍 ${a.name}</span>
+              <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">${a.region}</span>
+            </div>
+            ${isRecommended
+              ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,200,255,0.15);color:var(--accent);border:1px solid rgba(0,200,255,0.3);">⭐ 추천</span>`
+              : `<span style="font-size:10px;color:var(--text-muted);">단독 파밍</span>`}
+          </div>
+          <div style="padding:10px 14px;">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;">
+              ${a.skills.map(s => {
+                const isTarget = s === w.skill;
+                return `<span style="font-size:10px;padding:2px 7px;border-radius:8px;
+                  background:${isTarget ? 'rgba(128,255,128,0.2)' : 'rgba(255,255,255,0.05)'};
+                  color:${isTarget ? '#80FF80' : 'var(--text-muted)'};
+                  border:1px solid ${isTarget ? 'rgba(128,255,128,0.4)' : 'rgba(255,255,255,0.1)'};
+                  font-weight:${isTarget ? '700' : '400'};">${s}${isTarget ? ' ✓' : ''}</span>`;
+              }).join('')}
+            </div>
+            ${bundleHtml}
+          </div>
+        </div>`;
+      }).join('')
+  );
+
+  el.innerHTML = `
+    <!-- 무기 헤더 -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+      <span style="font-size:18px;font-weight:700;color:${rarityColor(w.rarity)};">★${w.rarity}</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.operator}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${w.type}${w.name !== '(미확인)' ? ' · '+w.name : ''}</div>
+      </div>
+    </div>
+
+    ${statsHtml}
+
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
+      파밍처 목록
+      ${w.skill ? `<span style="color:var(--text-muted);font-weight:400;margin-left:4px;">— 스킬 <b style="color:#80FF80;">${w.skill}</b> 기준</span>` : ''}
+    </div>
+    ${alluviumsHtml}
+    <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">
+      ※ 주속성·보조속성은 모든 파밍처에서 랜덤 드롭돼요. 스킬 특성이 나오는 장소를 선택해야 해요.
+    </div>`;
+}
+
+// ========== 공통 헬퍼 ==========
+function rarityColor(r) {
+  return r===6 ? '#ffd740' : r===5 ? '#b39ddb' : '#4fc3f7';
+}
+
+function alluviumTag(a) {
+  return `<div style="border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:8px 12px;background:rgba(0,200,255,0.04);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <span style="font-size:12px;font-weight:700;color:var(--accent);">${a.name}</span>
+        <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${a.region}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
+      ${a.skills.map(s => `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(128,255,128,0.1);color:#80FF80;border:1px solid rgba(128,255,128,0.25);">${s}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+function weaponCard(w, hiPri, hiSec, hiSk) {
+  const rc = rarityColor(w.rarity);
+  const priMatch = hiPri && w.primary === hiPri;
+  const secMatch = hiSec && w.secondary === hiSec;
+  const skMatch  = hiSk  && w.skill === hiSk;
+  const allMatch = (!hiPri || priMatch) && (!hiSec || secMatch) && (!hiSk || skMatch);
+  const isUnknown = !w.primary && !w.secondary && !w.skill;
+
+  return `<div style="border:1px solid rgba(30,58,95,${allMatch?'0.8':'0.4'});border-radius:8px;padding:8px 12px;
+    background:${allMatch?'rgba(0,200,255,0.04)':'rgba(255,255,255,0.02)'};">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;color:${rc};">★${w.rarity}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text);">${w.operator}</span>
+      <span style="font-size:10px;color:var(--text-muted);">${w.type}</span>
+      ${w.name !== '(미확인)' ? `<span style="font-size:10px;color:var(--accent2);">${w.name}</span>` : ''}
+      ${isUnknown ? `<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(255,170,0,0.15);color:var(--warning);">데이터 미확인</span>` : ''}
+    </div>
+    ${!isUnknown ? `<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;">
+      <span style="font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(79,195,247,${priMatch?'0.2':'0.06'});color:#4FC3F7;border:1px solid rgba(79,195,247,${priMatch?'0.5':'0.2'});">${w.primary||'—'}</span>
+      <span style="font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(255,213,128,${secMatch?'0.2':'0.06'});color:#FFD580;border:1px solid rgba(255,213,128,${secMatch?'0.5':'0.2'});">${w.secondary||'—'}</span>
+      <span style="font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(128,255,128,${skMatch?'0.2':'0.06'});color:#80FF80;border:1px solid rgba(128,255,128,${skMatch?'0.5':'0.2'});">${w.skill||'—'}</span>
+    </div>` : ''}
+  </div>`;
+}
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-theme');
   document.getElementById('theme-icon-dark').style.display  = isLight ? 'none'  : '';
@@ -3851,7 +4527,7 @@ function showToast(msg, type = 'info') {
     background:var(--surface);border:1px solid ${colors[type]};
     color:var(--text);padding:10px 20px;border-radius:8px;
     font-size:13px;font-family:'Noto Sans KR',sans-serif;
-    z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.4);
     animation:fadeInUp 0.2s ease;white-space:nowrap;
   `;
   document.body.appendChild(toast);
@@ -3962,8 +4638,207 @@ window.addEventListener('resize', () => {
   resizeTimer = setTimeout(() => {
     renderOutpostProducts(activeAuthOutpostId);
     updateMobileStatusBtn();
+    renderOperatorList();
+    renderOperatorTotal();
+    if (document.getElementById('tab-overview')?.classList.contains('active')) {
+      renderOverviewTab();
+    }
   }, 200);
 });
+
+// ========== 온보딩 투어 ==========
+const TOUR_KEY = 'endfield_tour_v1';
+
+const TOUR_STEPS = [
+  {
+    title: '👋 처음 오셨군요!',
+    body: '엔드필드 공장 계산기에 오신 걸 환영해요!\n짧은 투어로 주요 기능을 안내해드릴게요.',
+    target: null, position: 'center',
+  },
+  {
+    title: '📊 전체 현황',
+    body: '모든 거점의 관리권 생산·소모·부족 품목을\n한눈에 볼 수 있어요.',
+    target: () => document.querySelector('.tab-bar .tab:nth-child(1)'), position: 'bottom',
+  },
+  {
+    title: '◈ 관리권 계산기',
+    body: '거점별 관리권 생산량을 계산해요.\n구역마다 오퍼레이터를 배치하면\n특성 매칭에 따라 보너스가 자동 적용돼요.',
+    target: () => document.querySelector('.tab-bar .tab:nth-child(2)'), position: 'bottom',
+  },
+  {
+    title: '⚙ 공장 계산기',
+    body: '설비를 추가하고 수량을 입력하면\n재료 생산·소모 수지가 실시간 계산돼요.\n\n① 그룹 추가 → ② 설비 추가 → ③ 수량 입력',
+    target: () => document.querySelector('.tab-bar .tab:nth-child(3)'), position: 'bottom',
+  },
+  {
+    title: '👤 오퍼레이터 육성',
+    body: '현재→목표 레벨·정예화·스킬을 설정하면\n필요한 재료와 파밍 이성을 자동 계산해줘요.',
+    target: () => document.querySelector('.tab-bar .tab:nth-child(4)'), position: 'bottom',
+  },
+  {
+    title: '💾 데이터 저장',
+    body: '입력 데이터는 브라우저에 자동 저장돼요.\n다운로드(↓)로 백업하고\n업로드(↑)로 다른 기기에서 불러올 수 있어요.',
+    target: () => document.getElementById('theme-btn'), position: 'bottom-left',
+  },
+  {
+    title: '🎉 준비 완료!',
+    body: '이제 직접 사용해보세요!\n헤더의 ❓ 버튼으로 언제든 다시 볼 수 있어요.',
+    target: null, position: 'center',
+  },
+];
+
+let tourStep = 0;
+let tourActive = false;
+
+function startTour(force = false) {
+  if (!force && localStorage.getItem(TOUR_KEY)) return;
+  tourStep = 0;
+  tourActive = true;
+  renderTourStep();
+}
+
+function renderTourStep() {
+  cleanTour();
+  if (!tourActive || tourStep >= TOUR_STEPS.length) { endTour(); return; }
+
+  const step     = TOUR_STEPS[tourStep];
+  const targetEl = step.target ? step.target() : null;
+
+  // 백드롭
+  const bd = document.createElement('div');
+  bd.className = 'tour-backdrop'; bd.id = 'tour-backdrop';
+  bd.onclick = () => nextTourStep();
+  document.body.appendChild(bd);
+
+  // 하이라이트
+  if (targetEl) {
+    const rect = targetEl.getBoundingClientRect();
+    const hl = document.createElement('div');
+    hl.className = 'tour-highlight'; hl.id = 'tour-highlight';
+    hl.style.cssText = `top:${rect.top-4}px;left:${rect.left-4}px;width:${rect.width+8}px;height:${rect.height+8}px;`;
+    document.body.appendChild(hl);
+  }
+
+  // 카드
+  const card = document.createElement('div');
+  card.className = 'tour-card'; card.id = 'tour-card';
+  card.innerHTML = `
+    <div class="tour-card-title">${step.title}</div>
+    <div class="tour-card-body">${step.body.replace(/\n/g,'<br>')}</div>
+    <div class="tour-card-footer">
+      <span class="tour-step-indicator">${tourStep+1} / ${TOUR_STEPS.length}</span>
+      <div class="tour-btn-group">
+        <button class="tour-btn" onclick="endTour()">건너뛰기</button>
+        ${tourStep > 0 ? `<button class="tour-btn" onclick="prevTourStep()">◀</button>` : ''}
+        <button class="tour-btn primary" onclick="nextTourStep()">
+          ${tourStep === TOUR_STEPS.length-1 ? '완료 ✓' : '다음 ▶'}
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(card);
+  positionTourCard(card, targetEl, step.position);
+}
+
+function positionTourCard(card, targetEl, position) {
+  const cw=280, ch=200, vw=window.innerWidth, vh=window.innerHeight;
+  let top, left;
+  if (!targetEl || position === 'center') {
+    top=(vh-ch)/2; left=(vw-cw)/2;
+  } else {
+    const r = targetEl.getBoundingClientRect();
+    if (position === 'bottom-left') { top=r.bottom+12; left=r.right-cw; }
+    else { top=r.bottom+12; left=r.left+r.width/2-cw/2; }
+    left = Math.max(12, Math.min(left, vw-cw-12));
+    top  = Math.max(12, Math.min(top,  vh-ch-12));
+    if (top+ch > vh-12) top = r.top-ch-12;
+  }
+  card.style.top=top+'px'; card.style.left=left+'px';
+}
+
+function nextTourStep() { tourStep++; renderTourStep(); }
+function prevTourStep() { tourStep--; renderTourStep(); }
+
+function endTour() {
+  cleanTour(); tourActive = false;
+  localStorage.setItem(TOUR_KEY, '1');
+}
+
+function cleanTour() {
+  ['tour-backdrop','tour-highlight','tour-card'].forEach(id => document.getElementById(id)?.remove());
+}
+
+function resetTour() {
+  localStorage.removeItem(TOUR_KEY);
+  startTour(true);
+}
+
+// ========== 커스텀 다이얼로그 (confirm/alert/prompt 대체) ==========
+function showDialog({ title = '', message = '', input = null, buttons }) {
+  return new Promise(resolve => {
+    const modal   = document.getElementById('modal-dialog');
+    const titleEl = document.getElementById('dialog-title');
+    const msgEl   = document.getElementById('dialog-message');
+    const inputEl = document.getElementById('dialog-input');
+    const btnsEl  = document.getElementById('dialog-buttons');
+
+    titleEl.textContent   = title;
+    msgEl.innerHTML       = message;
+
+    if (input !== null) {
+      inputEl.style.display = '';
+      inputEl.value         = input;
+      setTimeout(() => { inputEl.focus(); inputEl.select(); }, 50);
+    } else {
+      inputEl.style.display = 'none';
+    }
+
+    btnsEl.innerHTML = '';
+    buttons.forEach(btn => {
+      const el = document.createElement('button');
+      el.textContent = btn.label;
+      el.className   = btn.primary ? 'btn btn-primary' : 'btn';
+      el.style.cssText = 'font-size:12px;padding:6px 16px;';
+      el.onclick = () => {
+        modal.style.display = 'none';
+        resolve(btn.value !== undefined ? btn.value : (input !== null ? inputEl.value : undefined));
+      };
+      btnsEl.appendChild(el);
+    });
+
+    modal.style.display = 'flex';
+  });
+}
+
+function dialogConfirm(message) {
+  return showDialog({
+    title: '확인',
+    message,
+    buttons: [
+      { label: '취소',  value: false },
+      { label: '삭제',  value: true, primary: true },
+    ]
+  });
+}
+
+function dialogAlert(message) {
+  return showDialog({
+    title: '알림',
+    message,
+    buttons: [{ label: '확인', value: true, primary: true }]
+  });
+}
+
+function dialogPrompt(message, defaultValue = '') {
+  return showDialog({
+    title: '입력',
+    message,
+    input: defaultValue,
+    buttons: [
+      { label: '취소', value: null },
+      { label: '확인', primary: true },
+    ]
+  });
+}
 
 loadTheme();
 loadData();
@@ -3980,6 +4855,9 @@ switchAuthView('outpost', activeAuthOutpostId);
 renderOperatorList();
 renderOperatorConfig();
 renderOperatorTotal();
+initEssenceTab();
+// 첫 방문 시 투어 시작 (약간 딜레이로 UI 완전 렌더 후)
+setTimeout(() => startTour(), 600);
 </script>
 </body>
 </html>
