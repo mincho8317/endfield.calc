@@ -29,7 +29,7 @@ jobs:
         shell: pwsh
         run: |
           pip install pillow
-          python -c "
+          $code = @'
           from PIL import Image, ImageDraw
           import math, os
           os.makedirs('endfield-app/src-tauri/icons', exist_ok=True)
@@ -47,7 +47,12 @@ jobs:
           imgs = [make_icon(s) for s in sizes]
           imgs[0].save('endfield-app/src-tauri/icons/icon.ico', format='ICO', sizes=[(s,s) for s in sizes], append_images=imgs[1:])
           make_icon(256).save('endfield-app/src-tauri/icons/icon.icns')
-          "
+          '@
+          $code | python
+
+      - name: 아이콘 확인
+        shell: pwsh
+        run: ls endfield-app/src-tauri/icons/
 
       - name: 사이트 HTML 복사
         shell: bash
@@ -64,6 +69,11 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
+      - name: 번들 경로 확인
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse endfield-app/src-tauri/target/release/bundle/ -ErrorAction SilentlyContinue
+
       - name: 빌드 결과물 업로드
         uses: actions/upload-artifact@v4
         with:
@@ -71,6 +81,7 @@ jobs:
           path: |
             endfield-app/src-tauri/target/release/bundle/msi/*.msi
             endfield-app/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: warn
 
   release:
     needs: build-windows
