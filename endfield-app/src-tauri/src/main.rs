@@ -1,9 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{
-    AppHandle, CustomMenuItem, Manager, SystemTray,
-    SystemTrayEvent, SystemTrayMenu, WindowBuilder, WindowUrl,
-};
+use tauri::{AppHandle, Manager, WindowBuilder, WindowUrl};
 
 #[tauri::command]
 fn open_overlay(app: AppHandle, data: String) {
@@ -72,46 +69,11 @@ fn check_game_running() -> bool {
         false
     }
     #[cfg(not(target_os = "windows"))]
-    {
-        false
-    }
+    { false }
 }
 
 fn main() {
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(CustomMenuItem::new("open", "계산기 열기"))
-        .add_item(CustomMenuItem::new("overlay", "배치 도우미"))
-        .add_native_item(tauri::SystemTrayMenuItem::Separator)
-        .add_item(CustomMenuItem::new("quit", "종료"));
-
-    let tray = SystemTray::new().with_menu(tray_menu);
-
     tauri::Builder::default()
-        .system_tray(tray)
-        .on_system_tray_event(|app, event| match event {
-            SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
-                "open" => {
-                    if let Some(win) = app.get_window("main") {
-                        win.show().unwrap();
-                        win.set_focus().unwrap();
-                    }
-                }
-                "overlay" => {
-                    open_overlay(app.clone(), "{}".to_string());
-                }
-                "quit" => {
-                    std::process::exit(0);
-                }
-                _ => {}
-            },
-            SystemTrayEvent::LeftClick { .. } => {
-                if let Some(win) = app.get_window("main") {
-                    win.show().unwrap();
-                    win.set_focus().unwrap();
-                }
-            }
-            _ => {}
-        })
         .invoke_handler(tauri::generate_handler![
             open_overlay,
             close_overlay,
