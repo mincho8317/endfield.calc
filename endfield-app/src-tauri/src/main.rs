@@ -30,9 +30,10 @@ fn open_overlay(app: AppHandle, data: String) {
             .unwrap();
 
             let data_clone = data.clone();
-            win.once("overlay-ready", move |_| {
-                win.emit("layout-data", data_clone).unwrap();
-            });
+            let win_clone = win.clone();
+win_clone.once("overlay-ready", move |_| {
+    win_clone.emit("layout-data", data_clone).unwrap();
+});
         }
     }
 }
