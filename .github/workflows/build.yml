@@ -23,11 +23,11 @@ jobs:
       - name: Rust 캐시
         uses: swatinem/rust-cache@v2
         with:
-          workingDirectory: ./endfield-app/src-tauri
+          workspaces: endfield-app/src-tauri -> target
 
       - name: 사이트 HTML 복사
-        run: |
-          cp index.html endfield-app/src/endfield_factory_calc.html
+        shell: bash
+        run: cp index.html endfield-app/src/endfield_factory_calc.html
 
       - name: npm 의존성 설치
         working-directory: ./endfield-app
@@ -71,42 +71,8 @@ jobs:
             ## 엔드필드 공장 계산기 ${{ github.ref_name }}
 
             ### 설치 방법
-            1. `엔드필드.공장.계산기_${{ github.ref_name }}_x64-setup.exe` 다운로드
+            1. `.exe` 파일 다운로드
             2. 실행 (보안 경고 → "추가 정보" → "실행" 클릭)
             3. 설치 완료
-
-            ### 배치 도우미 사용법
-            1. 공장 배치 탭에서 설비 배치
-            2. "배치 도우미" 버튼 클릭
-            3. 게임 화면 위에 오버레이 표시
-            4. 캘리브레이션으로 격자 크기 맞추기
-
-            ### Custom URL Scheme
-            브라우저에서 사이트 접속 후 "배치 도우미" 버튼 클릭 시
-            자동으로 앱이 실행됩니다.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 업데이트 manifest 생성
-        run: |
-          cat > releases/latest.json << EOF
-          {
-            "version": "${{ github.ref_name }}",
-            "notes": "새 버전이 출시됐어요!",
-            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "platforms": {
-              "windows-x86_64": {
-                "url": "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/엔드필드.공장.계산기_${{ github.ref_name }}_x64-setup.exe",
-                "signature": ""
-              }
-            }
-          }
-          EOF
-
-      - name: 업데이트 manifest 커밋
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add releases/latest.json
-          git commit -m "chore: ${{ github.ref_name }} 업데이트 manifest" || true
-          git push
