@@ -1,41 +1,19 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{
     AppHandle, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    CustomMenuItem, Window, WindowBuilder, WindowUrl,
+    CustomMenuItem, WindowBuilder, WindowUrl,
 };
-use std::sync::{Arc, Mutex};
 
-// ── 전역 상태 ──────────────────────────────────────
-#[derive(Default)]
-struct OverlayState {
-    visible: bool,
-    x: f64,
-    y: f64,
-    scale: f64,
-    cell_size: f64,
-    drag_ratio: f64,
-    scroll_ratio: f64,
-}
-
-type SharedState = Arc<Mutex<OverlayState>>;
-
-// ── Tauri 커맨드 ────────────────────────────────────
-
-/// 오버레이 창 열기 + 배치 데이터 전달
 #[tauri::command]
 fn open_overlay(app: AppHandle, data: String) {
-    let overlay = app.get_window("overlay");
-    match overlay {
+    match app.get_window("overlay") {
         Some(win) => {
             win.show().unwrap();
             win.set_always_on_top(true).unwrap();
-            // 배치 데이터 전달
             win.emit("layout-data", data).unwrap();
         }
         None => {
-            // 창이 없으면 새로 생성
             let win = WindowBuilder::new(
                 &app,
                 "overlay",
@@ -47,7 +25,6 @@ fn open_overlay(app: AppHandle, data: String) {
             .decorations(false)
             .transparent(true)
             .always_on_top(true)
-            .skip_taskbar(false)
             .resizable(true)
             .build()
             .unwrap();
@@ -60,7 +37,6 @@ fn open_overlay(app: AppHandle, data: String) {
     }
 }
 
-/// 오버레이 창 닫기
 #[tauri::command]
 fn close_overlay(app: AppHandle) {
     if let Some(win) = app.get_window("overlay") {
@@ -68,7 +44,6 @@ fn close_overlay(app: AppHandle) {
     }
 }
 
-/// 캘리브레이션 저장
 #[tauri::command]
 fn save_calibration(
     app: AppHandle,
@@ -76,7 +51,6 @@ fn save_calibration(
     drag_ratio: f64,
     scroll_ratio: f64,
 ) {
-    // tauri store에 저장
     app.emit_all("calibration-saved", serde_json::json!({
         "cell_size": cell_size,
         "drag_ratio": drag_ratio,
@@ -84,36 +58,20 @@ fn save_calibration(
     })).unwrap();
 }
 
-/// 오버레이 투명도 설정
-#[tauri::command]
-fn set_overlay_opacity(app: AppHandle, opacity: f64) {
-    if let Some(win) = app.get_window("overlay") {
-        win.emit("set-opacity", opacity).unwrap();
-    }
-}
-
-/// 게임 프로세스 실행 여부 확인
 #[tauri::command]
 fn check_game_running() -> bool {
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
-        let output = Command::new("tasklist")
-            .output()
-            .unwrap_or_default();
+        let output = Command::new("tasklist").output().unwrap_or_default();
         let stdout = String::from_utf8_lossy(&output.stdout);
-        // 엔드필드 프로세스명 (실제 확인 필요)
         stdout.contains("EndField") || stdout.contains("endfield")
     }
     #[cfg(not(target_os = "windows"))]
-    {
-        false
-    }
+    { false }
 }
 
-// ── 메인 ───────────────────────────────────────────
 fn main() {
-    // 시스템 트레이 설정
     let tray_menu = SystemTrayMenu::new()
         .add_item(CustomMenuItem::new("open".to_string(), "계산기 열기"))
         .add_item(CustomMenuItem::new("overlay".to_string(), "배치 도우미"))
@@ -135,9 +93,7 @@ fn main() {
                 "overlay" => {
                     open_overlay(app.clone(), "{}".to_string());
                 }
-                "quit" => {
-                    std::process::exit(0);
-                }
+                "quit" => { std::process::exit(0); }
                 _ => {}
             },
             SystemTrayEvent::LeftClick { .. } => {
@@ -148,35 +104,13 @@ fn main() {
             }
             _ => {}
         })
-        // URL Scheme 처리 (endfield://overlay?data=...)
-        .register_uri_scheme_protocol("endfield", |app, request| {
-            let uri = request.uri();
-
-            if uri.contains("overlay") {
-                // data 파라미터 추출
-                let data = if let Some(pos) = uri.find("data=") {
-                    uri[pos + 5..].to_string()
-                } else {
-                    "{}".to_string()
-                };
-
-                open_overlay(app.clone(), data);
-            }
-
-            // 빈 응답 반환
-            tauri::http::ResponseBuilder::new()
-                .status(200)
-                .body(vec![])
-        })
         .invoke_handler(tauri::generate_handler![
             open_overlay,
             close_overlay,
             save_calibration,
-            set_overlay_opacity,
             check_game_running,
         ])
         .on_window_event(|event| {
-            // 메인 창 닫기 → 트레이로 최소화
             if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
                 if event.window().label() == "main" {
                     event.window().hide().unwrap();
