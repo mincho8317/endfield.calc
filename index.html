@@ -5543,6 +5543,7 @@ function openOverlayHelper() {
 }
 
 function showOverlayModal() {
+  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/download/v1.0.0/Endfield.Factory.Calc_1.0.0_x64-setup.exe';
   const modal = document.createElement('div');
   modal.style.cssText = `
     position:fixed;inset:0;background:rgba(0,0,0,0.75);
@@ -5569,7 +5570,7 @@ function showOverlayModal() {
         <b style="color:var(--text);">반투명 오버레이</b>로 설비 위치를 표시해드려요.
       </p>
 
-      <div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:20px;">
+      <div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:16px;">
         <div style="font-size:11px;color:var(--text-sub);line-height:1.9;">
           ✓ &nbsp;게임 화면 위 반투명 격자 오버레이<br>
           ✓ &nbsp;설비 위치 / 방향 실시간 표시<br>
@@ -5578,8 +5579,13 @@ function showOverlayModal() {
         </div>
       </div>
 
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px;">
-        ※ 현재 준비 중이에요. 출시 알림을 받으려면 북마크해두세요!
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 14px;margin-bottom:20px;">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">설치 방법</div>
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.8;">
+          1. 아래 버튼으로 .exe 다운로드<br>
+          2. 실행 → 보안 경고 시 "추가 정보" → "실행"<br>
+          3. 설치 완료 후 사이트에서 버튼 클릭하면 자동 실행
+        </div>
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -5588,15 +5594,18 @@ function showOverlayModal() {
           background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
           닫기
         </button>
-        <button onclick="
-          localStorage.setItem('endfield_app_installed','1');
-          alert('앱이 출시되면 이 버튼으로 바로 실행할 수 있어요!');
-          this.closest('div[style*=fixed]').remove();
-        "
+        <a href="${DOWNLOAD_URL}" target="_blank"
+          onclick="localStorage.setItem('endfield_app_installed','1');setTimeout(()=>this.closest('div[style*=fixed]')?.remove(),500);"
           style="padding:7px 18px;border-radius:6px;border:1px solid var(--accent);
-          background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;">
-          앱 다운로드
-        </button>
+          background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;
+          text-decoration:none;display:flex;align-items:center;gap:5px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          앱 다운로드 (v1.0.0)
+        </a>
       </div>
     </div>
   `;
