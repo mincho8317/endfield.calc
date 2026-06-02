@@ -25,6 +25,33 @@ jobs:
         with:
           workspaces: endfield-app/src-tauri -> target
 
+      - name: Python Pillow 설치
+        run: pip install pillow
+
+      - name: 아이콘 생성
+        shell: pwsh
+        run: |
+          python -c "
+          from PIL import Image, ImageDraw
+          import math, os
+          os.makedirs('endfield-app/src-tauri/icons', exist_ok=True)
+          def make_icon(size):
+              img = Image.new('RGBA', (size, size), (0,0,0,0))
+              draw = ImageDraw.Draw(img)
+              cx, cy, r = size//2, size//2, int(size*0.45)
+              pts = [(cx+r*math.cos(math.radians(60*i-30)), cy+r*math.sin(math.radians(60*i-30))) for i in range(6)]
+              draw.polygon(pts, fill=(240,200,22,255))
+              return img
+          make_icon(32).save('endfield-app/src-tauri/icons/32x32.png')
+          make_icon(128).save('endfield-app/src-tauri/icons/128x128.png')
+          make_icon(256).save('endfield-app/src-tauri/icons/128x128@2x.png')
+          sizes = [16,32,48,64,128,256]
+          imgs = [make_icon(s) for s in sizes]
+          imgs[0].save('endfield-app/src-tauri/icons/icon.ico', format='ICO', sizes=[(s,s) for s in sizes], append_images=imgs[1:])
+          make_icon(256).save('endfield-app/src-tauri/icons/icon.icns')
+          print('아이콘 생성 완료')
+          "
+
       - name: 사이트 HTML 복사
         shell: bash
         run: cp index.html endfield-app/src/endfield_factory_calc.html
