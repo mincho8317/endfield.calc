@@ -27,7 +27,7 @@ jobs:
 
       - name: 사이트 HTML 복사
         run: |
-          cp endfield_factory_calc.html endfield-app/src/endfield_factory_calc.html
+          cp index.html endfield-app/src/endfield_factory_calc.html
 
       - name: npm 의존성 설치
         working-directory: ./endfield-app
