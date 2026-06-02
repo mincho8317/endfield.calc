@@ -1,8 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{
-    AppHandle, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    CustomMenuItem, WindowBuilder, WindowUrl,
+    AppHandle, CustomMenuItem, Manager, SystemTray,
+    SystemTrayEvent, SystemTrayMenu, WindowBuilder, WindowUrl,
 };
 
 #[tauri::command]
@@ -29,11 +29,11 @@ fn open_overlay(app: AppHandle, data: String) {
             .build()
             .unwrap();
 
-            let data_clone = data.clone();
-            let win_clone = win.clone();
-win_clone.once("overlay-ready", move |_| {
-    win_clone.emit("layout-data", data_clone).unwrap();
-});
+            let win2 = win.clone();
+            let data2 = data.clone();
+            win.once("overlay-ready", move |_| {
+                win2.emit("layout-data", data2).unwrap();
+            });
         }
     }
 }
@@ -56,7 +56,8 @@ fn save_calibration(
         "cell_size": cell_size,
         "drag_ratio": drag_ratio,
         "scroll_ratio": scroll_ratio,
-    })).unwrap();
+    }))
+    .unwrap();
 }
 
 #[tauri::command]
@@ -64,20 +65,24 @@ fn check_game_running() -> bool {
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
-        let output = Command::new("tasklist").output().unwrap_or_default();
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        stdout.contains("EndField") || stdout.contains("endfield")
+        if let Ok(output) = Command::new("tasklist").output() {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            return stdout.to_lowercase().contains("endfield");
+        }
+        false
     }
     #[cfg(not(target_os = "windows"))]
-    { false }
+    {
+        false
+    }
 }
 
 fn main() {
     let tray_menu = SystemTrayMenu::new()
-        .add_item(CustomMenuItem::new("open".to_string(), "계산기 열기"))
-        .add_item(CustomMenuItem::new("overlay".to_string(), "배치 도우미"))
+        .add_item(CustomMenuItem::new("open", "계산기 열기"))
+        .add_item(CustomMenuItem::new("overlay", "배치 도우미"))
         .add_native_item(tauri::SystemTrayMenuItem::Separator)
-        .add_item(CustomMenuItem::new("quit".to_string(), "종료"));
+        .add_item(CustomMenuItem::new("quit", "종료"));
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
@@ -94,7 +99,9 @@ fn main() {
                 "overlay" => {
                     open_overlay(app.clone(), "{}".to_string());
                 }
-                "quit" => { std::process::exit(0); }
+                "quit" => {
+                    std::process::exit(0);
+                }
                 _ => {}
             },
             SystemTrayEvent::LeftClick { .. } => {
