@@ -172,7 +172,7 @@ main { padding: 14px 20px; }
   background: var(--bg-mid);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 6px;
-  overflow: hidden;
+  overflow: visible;  /* 드롭다운이 패널 밖으로 나올 수 있게 */
 }
 
 .panel-header {
@@ -447,12 +447,13 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .custom-select-btn .cs-arrow { flex-shrink: 0; transition: transform 0.18s; color: var(--text-muted); }
 .custom-select-btn.open .cs-arrow { transform: rotate(180deg); }
 .custom-select-dropdown {
-  position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+  /* position/top/left/width는 JS에서 fixed로 직접 설정 */
   background: var(--bg-popup);
   border: 1px solid rgba(240,200,22,0.3);
-  border-radius: 6px; z-index: 500;
-  max-height: 220px; overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6); scrollbar-width: thin;
+  border-radius: 6px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  scrollbar-width: thin;
 }
 .cs-option {
   padding: 8px 11px; font-size: 12px; cursor: pointer;
@@ -558,17 +559,18 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
    INNER TAB
 ════════════════════════════════ */
 .inner-tab {
-  flex: 1; padding: 11px 12px;  /* 피드백: 상하 여백 늘림 */
+  flex: 1; padding: 10px 12px;
   font-size: 12px; font-weight: 500;
-  color: var(--text-label); cursor: pointer;
+  color: var(--text-muted); cursor: pointer;
   text-align: center; border-bottom: 2px solid transparent;
   transition: all 0.12s; font-family: var(--font-body);
 }
-.inner-tab:hover { color: var(--text-sub); background: rgba(255,255,255,0.02); }
+.inner-tab:hover { color: var(--text-sub); background: rgba(255,255,255,0.03); }
 .inner-tab.active {
-  color: #f0c816;
+  color: #1a1200;
+  background: #f0c816;
   border-bottom-color: #f0c816;
-  background: rgba(240,200,22,0.04);
+  font-weight: 700;
 }
 
 /* ════════════════════════════════
@@ -679,11 +681,18 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 .ws-group-header {
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 12px;
-  background: rgba(240,200,22,0.04);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 13px; font-weight: 600; color: var(--text);
+  padding: 7px 10px;
+  background: rgba(240,200,22,0.07);
+  border-bottom: 1px solid rgba(240,200,22,0.12);
+  font-size: 12px; font-weight: 600; color: var(--text);
   border-radius: 8px 8px 0 0;
+}
+/* 그룹명 입력칸도 헤더 안에서 잘 보이게 */
+.ws-group-header .ws-group-name {
+  background: rgba(0,0,0,0.2) !important;
+  border-color: rgba(240,200,22,0.15) !important;
+  color: var(--text) !important;
+  font-weight: 600;
 }
 
 /* ════════════════════════════════
@@ -714,6 +723,152 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 .page-view { display: none; }
 .page-view.active { display: block; }
+
+/* ── 공장 계산기 입력칸/버튼 전역 다크 스타일 ── */
+input[type=text],
+input[type=number],
+input[type=search],
+input[type=email],
+textarea {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-input) !important;
+  color: var(--text) !important;
+  border-radius: 4px !important;
+  font-family: var(--font-body);
+  outline: none;
+}
+input[type=text]:focus,
+input[type=number]:focus,
+input[type=search]:focus { border-color: var(--accent) !important; }
+input::placeholder { color: var(--text-muted) !important; }
+
+select {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-input) !important;
+  color: var(--text) !important;
+  border-radius: 4px !important;
+  font-family: var(--font-body);
+  outline: none;
+  cursor: pointer;
+}
+select:focus { border-color: var(--accent) !important; }
+select option { background: var(--bg-popup); color: var(--text); }
+
+.ws-group-name {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: var(--font-body);
+  outline: none;
+  flex: 1; min-width: 0;
+}
+.ws-group-name:focus { border-color: var(--accent); }
+
+.ws-mult-input,
+.ws-count-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  text-align: center;
+  outline: none;
+}
+.ws-mult-input:focus,
+.ws-count-input:focus { border-color: var(--accent); }
+
+/* ── 설비 행 레이아웃 ── */
+.ws-equip-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 5px 6px 5px 8px;
+}
+/* 생산/소모 정보 영역 */
+.ws-equip-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+/* 수량 입력칸 */
+.ws-equip-row .ws-count-input {
+  width: 44px;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 4px !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: var(--text);
+  font-size: 12px;
+  text-align: center;
+  padding: 0 4px;
+  align-self: center;
+  height: 26px;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+.ws-equip-row .ws-count-input:focus {
+  border-color: var(--accent) !important;
+  background: rgba(240,200,22,0.05) !important;
+  outline: none;
+}
+/* 삭제 버튼 — X */
+.ws-equip-row .ws-del-btn {
+  width: 20px;
+  height: 20px;
+  border: none !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  font-size: 12px;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 6px;
+  line-height: 1;
+}
+.ws-equip-row .ws-del-btn:hover {
+  background: rgba(208,64,64,0.15) !important;
+  color: var(--danger) !important;
+}
+
+.ws-add-equip-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text-sub) !important;
+  border-radius: 4px !important;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.ws-add-equip-btn:hover {
+  border-color: var(--accent-line) !important;
+  color: var(--accent) !important;
+  background: var(--accent-dim);
+}
+
+.ws-del-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.ws-del-btn:hover { color: var(--danger) !important; }
 
 #base-config-wrap { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 1000px; opacity: 1; }
 #base-config-wrap.collapsed { max-height: 0; opacity: 0; }
@@ -775,51 +930,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
         </div>
       </div>
     </div>
-    <!-- 유틸리티 버튼 -->
-    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
 
-      <!-- 테마 전환 -->
-      <button onclick="toggleTheme()" id="theme-btn" title="테마 전환"
-        style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:4px;display:flex;align-items:center;transition:color 0.2s;"
-        onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
-        <svg id="theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        <svg id="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-      </button>
-
-      <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
-
-      <!-- 다운로드 (데이터 저장 — 화살표 아래로) -->
-      <button onclick="exportData()" title="데이터 다운로드 (.json)"
-        style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:4px;display:flex;align-items:center;transition:color 0.2s;"
-        onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </button>
-
-      <!-- 업로드 (데이터 불러오기 — 화살표 위로) -->
-      <label title="데이터 업로드 (.json)" style="cursor:pointer;display:flex;">
-        <input type="file" accept=".json" onchange="importData(this)" style="display:none;">
-        <span style="background:transparent;border:none;color:var(--text-muted);padding:6px;cursor:pointer;border-radius:4px;display:flex;align-items:center;transition:color 0.2s;"
-          onmouseenter="this.style.color='var(--accent)'" onmouseleave="this.style.color='var(--text-muted)'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-        </span>
-      </label>
-
-    </div>
   </div>
   <div class="tab-bar">
     <div class="tab" onclick="switchTab('overview')">Overview</div>
@@ -1178,6 +1289,20 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
     <!-- ===== 공장 배치 탭 ===== -->
     <div id="tab-layout" class="page-view">
+      <!-- 배치 도우미 버튼 -->
+      <div style="display:flex;justify-content:flex-end;padding:8px 12px 0;">
+        <button class="btn" onclick="openOverlayHelper()"
+          style="font-size:11px;display:flex;align-items:center;gap:5px;
+          border-color:rgba(240,200,22,0.4);color:var(--accent);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+            <path d="M9 10l2 2 4-4" stroke-width="2.5"/>
+          </svg>
+          배치 도우미
+        </button>
+      </div>
       <div id="factory-layout-root"></div>
     </div>
 
@@ -2359,13 +2484,13 @@ function renderGroupHTML(g) {
 
     const makeLines = (items, sign, color) => items.map(item => {
       const rate = totalCnt > 0 ? fmt((60 / recipe.speed) * item.qty * totalCnt) : null;
-      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 0;">
-        <span style="display:flex;align-items:center;min-width:0;">
-          <span style="color:${color};font-weight:700;margin-right:4px;flex-shrink:0;">${sign}</span>
-          ${itemIcon(item.name, 32)}
-          <span style="color:var(--text);">${item.name}</span>
+      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:1px 0;font-size:10px;">
+        <span style="display:flex;align-items:center;min-width:0;gap:2px;">
+          <span style="color:${color};font-weight:700;flex-shrink:0;font-size:9px;">${sign}</span>
+          ${itemIcon(item.name, 14)}
+          <span style="color:var(--text-sub);">${item.name}</span>
         </span>
-        ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${rate}/분</span>` : ''}
+        ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:9px;flex-shrink:0;">${rate}/분</span>` : ''}
       </div>`;
     }).join('');
 
@@ -2387,16 +2512,15 @@ function renderGroupHTML(g) {
       <input type="number" class="ws-count-input" min="0"
         value="${cnt||''}" placeholder="0"
         oninput="updateEquipCount(${g.id},${e.recipeId},this.value)">
-      <button class="ws-del-btn" onclick="removeEquip(${g.id},${e.recipeId})" title="제거">×</button>
+      <button class="ws-del-btn" onclick="removeEquip(${g.id},${e.recipeId})" title="제거">✕</button>
     </div>`;
   }).join('');
 
   const collapsed = g.collapsed || false;
   const bodyHTML = collapsed ? '' : `
-    <div style="display:flex;flex-direction:column;gap:6px;padding:8px 8px 0;">
+    <div style="display:flex;flex-direction:column;gap:4px;padding:8px;">
       ${equipRows}
     </div>
-    <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)">+ 설비 추가</button>
   `;
 
   return `<div class="ws-group" id="wsgroup-${g.id}">
@@ -2414,6 +2538,7 @@ function renderGroupHTML(g) {
           oninput="updateGroupMult(${g.id},this.value)">
       </div>
       <button class="btn" style="font-size:10px;padding:3px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
+      <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)">+ 설비</button>
       <button class="ws-del-btn" style="font-size:16px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
     </div>
     ${bodyHTML}
@@ -4682,7 +4807,7 @@ function isOpen(container) {
 function toggleCustomSelect(btn) {
   const container = btn.closest('.custom-select-wrap');
   if (!container) return;
-  const existing = container.querySelector('.custom-select-dropdown');
+  const existing = document.querySelector('.custom-select-dropdown');
   if (existing) {
     closeAllCustomSelects();
     return;
@@ -4692,6 +4817,7 @@ function toggleCustomSelect(btn) {
 
   const dropdown = document.createElement('div');
   dropdown.className = 'custom-select-dropdown';
+  dropdown.dataset.ownerId = container.dataset.csId || '';
 
   const options    = container._csOptions || [];
   const selected   = container._csSelected;
@@ -4712,7 +4838,30 @@ function toggleCustomSelect(btn) {
     dropdown.appendChild(item);
   });
 
-  container.appendChild(dropdown);
+  // body에 fixed로 붙이기
+  document.body.appendChild(dropdown);
+
+  // 버튼 위치 기준으로 드롭다운 위치 계산
+  const rect = btn.getBoundingClientRect();
+  const dropH = Math.min(220, options.length * 34 + 34);
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  dropdown.style.position = 'fixed';
+  dropdown.style.left = rect.left + 'px';
+  dropdown.style.width = rect.width + 'px';
+  dropdown.style.zIndex = '9999';
+
+  if (spaceBelow >= dropH || spaceBelow >= spaceAbove) {
+    // 아래로 펼치기
+    dropdown.style.top = (rect.bottom + 2) + 'px';
+    dropdown.style.maxHeight = Math.min(220, spaceBelow - 8) + 'px';
+  } else {
+    // 위로 펼치기
+    dropdown.style.bottom = (window.innerHeight - rect.top + 2) + 'px';
+    dropdown.style.top = 'auto';
+    dropdown.style.maxHeight = Math.min(220, spaceAbove - 8) + 'px';
+  }
 
   // 선택된 항목으로 스크롤
   setTimeout(() => {
@@ -4742,9 +4891,12 @@ function selectCustomOption(container, value, label, isPlaceholder) {
 }
 
 function closeOnOutside(e) {
-  if (!e.target.closest('.custom-select-wrap')) closeAllCustomSelects();
+  if (!e.target.closest('.custom-select-wrap') && !e.target.closest('.custom-select-dropdown')) closeAllCustomSelects();
   else document.addEventListener('click', closeOnOutside, { once: true });
 }
+
+// 스크롤 시 드롭다운 닫기
+window.addEventListener('scroll', closeAllCustomSelects, true);
 
 function closeAllCustomSelects() {
   document.querySelectorAll('.custom-select-dropdown').forEach(d => d.remove());
@@ -5368,6 +5520,91 @@ function markSaved() {
 }
 
 // ========== 내보내기 ==========
+function openOverlayHelper() {
+  // Tauri 앱 안에서 실행 중인지 확인
+  const isTauriApp = window.__TAURI__ !== undefined;
+
+  if (isTauriApp) {
+    // 앱 내부 → Tauri invoke로 직접 오버레이 열기
+    const data = btoa(encodeURIComponent(JSON.stringify(od())));
+    window.__TAURI__.invoke('open_overlay', { data });
+    return;
+  }
+
+  // 브라우저에서 실행 중
+  const hasApp = localStorage.getItem('endfield_app_installed');
+  if (hasApp) {
+    // Custom URL Scheme으로 앱 실행
+    const data = btoa(encodeURIComponent(JSON.stringify(od())));
+    window.location.href = `endfield://overlay?data=${data}`;
+  } else {
+    showOverlayModal();
+  }
+}
+
+function showOverlayModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.75);
+    z-index:9999;display:flex;align-items:center;justify-content:center;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      background:var(--panel3);border:1px solid rgba(255,255,255,0.1);
+      border-top:2px solid var(--accent);border-radius:8px;
+      padding:28px 28px 24px;max-width:420px;width:90%;
+      box-shadow:0 12px 40px rgba(0,0,0,0.7);
+    ">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          <path d="M9 10l2 2 4-4" stroke-width="2.5"/>
+        </svg>
+        <span style="font-size:15px;font-weight:700;color:var(--text);">배치 도우미 앱</span>
+      </div>
+
+      <p style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:8px;">
+        배치 도우미 앱을 설치하면 게임 화면 위에<br>
+        <b style="color:var(--text);">반투명 오버레이</b>로 설비 위치를 표시해드려요.
+      </p>
+
+      <div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:20px;">
+        <div style="font-size:11px;color:var(--text-sub);line-height:1.9;">
+          ✓ &nbsp;게임 화면 위 반투명 격자 오버레이<br>
+          ✓ &nbsp;설비 위치 / 방향 실시간 표시<br>
+          ✓ &nbsp;캘리브레이션으로 해상도 자동 보정<br>
+          ✓ &nbsp;마우스 이동/줌 추적
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px;">
+        ※ 현재 준비 중이에요. 출시 알림을 받으려면 북마크해두세요!
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="this.closest('div[style*=fixed]').remove()"
+          style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);
+          background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
+          닫기
+        </button>
+        <button onclick="
+          localStorage.setItem('endfield_app_installed','1');
+          alert('앱이 출시되면 이 버튼으로 바로 실행할 수 있어요!');
+          this.closest('div[style*=fixed]').remove();
+        "
+          style="padding:7px 18px;border-radius:6px;border:1px solid var(--accent);
+          background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;">
+          앱 다운로드
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
 function exportData() {
   const savedOutpostData = {};
   OUTPOSTS.forEach(o => {
