@@ -1,0 +1,16 @@
+{
+  "name": "endfield-calc-app",
+  "version": "1.0.0",
+  "description": "엔드필드 공장 계산기 데스크톱 앱",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.6.0"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.6.0"
+  }
+}

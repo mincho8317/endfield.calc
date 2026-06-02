@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>배치 도우미</title>
+<script src="https://unpkg.com/@tauri-apps/api@1/dist/index.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+  body {
+    background: transparent;
+    overflow: hidden;
+    font-family: 'Noto Sans KR', sans-serif;
+    width: 100vw; height: 100vh;
+  }
+
+  /* ── 오버레이 캔버스 ── */
+  #overlay-canvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* ── 컨트롤 패널 ── */
+  #control-panel {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(14,14,12,0.92);
+    border: 1px solid rgba(240,200,22,0.4);
+    border-radius: 8px;
+    padding: 10px;
+    width: 200px;
+    pointer-events: all;
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f0c816;
+    letter-spacing: 0.06em;
+  }
+  .close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    line-height: 1;
+  }
+  .close-btn:hover { color: #e84848; }
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+    gap: 6px;
+  }
+  .control-label {
+    font-size: 10px;
+    color: rgba(160,160,150,0.8);
+  }
+  .control-value {
+    font-size: 10px;
+    color: #e8e8e4;
+    font-family: 'Share Tech Mono', monospace;
+    min-width: 36px;
+    text-align: right;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #f0c816;
+    cursor: pointer;
+  }
+
+  .btn-sm {
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: rgba(200,200,190,0.8);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.1s;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .btn-sm:hover { border-color: rgba(240,200,22,0.4); color: #f0c816; }
+  .btn-primary-sm {
+    background: #f0c816;
+    border-color: #f0c816;
+    color: #1a1200;
+    font-weight: 700;
+  }
+  .btn-primary-sm:hover { background: #f8d820; }
+
+  .sep { height: 1px; background: rgba(255,255,255,0.06); margin: 8px 0; }
+
+  /* ── 캘리브레이션 모드 ── */
+  #calib-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    z-index: 200;
+  }
+  #calib-overlay.active { display: flex; }
+
+  #calib-box {
+    background: rgba(14,14,12,0.95);
+    border: 1px solid rgba(240,200,22,0.5);
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 320px;
+    text-align: center;
+  }
+  #calib-box h3 {
+    font-size: 14px;
+    color: #f0c816;
+    margin-bottom: 10px;
+  }
+  #calib-box p {
+    font-size: 11px;
+    color: rgba(180,180,170,0.9);
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+  #calib-step {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f0c816;
+    margin-bottom: 8px;
+  }
+
+  /* ── 드래그 핸들 ── */
+  #drag-handle {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 28px;
+    cursor: move;
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(240,200,22,0.08);
+    border-bottom: 1px solid rgba(240,200,22,0.15);
+    border-radius: 8px 8px 0 0;
+  }
+  #drag-handle span {
+    font-size: 9px;
+    color: rgba(240,200,22,0.5);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- 오버레이 격자 캔버스 -->
+<canvas id="overlay-canvas"></canvas>
+
+<!-- 드래그로 이동 가능한 컨트롤 패널 -->
+<div id="control-panel">
+  <div id="drag-handle"><span>⋮⋮ 배치 도우미 ⋮⋮</span></div>
+  <div style="padding-top:8px;">
+
+    <div class="panel-header">
+      <span class="panel-title">배치 도우미</span>
+      <button class="close-btn" onclick="hideOverlay()">✕</button>
+    </div>
+
+    <!-- 투명도 -->
+    <div class="control-row">
+      <span class="control-label">투명도</span>
+      <input type="range" id="opacity-slider" min="10" max="90" value="60"
+        oninput="updateOpacity(this.value)">
+      <span class="control-value" id="opacity-val">60%</span>
+    </div>
+
+    <!-- 격자 크기 -->
+    <div class="control-row">
+      <span class="control-label">격자 크기</span>
+      <input type="range" id="cell-slider" min="20" max="120" value="48"
+        oninput="updateCellSize(this.value)">
+      <span class="control-value" id="cell-val">48px</span>
+    </div>
+
+    <!-- 오프셋 X -->
+    <div class="control-row">
+      <span class="control-label">위치 X</span>
+      <input type="range" id="offset-x-slider" min="-200" max="200" value="0"
+        oninput="updateOffsetX(this.value)">
+      <span class="control-value" id="offset-x-val">0</span>
+    </div>
+
+    <!-- 오프셋 Y -->
+    <div class="control-row">
+      <span class="control-label">위치 Y</span>
+      <input type="range" id="offset-y-slider" min="-200" max="200" value="0"
+        oninput="updateOffsetY(this.value)">
+      <span class="control-value" id="offset-y-val">0</span>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 마우스 감도 -->
+    <div class="control-row">
+      <span class="control-label">이동 감도</span>
+      <input type="range" id="drag-ratio-slider" min="0.1" max="3.0" step="0.05" value="1.0"
+        oninput="updateDragRatio(this.value)">
+      <span class="control-value" id="drag-ratio-val">1.0</span>
+    </div>
+
+    <!-- 줌 감도 -->
+    <div class="control-row">
+      <span class="control-label">줌 감도</span>
+      <input type="range" id="scroll-ratio-slider" min="0.01" max="0.2" step="0.01" value="0.05"
+        oninput="updateScrollRatio(this.value)">
+      <span class="control-value" id="scroll-ratio-val">0.05</span>
+    </div>
+
+    <div class="sep"></div>
+
+    <button class="btn-sm btn-primary-sm" onclick="startCalibration()">🎯 캘리브레이션</button>
+    <button class="btn-sm" onclick="resetPosition()">↺ 위치 초기화</button>
+    <button class="btn-sm" onclick="saveSettings()">💾 설정 저장</button>
+
+  </div>
+</div>
+
+<!-- 캘리브레이션 모드 -->
+<div id="calib-overlay">
+  <div id="calib-box">
+    <h3>🎯 캘리브레이션</h3>
+    <div id="calib-step">1 / 2</div>
+    <p id="calib-desc">
+      게임에서 격자의 <b>좌상단 모서리</b>를<br>
+      화면에서 클릭해주세요
+    </p>
+    <button class="btn-sm" onclick="cancelCalibration()" style="width:auto;padding:5px 16px;">취소</button>
+  </div>
+</div>
+
+<script>
+const { invoke, event } = window.__TAURI__;
+
+// ── 상태 ────────────────────────────────────────────
+let state = {
+  layoutData: null,
+  cellSize: 48,
+  offsetX: 0,
+  offsetY: 0,
+  opacity: 0.6,
+  dragRatio: 1.0,
+  scrollRatio: 0.05,
+  calibStep: 0,
+  calibPoints: [],
+  // 마우스 추적
+  isTracking: false,
+  lastMouseX: 0,
+  lastMouseY: 0,
+  isRightDragging: false,
+};
+
+// ── 캔버스 초기화 ────────────────────────────────────
+const canvas = document.getElementById('overlay-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  draw();
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ── 그리기 ───────────────────────────────────────────
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!state.layoutData) return;
+
+  const { cellSize, offsetX, offsetY, opacity } = state;
+  const groups = state.layoutData.groups || [];
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+
+  groups.forEach(group => {
+    const equips = group.equips || [];
+    equips.forEach(equip => {
+      const recipe = getRecipeById(equip.recipeId);
+      if (!recipe) return;
+      const cnt = equip.count || 1;
+
+      for (let i = 0; i < cnt; i++) {
+        // 배치 위치 (실제 앱에선 좌표 데이터 필요)
+        const gx = offsetX + (i % 5) * cellSize * 3;
+        const gy = offsetY + Math.floor(i / 5) * cellSize * 3;
+
+        drawEquip(ctx, gx, gy, cellSize, recipe.equipment, group.name);
+      }
+    });
+  });
+
+  ctx.restore();
+
+  // 격자선
+  drawGrid();
+}
+
+function drawGrid() {
+  const { cellSize, offsetX, offsetY } = state;
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.strokeStyle = '#f0c816';
+  ctx.lineWidth = 0.5;
+
+  // 가로선
+  for (let y = offsetY % cellSize; y < canvas.height; y += cellSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+  // 세로선
+  for (let x = offsetX % cellSize; x < canvas.width; x += cellSize) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawEquip(ctx, x, y, cellSize, name, groupName) {
+  const w = cellSize * 3;
+  const h = cellSize * 3;
+
+  // 배경
+  ctx.fillStyle = 'rgba(240,200,22,0.08)';
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 4);
+  ctx.fill();
+
+  // 테두리
+  ctx.strokeStyle = 'rgba(240,200,22,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 4);
+  ctx.stroke();
+
+  // 설비명
+  ctx.fillStyle = '#f0c816';
+  ctx.font = `bold ${Math.max(10, cellSize * 0.4)}px 'Noto Sans KR', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(name || '설비', x + w/2, y + h/2);
+
+  // 그룹명
+  ctx.fillStyle = 'rgba(200,200,190,0.5)';
+  ctx.font = `${Math.max(8, cellSize * 0.25)}px 'Noto Sans KR', sans-serif`;
+  ctx.fillText(groupName || '', x + w/2, y + h - 8);
+}
+
+function getRecipeById(id) {
+  // 사이트의 RECIPES 데이터 활용 (index.html에서 공유)
+  return { equipment: '설비', outputs: [] };
+}
+
+// ── 컨트롤 함수 ─────────────────────────────────────
+function updateOpacity(v) {
+  state.opacity = v / 100;
+  document.getElementById('opacity-val').textContent = v + '%';
+  draw();
+}
+
+function updateCellSize(v) {
+  state.cellSize = parseInt(v);
+  document.getElementById('cell-val').textContent = v + 'px';
+  draw();
+}
+
+function updateOffsetX(v) {
+  state.offsetX = parseInt(v);
+  document.getElementById('offset-x-val').textContent = v;
+  draw();
+}
+
+function updateOffsetY(v) {
+  state.offsetY = parseInt(v);
+  document.getElementById('offset-y-val').textContent = v;
+  draw();
+}
+
+function updateDragRatio(v) {
+  state.dragRatio = parseFloat(v);
+  document.getElementById('drag-ratio-val').textContent = parseFloat(v).toFixed(2);
+}
+
+function updateScrollRatio(v) {
+  state.scrollRatio = parseFloat(v);
+  document.getElementById('scroll-ratio-val').textContent = parseFloat(v).toFixed(2);
+}
+
+function resetPosition() {
+  state.offsetX = 0;
+  state.offsetY = 0;
+  document.getElementById('offset-x-slider').value = 0;
+  document.getElementById('offset-y-slider').value = 0;
+  document.getElementById('offset-x-val').textContent = '0';
+  document.getElementById('offset-y-val').textContent = '0';
+  draw();
+}
+
+function saveSettings() {
+  const settings = {
+    cellSize: state.cellSize,
+    dragRatio: state.dragRatio,
+    scrollRatio: state.scrollRatio,
+    opacity: state.opacity,
+  };
+  localStorage.setItem('endfield_overlay_settings', JSON.stringify(settings));
+  // Tauri에도 저장
+  invoke('save_calibration', {
+    cellSize: state.cellSize,
+    dragRatio: state.dragRatio,
+    scrollRatio: state.scrollRatio,
+  });
+  showToast('설정이 저장됐어요!');
+}
+
+function loadSettings() {
+  const saved = localStorage.getItem('endfield_overlay_settings');
+  if (saved) {
+    const s = JSON.parse(saved);
+    state.cellSize = s.cellSize || 48;
+    state.dragRatio = s.dragRatio || 1.0;
+    state.scrollRatio = s.scrollRatio || 0.05;
+    state.opacity = s.opacity || 0.6;
+
+    document.getElementById('cell-slider').value = state.cellSize;
+    document.getElementById('cell-val').textContent = state.cellSize + 'px';
+    document.getElementById('drag-ratio-slider').value = state.dragRatio;
+    document.getElementById('drag-ratio-val').textContent = state.dragRatio.toFixed(2);
+    document.getElementById('scroll-ratio-slider').value = state.scrollRatio;
+    document.getElementById('scroll-ratio-val').textContent = state.scrollRatio.toFixed(2);
+    document.getElementById('opacity-slider').value = Math.round(state.opacity * 100);
+    document.getElementById('opacity-val').textContent = Math.round(state.opacity * 100) + '%';
+    draw();
+  }
+}
+
+// ── 캘리브레이션 ─────────────────────────────────────
+function startCalibration() {
+  state.calibStep = 1;
+  state.calibPoints = [];
+  document.getElementById('calib-overlay').classList.add('active');
+  updateCalibUI();
+  canvas.style.pointerEvents = 'all';
+  canvas.addEventListener('click', onCalibClick);
+}
+
+function onCalibClick(e) {
+  state.calibPoints.push({ x: e.clientX, y: e.clientY });
+
+  if (state.calibStep === 1) {
+    state.calibStep = 2;
+    updateCalibUI();
+  } else if (state.calibStep === 2) {
+    // 두 점으로 격자 크기 계산
+    const p1 = state.calibPoints[0];
+    const p2 = state.calibPoints[1];
+    const dist = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2);
+    // 두 점이 N칸 떨어진 경우 입력받기
+    const cells = prompt('두 점 사이가 몇 칸인가요?', '5');
+    if (cells) {
+      state.cellSize = Math.round(dist / parseInt(cells));
+      state.offsetX = p1.x % state.cellSize;
+      state.offsetY = p1.y % state.cellSize;
+
+      document.getElementById('cell-slider').value = state.cellSize;
+      document.getElementById('cell-val').textContent = state.cellSize + 'px';
+    }
+
+    cancelCalibration();
+    draw();
+    showToast(`캘리브레이션 완료! 격자 크기: ${state.cellSize}px`);
+  }
+}
+
+function updateCalibUI() {
+  document.getElementById('calib-step').textContent = `${state.calibStep} / 2`;
+  if (state.calibStep === 1) {
+    document.getElementById('calib-desc').innerHTML =
+      '게임 격자의 <b>임의의 교차점</b>을<br>클릭해주세요';
+  } else {
+    document.getElementById('calib-desc').innerHTML =
+      '격자의 <b>다른 교차점</b>을<br>클릭해주세요 (멀수록 정확)';
+  }
+}
+
+function cancelCalibration() {
+  state.calibStep = 0;
+  document.getElementById('calib-overlay').classList.remove('active');
+  canvas.style.pointerEvents = 'none';
+  canvas.removeEventListener('click', onCalibClick);
+}
+
+// ── 마우스 추적 (게임 화면 이동/줌 동기화) ───────────
+// 오버레이 창 밖의 마우스 이벤트는 OS 레벨에서 감지
+// Tauri의 글로벌 이벤트로 처리
+document.addEventListener('mousemove', (e) => {
+  if (state.isRightDragging) {
+    const dx = (e.clientX - state.lastMouseX) * state.dragRatio;
+    const dy = (e.clientY - state.lastMouseY) * state.dragRatio;
+    state.offsetX += dx;
+    state.offsetY += dy;
+
+    // 슬라이더 범위 제한
+    state.offsetX = Math.max(-500, Math.min(500, state.offsetX));
+    state.offsetY = Math.max(-500, Math.min(500, state.offsetY));
+
+    document.getElementById('offset-x-slider').value = Math.round(state.offsetX);
+    document.getElementById('offset-y-slider').value = Math.round(state.offsetY);
+    document.getElementById('offset-x-val').textContent = Math.round(state.offsetX);
+    document.getElementById('offset-y-val').textContent = Math.round(state.offsetY);
+    draw();
+  }
+  state.lastMouseX = e.clientX;
+  state.lastMouseY = e.clientY;
+});
+
+document.addEventListener('mousedown', (e) => {
+  if (e.button === 2) { // 우클릭
+    state.isRightDragging = true;
+  }
+});
+
+document.addEventListener('mouseup', (e) => {
+  if (e.button === 2) {
+    state.isRightDragging = false;
+  }
+});
+
+document.addEventListener('wheel', (e) => {
+  const delta = e.deltaY > 0 ? -1 : 1;
+  const scaleChange = delta * state.scrollRatio;
+  state.cellSize = Math.max(16, Math.min(120,
+    state.cellSize + Math.round(state.cellSize * scaleChange)
+  ));
+  document.getElementById('cell-slider').value = state.cellSize;
+  document.getElementById('cell-val').textContent = state.cellSize + 'px';
+  draw();
+}, { passive: true });
+
+// ── 패널 드래그 이동 ─────────────────────────────────
+const panel = document.getElementById('control-panel');
+const handle = document.getElementById('drag-handle');
+let panelDrag = { active: false, startX: 0, startY: 0, initLeft: 0, initTop: 0 };
+
+handle.addEventListener('mousedown', (e) => {
+  panelDrag.active = true;
+  panelDrag.startX = e.clientX;
+  panelDrag.startY = e.clientY;
+  const rect = panel.getBoundingClientRect();
+  panelDrag.initLeft = rect.left;
+  panelDrag.initTop = rect.top;
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!panelDrag.active) return;
+  const dx = e.clientX - panelDrag.startX;
+  const dy = e.clientY - panelDrag.startY;
+  panel.style.left = (panelDrag.initLeft + dx) + 'px';
+  panel.style.top = (panelDrag.initTop + dy) + 'px';
+  panel.style.right = 'auto';
+});
+
+document.addEventListener('mouseup', () => {
+  panelDrag.active = false;
+});
+
+// ── Tauri 이벤트 수신 ────────────────────────────────
+event.listen('layout-data', (e) => {
+  try {
+    const decoded = decodeURIComponent(atob(e.payload));
+    state.layoutData = JSON.parse(decoded);
+    draw();
+  } catch(err) {
+    console.error('레이아웃 데이터 파싱 실패:', err);
+  }
+});
+
+event.listen('set-opacity', (e) => {
+  state.opacity = e.payload;
+  document.getElementById('opacity-slider').value = Math.round(e.payload * 100);
+  document.getElementById('opacity-val').textContent = Math.round(e.payload * 100) + '%';
+  draw();
+});
+
+// ── 앱 닫기 ──────────────────────────────────────────
+function hideOverlay() {
+  invoke('close_overlay');
+}
+
+// ── 토스트 ───────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:rgba(14,14,12,0.95);border:1px solid rgba(240,200,22,0.4);
+    border-radius:6px;padding:8px 16px;font-size:11px;color:#e8e8e4;
+    z-index:9999;pointer-events:none;
+  `;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ── 초기화 ───────────────────────────────────────────
+loadSettings();
+event.emit('overlay-ready', {});
+</script>
+</body>
+</html>

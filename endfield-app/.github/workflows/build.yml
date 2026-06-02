@@ -1,0 +1,112 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node.js 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Rust 설치
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust 캐시
+        uses: swatinem/rust-cache@v2
+        with:
+          workingDirectory: ./endfield-app/src-tauri
+
+      - name: 사이트 HTML 복사
+        run: |
+          cp endfield_factory_calc.html endfield-app/src/endfield_factory_calc.html
+
+      - name: npm 의존성 설치
+        working-directory: ./endfield-app
+        run: npm install
+
+      - name: Tauri 앱 빌드
+        working-directory: ./endfield-app
+        run: npm run build
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+      - name: 빌드 결과물 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: endfield-calc-windows
+          path: |
+            endfield-app/src-tauri/target/release/bundle/msi/*.msi
+            endfield-app/src-tauri/target/release/bundle/nsis/*.exe
+
+  release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 빌드 결과물 다운로드
+        uses: actions/download-artifact@v4
+        with:
+          name: endfield-calc-windows
+          path: ./dist
+
+      - name: GitHub Release 생성
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/**/*.exe
+            ./dist/**/*.msi
+          body: |
+            ## 엔드필드 공장 계산기 ${{ github.ref_name }}
+
+            ### 설치 방법
+            1. `엔드필드.공장.계산기_${{ github.ref_name }}_x64-setup.exe` 다운로드
+            2. 실행 (보안 경고 → "추가 정보" → "실행" 클릭)
+            3. 설치 완료
+
+            ### 배치 도우미 사용법
+            1. 공장 배치 탭에서 설비 배치
+            2. "배치 도우미" 버튼 클릭
+            3. 게임 화면 위에 오버레이 표시
+            4. 캘리브레이션으로 격자 크기 맞추기
+
+            ### Custom URL Scheme
+            브라우저에서 사이트 접속 후 "배치 도우미" 버튼 클릭 시
+            자동으로 앱이 실행됩니다.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 업데이트 manifest 생성
+        run: |
+          cat > releases/latest.json << EOF
+          {
+            "version": "${{ github.ref_name }}",
+            "notes": "새 버전이 출시됐어요!",
+            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "platforms": {
+              "windows-x86_64": {
+                "url": "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/엔드필드.공장.계산기_${{ github.ref_name }}_x64-setup.exe",
+                "signature": ""
+              }
+            }
+          }
+          EOF
+
+      - name: 업데이트 manifest 커밋
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add releases/latest.json
+          git commit -m "chore: ${{ github.ref_name }} 업데이트 manifest" || true
+          git push

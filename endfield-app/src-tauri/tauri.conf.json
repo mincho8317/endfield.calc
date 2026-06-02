@@ -1,0 +1,86 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "../src",
+    "distDir": "../src"
+  },
+  "package": {
+    "productName": "엔드필드 공장 계산기",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": { "all": false, "open": true },
+      "window": { "all": true },
+      "globalShortcut": { "all": true },
+      "process": { "exit": true }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "kr.endfield.calc",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      },
+      "resources": []
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://raw.githubusercontent.com/mincho8317/endfield.calc/main/releases/latest.json"
+      ],
+      "dialog": true,
+      "pubkey": ""
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "엔드필드 공장 계산기",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "center": true,
+        "url": "index.html"
+      },
+      {
+        "label": "overlay",
+        "title": "배치 도우미",
+        "width": 600,
+        "height": 500,
+        "minWidth": 200,
+        "minHeight": 200,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": false,
+        "visible": false,
+        "url": "overlay.html"
+      }
+    ],
+    "protocol": {
+      "asset": true,
+      "assetScope": ["**"]
+    }
+  }
+}

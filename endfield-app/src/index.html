@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>엔드필드 공장 계산기</title>
+<script src="https://unpkg.com/@tauri-apps/api@1/dist/index.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { overflow: hidden; background: #0e0e0e; }
+
+  /* 앱 전용 타이틀바 (decorations:true라서 OS 기본 타이틀바 사용) */
+  #app-frame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+  }
+</style>
+</head>
+<body>
+
+<!--
+  현재 사이트(GitHub Pages)를 iframe으로 로드하거나
+  빌드 시 사이트 HTML을 직접 포함
+  
+  개발 중: GitHub Pages URL 사용
+  배포 시: endfield_factory_calc.html을 직접 포함
+-->
+<iframe
+  id="app-frame"
+  src="endfield_factory_calc.html"
+  frameborder="0"
+  allowtransparency="true"
+></iframe>
+
+<script>
+const { invoke, event } = window.__TAURI__;
+
+// iframe에서 오는 메시지 처리
+window.addEventListener('message', async (e) => {
+  const { type, data } = e.data || {};
+
+  switch (type) {
+    case 'OPEN_OVERLAY':
+      // 공장 배치 탭에서 "배치 도우미" 버튼 클릭
+      await invoke('open_overlay', { data: data || '{}' });
+      break;
+
+    case 'CLOSE_OVERLAY':
+      await invoke('close_overlay');
+      break;
+  }
+});
+
+// 게임 실행 감지
+async function checkGame() {
+  const running = await invoke('check_game_running');
+  if (running) {
+    // iframe에 게임 실행 알림
+    document.getElementById('app-frame').contentWindow.postMessage({
+      type: 'GAME_RUNNING',
+      value: true,
+    }, '*');
+  }
+}
+
+// 5초마다 게임 실행 여부 확인
+setInterval(checkGame, 5000);
+checkGame();
+</script>
+</body>
+</html>
