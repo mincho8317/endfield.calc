@@ -53,13 +53,6 @@ jobs:
           "@
           $code | python
 
-      - name: 아이콘 확인
-        shell: pwsh
-        run: |
-          $iconDir = "${{ github.workspace }}\endfield-app\src-tauri\icons"
-          Write-Host "Icon directory: $iconDir"
-          Get-ChildItem $iconDir
-
       - name: 사이트 HTML 복사
         shell: bash
         run: cp index.html endfield-app/src/endfield_factory_calc.html
@@ -108,6 +101,7 @@ jobs:
           files: |
             ./dist/**/*.exe
             ./dist/**/*.msi
+          overwrite: true
           body: |
             ## Endfield Factory Calc ${{ github.ref_name }}
 
