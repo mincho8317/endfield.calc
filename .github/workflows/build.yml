@@ -28,9 +28,10 @@ jobs:
       - name: Python Pillow 설치
         run: pip install pillow
 
-      - name: 아이콘 생성
+- name: 아이콘 생성
         shell: pwsh
         run: |
+          pip install pillow
           python -c "
           from PIL import Image, ImageDraw
           import math, os
@@ -49,7 +50,6 @@ jobs:
           imgs = [make_icon(s) for s in sizes]
           imgs[0].save('endfield-app/src-tauri/icons/icon.ico', format='ICO', sizes=[(s,s) for s in sizes], append_images=imgs[1:])
           make_icon(256).save('endfield-app/src-tauri/icons/icon.icns')
-          print('아이콘 생성 완료')
           "
 
       - name: 사이트 HTML 복사
