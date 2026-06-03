@@ -72,9 +72,20 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path ./dist
-          $exe = Get-ChildItem -Path "endfield-app/src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
-          Copy-Item $exe.FullName -Destination "./dist/Endfield-Factory-Calc-setup.exe"
-          Write-Host "복사 완료: $($exe.Name) -> Endfield-Factory-Calc-setup.exe"
+          $nsis = Get-ChildItem -Path "endfield-app/src-tauri/target/release/bundle/nsis/" -Filter "*.exe" | Select-Object -First 1
+          if ($nsis) {
+            Copy-Item $nsis.FullName -Destination "./dist/Endfield-Factory-Calc-setup.exe"
+            Write-Host "NSIS 복사: $($nsis.Name)"
+          } else {
+            $msi = Get-ChildItem -Path "endfield-app/src-tauri/target/release/bundle/msi/" -Filter "*.msi" | Select-Object -First 1
+            if ($msi) {
+              Copy-Item $msi.FullName -Destination "./dist/Endfield-Factory-Calc-setup.exe"
+              Write-Host "MSI 복사: $($msi.Name)"
+            } else {
+              Write-Error "빌드 파일을 찾을 수 없어요"
+              exit 1
+            }
+          }
 
       - name: 빌드 결과물 업로드
         uses: actions/upload-artifact@v4
