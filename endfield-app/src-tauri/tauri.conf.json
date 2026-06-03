@@ -31,7 +31,8 @@
       ]
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "devtools": true
     },
     "windows": [
       {
