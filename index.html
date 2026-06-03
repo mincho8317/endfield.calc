@@ -5521,29 +5521,36 @@ function markSaved() {
 
 // ========== 내보내기 ==========
 function openOverlayHelper() {
-  // Tauri 앱 안에서 실행 중인지 확인
   const isTauriApp = window.__TAURI__ !== undefined;
 
   if (isTauriApp) {
-    // 앱 내부 → Tauri invoke로 직접 오버레이 열기
     const data = btoa(encodeURIComponent(JSON.stringify(od())));
     window.__TAURI__.invoke('open_overlay', { data });
     return;
   }
 
-  // 브라우저에서 실행 중
+  // 앱 설치 여부는 URL scheme 시도로 판단
+  // localStorage 대신 매번 팝업 표시 (설치 안됐을 수 있으니)
   const hasApp = localStorage.getItem('endfield_app_installed');
+
   if (hasApp) {
-    // Custom URL Scheme으로 앱 실행
+    // URL scheme 시도
     const data = btoa(encodeURIComponent(JSON.stringify(od())));
     window.location.href = `endfield://overlay?data=${data}`;
+    // 3초 후에도 반응 없으면 팝업 다시 표시
+    setTimeout(() => {
+      if (document.visibilityState === 'visible') {
+        localStorage.removeItem('endfield_app_installed');
+        showOverlayModal();
+      }
+    }, 3000);
   } else {
     showOverlayModal();
   }
 }
 
 function showOverlayModal() {
-  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/download/v1.0.0/Endfield.Factory.Calc_1.0.0_x64-setup.exe';
+  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/download/v1.0.1/Endfield.Factory.Calc_1.0.1_x64-setup.exe';
   const modal = document.createElement('div');
   modal.style.cssText = `
     position:fixed;inset:0;background:rgba(0,0,0,0.75);
@@ -5588,14 +5595,23 @@ function showOverlayModal() {
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
         <button onclick="this.closest('div[style*=fixed]').remove()"
           style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);
           background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
           닫기
         </button>
+        <button onclick="
+          localStorage.setItem('endfield_app_installed','1');
+          this.closest('div[style*=fixed]').remove();
+          showToast('설치 완료! 배치 도우미 버튼을 다시 눌러주세요.');
+        "
+          style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);
+          background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
+          설치 완료했어요
+        </button>
         <a href="${DOWNLOAD_URL}" target="_blank"
-          onclick="localStorage.setItem('endfield_app_installed','1');setTimeout(()=>this.closest('div[style*=fixed]')?.remove(),500);"
+          onclick="setTimeout(()=>this.closest('div[style*=fixed]')?.remove(),500);"
           style="padding:7px 18px;border-radius:6px;border:1px solid var(--accent);
           background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;
           text-decoration:none;display:flex;align-items:center;gap:5px;">
@@ -5604,7 +5620,7 @@ function showOverlayModal() {
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          앱 다운로드 (v1.0.0)
+          앱 다운로드 (v1.0.1)
         </a>
       </div>
     </div>
