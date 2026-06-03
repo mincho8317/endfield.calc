@@ -2825,39 +2825,6 @@ function showAddEquipModal(g, recipeId) {
   const modal = document.createElement('div');
   modal.id = 'modal-auto-add';
   modal.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;width:340px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:700;color:var(--accent);">설비 추가</span>
-        <button onclick="document.getElementById('modal-auto-add').remove()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
-      </div>
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
-        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;">
-          ${recipe.outputs[0].name}
-          <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${recipe.equip}</span>
-          ${existing ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">현재 ${existing.count}개 → 합산됨</span>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:11px;color:var(--text-label);">추가 수량</span>
-          <input id="add-equip-count" type="number" min="1" value="1"
-            style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:14px;text-align:center;outline:none;"
-            oninput="updateSubPreview(${recipeId})">
-          <span style="font-size:11px;color:var(--text-label);">개</span>
-        </div>
-      </div>
-      ${hasSubs ? `
-      <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.06);">
-        하위 설비 (입력 수량 기준 자동 계산)
-      </div>
-      <div style="overflow-y:auto;max-height:200px;padding:6px 16px;" id="sub-preview">${subRows}</div>
-      ` : ''}
-      <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">
-        ${hasSubs
-          ? `<button class="btn" onclick="doAddEquip(${g.id},${recipeId},false)">이것만 추가</button>
-             <button class="btn btn-primary" onclick="doAddEquip(${g.id},${recipeId},true)">하위 설비 포함 추가</button>`
-          : `<button class="btn btn-primary" onclick="doAddEquip(${g.id},${recipeId},false)">추가</button>`}
-      </div>
-    </div>`;
   document.body.appendChild(modal);
   document.getElementById('add-equip-count')?.focus();
 }
@@ -5555,85 +5522,63 @@ function openOverlayHelper() {
 }
 
 function showOverlayModal() {
-  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/download/v1.0.1/Endfield.Factory.Calc_1.0.1_x64-setup.exe';
+  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/latest/download/Endfield-Factory-Calc-setup.exe';
   const modal = document.createElement('div');
-  modal.style.cssText = `
-    position:fixed;inset:0;background:rgba(0,0,0,0.75);
-    z-index:9999;display:flex;align-items:center;justify-content:center;
-  `;
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
 
-  modal.innerHTML = `
-    <div style="
-      background:var(--panel3);border:1px solid rgba(255,255,255,0.1);
-      border-top:2px solid var(--accent);border-radius:8px;
-      padding:28px 28px 24px;max-width:420px;width:90%;
-      box-shadow:0 12px 40px rgba(0,0,0,0.7);
-    ">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-          <path d="M9 10l2 2 4-4" stroke-width="2.5"/>
-        </svg>
-        <span style="font-size:15px;font-weight:700;color:var(--text);">배치 도우미 앱</span>
-      </div>
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--panel3);border:1px solid rgba(255,255,255,0.1);border-top:2px solid var(--accent);border-radius:8px;padding:28px 28px 24px;max-width:420px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.7);';
 
-      <p style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:8px;">
-        배치 도우미 앱을 설치하면 게임 화면 위에<br>
-        <b style="color:var(--text);">반투명 오버레이</b>로 설비 위치를 표시해드려요.
-      </p>
+  box.innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M9 10l2 2 4-4" stroke-width="2.5"/></svg>' +
+      '<span style="font-size:15px;font-weight:700;color:var(--text);">배치 도우미 앱</span>' +
+    '</div>' +
+    '<p style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:8px;">배치 도우미 앱을 설치하면 게임 화면 위에<br><b style="color:var(--text);">반투명 오버레이</b>로 설비 위치를 표시해드려요.</p>' +
+    '<div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:16px;">' +
+      '<div style="font-size:11px;color:var(--text-sub);line-height:1.9;">✓ &nbsp;게임 화면 위 반투명 격자 오버레이<br>✓ &nbsp;설비 위치 / 방향 실시간 표시<br>✓ &nbsp;캘리브레이션으로 해상도 자동 보정<br>✓ &nbsp;마우스 이동/줌 추적</div>' +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 14px;margin-bottom:20px;">' +
+      '<div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">설치 방법</div>' +
+      '<div style="font-size:11px;color:var(--text-sub);line-height:1.8;">1. 아래 버튼으로 .exe 다운로드<br>2. 실행 → 보안 경고 시 "추가 정보" → "실행"<br>3. 설치 완료 후 "설치 완료했어요" 버튼 클릭</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;" id="overlay-modal-btns"></div>';
 
-      <div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:16px;">
-        <div style="font-size:11px;color:var(--text-sub);line-height:1.9;">
-          ✓ &nbsp;게임 화면 위 반투명 격자 오버레이<br>
-          ✓ &nbsp;설비 위치 / 방향 실시간 표시<br>
-          ✓ &nbsp;캘리브레이션으로 해상도 자동 보정<br>
-          ✓ &nbsp;마우스 이동/줌 추적
-        </div>
-      </div>
-
-      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 14px;margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">설치 방법</div>
-        <div style="font-size:11px;color:var(--text-sub);line-height:1.8;">
-          1. 아래 버튼으로 .exe 다운로드<br>
-          2. 실행 → 보안 경고 시 "추가 정보" → "실행"<br>
-          3. 설치 완료 후 사이트에서 버튼 클릭하면 자동 실행
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
-        <button onclick="this.closest('div[style*=fixed]').remove()"
-          style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);
-          background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
-          닫기
-        </button>
-        <button onclick="
-          localStorage.setItem('endfield_app_installed','1');
-          this.closest('div[style*=fixed]').remove();
-          showToast('설치 완료! 배치 도우미 버튼을 다시 눌러주세요.');
-        "
-          style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);
-          background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
-          설치 완료했어요
-        </button>
-        <a href="${DOWNLOAD_URL}" target="_blank"
-          onclick="setTimeout(()=>this.closest('div[style*=fixed]')?.remove(),500);"
-          style="padding:7px 18px;border-radius:6px;border:1px solid var(--accent);
-          background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;
-          text-decoration:none;display:flex;align-items:center;gap:5px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          앱 다운로드 (v1.0.1)
-        </a>
-      </div>
-    </div>
-  `;
-
+  modal.appendChild(box);
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  // 버튼들 따로 생성 (템플릿 리터럴 중첩 방지)
+  const btnContainer = box.querySelector('#overlay-modal-btns');
+
+  // 닫기
+  const btnClose = document.createElement('button');
+  btnClose.textContent = '닫기';
+  btnClose.style.cssText = 'padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;';
+  btnClose.onclick = function() { modal.remove(); };
+  btnContainer.appendChild(btnClose);
+
+  // 설치 완료
+  const btnDone = document.createElement('button');
+  btnDone.textContent = '설치 완료했어요';
+  btnDone.style.cssText = 'padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;';
+  btnDone.onclick = function() {
+    localStorage.setItem('endfield_app_installed', '1');
+    modal.remove();
+    showToast('설치 완료! 배치 도우미 버튼을 다시 눌러주세요.');
+  };
+  btnContainer.appendChild(btnDone);
+
+  // 다운로드
+  const btnDownload = document.createElement('a');
+  btnDownload.href = DOWNLOAD_URL;
+  btnDownload.target = '_blank';
+  btnDownload.style.cssText = 'padding:7px 18px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px;';
+  btnDownload.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>앱 다운로드';
+  btnDownload.onclick = function() { setTimeout(function() { modal.remove(); }, 500); };
+  btnContainer.appendChild(btnDownload);
 }
+
 
 function exportData() {
   const savedOutpostData = {};
