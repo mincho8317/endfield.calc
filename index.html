@@ -1536,6 +1536,8 @@ function FactoryLayout(){
   const [selBelt,   setSelBelt]  =useState(null);
   const [addOpen,   setAddOpen]  =useState(false);
   const [addFilter, setAddFilter]=useState('');
+  const [addCat,    setAddCat]   =useState(null);
+  const [addEquip,  setAddEquip] =useState(null);
   const [pending,   setPending]  =useState(null);
   const pendingRef  =useRef(null); // 드래그 onDrop 클로저 문제 방지
   const [remaining, setRemaining]=useState({});
@@ -2125,47 +2127,76 @@ function FactoryLayout(){
   );
 
   const recipes=window.RECIPES||[];
-  const filtered=addFilter?recipes.filter(r=>(r.outputs[0]?r.outputs[0].name:'').includes(addFilter)||r.equip.includes(addFilter)):recipes;
-  const byEquip={};
-  filtered.forEach(r=>{if(!byEquip[r.equip])byEquip[r.equip]=[];byEquip[r.equip].push(r);});
+  const equipList=window.EQUIPMENT_LIST||[];
+  const categories=[...new Set(equipList.map(e=>e.category))];
+  const activeCat=addCat||categories[0];
+  const equipsInCat=equipList.filter(e=>e.category===activeCat);
+  const activeEquip=addEquip;
+  const filteredRecipes=activeEquip?recipes.filter(r=>r.equip===activeEquip):[];
+
   const addModal=addOpen&&ce('div',{
     onClick:e=>{if(e.target===e.currentTarget)setAddOpen(false);},
     style:{position:'fixed',inset:0,zIndex:9000,background:'rgba(0,0,0,0.75)',
       display:'flex',alignItems:'center',justifyContent:'center',padding:16}},
     ce('div',{style:{background:'var(--panel)',border:'1px solid var(--border)',
-      borderRadius:6,width:'100%',maxWidth:400,maxHeight:'80vh',
+      borderRadius:6,width:'100%',maxWidth:420,maxHeight:'80vh',
       display:'flex',flexDirection:'column',overflow:'hidden'}},
+      // 헤더
       ce('div',{style:{padding:'12px 16px',borderBottom:'1px solid var(--border)',
         display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}},
-        ce('span',{style:{fontSize:13,fontWeight:700,color:'var(--accent)'}},'🏭 설비 선택'),
+        ce('span',{style:{fontSize:13,fontWeight:700,color:'var(--accent)}},'🏭 설비 선택'),
         ce('button',{onClick:()=>setAddOpen(false),
           style:{background:'none',border:'none',color:'var(--text-muted)',fontSize:18,cursor:'pointer'}},'×')
       ),
-      ce('div',{style:{padding:'8px 12px',borderBottom:'1px solid var(--border)',flexShrink:0}},
-        ce('input',{type:'text',placeholder:'검색...',value:addFilter,
-          onChange:e=>setAddFilter(e.target.value),
-          style:{width:'100%',background:'var(--surface2)',border:'1px solid var(--border)',
-            borderRadius:6,color:'var(--text)',padding:'7px 10px',fontSize:12,
-            outline:'none',boxSizing:'border-box',fontFamily:'Noto Sans KR,sans-serif'}})
+      // 대카테고리 뱃지
+      ce('div',{style:{padding:'8px 12px',borderBottom:'1px solid rgba(255,255,255,0.06)',flexShrink:0,
+        display:'flex',flexWrap:'wrap',gap:5}},
+        categories.map(cat=>ce('button',{key:cat,
+          onClick:()=>{setAddCat(cat);setAddEquip(null);},
+          style:{padding:'3px 12px',fontSize:11,fontWeight:600,cursor:'pointer',
+            borderRadius:20,border:'1px solid '+(cat===activeCat?'var(--accent)':'var(--border)'),
+            background:cat===activeCat?'var(--accent)':'transparent',
+            color:cat===activeCat?'var(--bg)':'var(--text-muted)',
+            transition:'all 0.15s'}},cat))
       ),
+      // 설비명 뱃지
+      ce('div',{style:{padding:'6px 12px',borderBottom:'1px solid rgba(255,255,255,0.06)',flexShrink:0,
+        display:'flex',flexWrap:'wrap',gap:5}},
+        equipsInCat.map(e=>{
+          const hasRecipe=recipes.some(r=>r.equip===e.name);
+          const isActive=e.name===activeEquip;
+          return ce('button',{key:e.id,
+            onClick:()=>hasRecipe&&setAddEquip(e.name),
+            style:{padding:'3px 10px',fontSize:11,cursor:hasRecipe?'pointer':'default',
+              borderRadius:4,border:'1px solid '+(isActive?'var(--teal)':hasRecipe?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.06)'),
+              background:isActive?'rgba(42,184,200,0.15)':'transparent',
+              color:isActive?'var(--teal)':hasRecipe?'var(--text-sub)':'var(--text-muted)',
+              opacity:hasRecipe?1:0.5,transition:'all 0.15s'}},
+            e.name+(hasRecipe?'':' (준비중)'));
+        })
+      ),
+      // 레시피 목록
       ce('div',{style:{overflowY:'auto',flex:1,padding:'6px 8px'}},
-        Object.keys(byEquip).length===0
-        ?ce('div',{style:{padding:24,textAlign:'center',color:'var(--text-muted)',fontSize:12}},'검색 결과 없음')
-        :Object.entries(byEquip).map(([eq,recs])=>ce('div',{key:eq,style:{marginBottom:4}},
-          ce('div',{style:{fontSize:10,color:'var(--text-muted)',fontWeight:700,
-            padding:'3px 6px',background:'rgba(0,0,0,0.2)',borderRadius:4,marginBottom:2}},eq),
-          recs.map(r=>ce('button',{key:r.id,
-            onClick:()=>{
-              setPending({recipeId:r.id,name:r.outputs[0]?r.outputs[0].name:r.label,equip:r.equip});
-              setAddOpen(false);setTool('place');
-            },
-            style:{width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,
-              background:'transparent',border:'none',color:'var(--text)',cursor:'pointer',
-              fontSize:12,marginBottom:1,display:'flex',alignItems:'center',
-              justifyContent:'space-between',fontFamily:'Noto Sans KR,sans-serif'}},
-            ce('span',null,r.outputs[0]?r.outputs[0].name:r.label),
-            ce('span',{style:{fontSize:10,color:'var(--text-muted)'}},'→ '+r.equip)
-          ))
+        !activeEquip
+        ?ce('div',{style:{padding:24,textAlign:'center',color:'var(--text-muted)',fontSize:12}},'설비를 선택해주세요')
+        :filteredRecipes.length===0
+        ?ce('div',{style:{padding:24,textAlign:'center',color:'var(--text-muted)',fontSize:12}},'아직 레시피가 없어요')
+        :filteredRecipes.map(r=>ce('button',{key:r.id,
+          onClick:()=>{
+            setPending({recipeId:r.id,name:r.outputs[0]?r.outputs[0].name:r.label,equip:r.equip});
+            setAddOpen(false);setTool('place');
+          },
+          style:{width:'100%',textAlign:'left',padding:'10px 12px',borderRadius:6,
+            background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',
+            color:'var(--text)',cursor:'pointer',fontSize:12,marginBottom:4,
+            display:'flex',alignItems:'flex-start',flexDirection:'column',gap:4,
+            fontFamily:'Noto Sans KR,sans-serif',transition:'all 0.15s'},
+          onMouseEnter:e=>{e.currentTarget.style.borderColor='var(--accent)';e.currentTarget.style.background='rgba(240,200,22,0.07)';},
+          onMouseLeave:e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.background='rgba(255,255,255,0.04)';}},
+          ce('div',{style:{fontSize:12,color:'var(--success)',fontWeight:700}},
+            '+ '+(r.outputs[0]?r.outputs[0].name:r.label)),
+          r.inputs.length>0&&ce('div',{style:{fontSize:11,color:'var(--text-muted)'}},
+            '− '+r.inputs.map(i=>i.name+' ×'+i.qty).join('  − '))
         ))
       )
     )
@@ -2773,49 +2804,124 @@ function openEquipModal(gid, existingRecipeId = null) {
   document.getElementById('modal-equip-title').textContent =
     existingRecipeId !== null ? '레시피 변경' : '설비 추가';
 
-  const equipTypes = [...new Set(RECIPES.map(r => r.equip))];
-  modalSelectedEquip = existingRecipeId !== null
-    ? RECIPES.find(r => r.id === existingRecipeId)?.equip || equipTypes[0]
-    : equipTypes[0];
-
-  renderEquipModalTabs(g, equipTypes);
-  renderEquipModalRecipes(g);
+  renderEquipModal(g);
   document.getElementById('modal-equip').style.display = 'block';
 }
 
-function renderEquipModalTabs(g, equipTypes) {
-  const tabsEl = document.getElementById('modal-equip-tabs');
-  tabsEl.innerHTML = equipTypes.map(eq => {
-    const isActive = eq === modalSelectedEquip;
-    return `<button onclick="selectEquipTab('${eq}')"
-      style="padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;
-        border-radius:4px;border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'};
-        background:${isActive ? 'var(--accent)' : 'transparent'};
-        color:${isActive ? 'var(--bg)' : 'var(--text-muted)'};
-        font-family:'Noto Sans KR',sans-serif;
-        transition:all 0.15s;"
-      id="equip-tab-${eq.replace(/\s/g,'_')}">${eq}</button>`;
-  }).join('');
+// 모달 선택 상태
+let modalSelectedCategory = null;
+let modalSelectedEquipName = null;
+
+function openEquipModal(gid, existingRecipeId = null) {
+  pendingGroupId = gid;
+  pendingChangeRecipeId = existingRecipeId;
+
+  const g = od().groups.find(g => g.id === gid);
+  if (!g) return;
+
+  document.getElementById('modal-equip-title').textContent =
+    existingRecipeId !== null ? '레시피 변경' : '설비 추가';
+
+  // 기존 선택 설비의 카테고리/설비명으로 초기화
+  if (existingRecipeId !== null) {
+    const r = RECIPES.find(r => r.id === existingRecipeId);
+    modalSelectedCategory = r?.category || null;
+    modalSelectedEquipName = r?.equip || null;
+  } else {
+    const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
+    modalSelectedCategory = categories[0];
+    modalSelectedEquipName = null;
+  }
+
+  renderEquipModal(g);
+  document.getElementById('modal-equip').style.display = 'block';
 }
 
-function selectEquipTab(equip) {
-  modalSelectedEquip = equip;
+function renderEquipModal(g) {
+  renderEquipModalTabs(g);
+}
+
+function renderEquipModalTabs(g) {
+  const tabsEl = document.getElementById('modal-equip-tabs');
+  const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
+
+  // 대카테고리 뱃지
+  const catHtml = categories.map(cat => {
+    const isActive = cat === modalSelectedCategory;
+    return `<button onclick="selectCategory('${cat}')"
+      style="padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;
+        border-radius:20px;border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'};
+        background:${isActive ? 'var(--accent)' : 'transparent'};
+        color:${isActive ? 'var(--bg)' : 'var(--text-muted)'};
+        transition:all 0.15s;">${cat}</button>`;
+  }).join('');
+
+  // 설비명 뱃지 (선택된 카테고리)
+  const equipsInCat = EQUIPMENT_LIST.filter(e => e.category === modalSelectedCategory);
+  const equipHtml = equipsInCat.map(e => {
+    const hasRecipe = RECIPES.some(r => r.equip === e.name);
+    const isActive = e.name === modalSelectedEquipName;
+    return `<button onclick="selectEquipName('${e.name}')"
+      style="padding:3px 10px;font-size:11px;cursor:pointer;
+        border-radius:4px;border:1px solid ${isActive ? 'var(--teal)' : hasRecipe ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'};
+        background:${isActive ? 'rgba(42,184,200,0.15)' : 'transparent'};
+        color:${isActive ? 'var(--teal)' : hasRecipe ? 'var(--text-sub)' : 'var(--text-muted)'};
+        opacity:${hasRecipe ? '1' : '0.5'};
+        transition:all 0.15s;">${e.name}${hasRecipe ? '' : ' (준비중)'}</button>`;
+  }).join('');
+
+  tabsEl.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">${catHtml}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">${equipHtml}</div>`;
+
+  renderEquipModalRecipes(g);
+}
+
+function selectCategory(cat) {
+  modalSelectedCategory = cat;
+  modalSelectedEquipName = null;
   const g = od().groups.find(g => g.id === pendingGroupId);
-  const equipTypes = [...new Set(RECIPES.map(r => r.equip))];
   if (presetEditMode) {
-    renderEquipModalTabs({ equips: editingPresetEquips }, equipTypes);
-    renderEquipModalRecipesForPreset();
+    renderEquipModalTabs({ equips: editingPresetEquips });
   } else {
     if (!g) return;
-    renderEquipModalTabs(g, equipTypes);
-    renderEquipModalRecipes(g);
+    renderEquipModalTabs(g);
   }
 }
 
+function selectEquipName(name) {
+  modalSelectedEquipName = name;
+  // 구 코드 호환
+  modalSelectedEquip = name;
+  const g = od().groups.find(g => g.id === pendingGroupId);
+  if (presetEditMode) {
+    renderEquipModalTabs({ equips: editingPresetEquips });
+    renderEquipModalRecipesForPreset();
+  } else {
+    if (!g) return;
+    renderEquipModalTabs(g);
+  }
+}
+
+// 구 코드 호환용
+function selectEquipTab(equip) { selectEquipName(equip); }
+
 function renderEquipModalRecipes(g) {
   const usedIds = new Set(g.equips.map(e => e.recipeId));
-  const recipes = RECIPES.filter(r => r.equip === modalSelectedEquip);
   const listEl  = document.getElementById('modal-equip-list');
+
+  // 설비 미선택 상태
+  if (!modalSelectedEquipName) {
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">설비를 선택해주세요</div>`;
+    return;
+  }
+
+  const recipes = RECIPES.filter(r => r.equip === modalSelectedEquipName);
+
+  if (recipes.length === 0) {
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">아직 레시피가 없어요<br><span style="font-size:10px;opacity:0.6;">추후 업데이트 예정</span></div>`;
+    return;
+  }
 
   listEl.innerHTML = recipes.map(r => {
     const isDup     = usedIds.has(r.id) && r.id !== pendingChangeRecipeId;
@@ -3150,10 +3256,11 @@ function openEquipModalForPreset() {
   presetEditChangeIdx = null;
   pendingGroupId = '__preset__';
   pendingChangeRecipeId = null;
-  const equipTypes = [...new Set(RECIPES.map(r => r.equip))];
-  modalSelectedEquip = equipTypes[0];
+  const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
+  modalSelectedCategory = categories[0];
+  modalSelectedEquipName = null;
   document.getElementById('modal-equip-title').textContent = '설비 추가 (프리셋)';
-  renderEquipModalTabs({ equips: editingPresetEquips }, equipTypes);
+  renderEquipModalTabs({ equips: editingPresetEquips });
   renderEquipModalRecipesForPreset();
   document.getElementById('modal-equip').style.display = 'block';
 }
@@ -3164,18 +3271,36 @@ function openEquipModalForPresetChange(idx) {
   pendingGroupId = '__preset__';
   const cur = editingPresetEquips[idx];
   pendingChangeRecipeId = cur ? cur.recipeId : null;
-  const equipTypes = [...new Set(RECIPES.map(r => r.equip))];
-  modalSelectedEquip = cur ? (RECIPES.find(r => r.id === cur.recipeId)?.equip || equipTypes[0]) : equipTypes[0];
+  if (cur) {
+    const r = RECIPES.find(r => r.id === cur.recipeId);
+    modalSelectedCategory = r?.category || null;
+    modalSelectedEquipName = r?.equip || null;
+  } else {
+    const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
+    modalSelectedCategory = categories[0];
+    modalSelectedEquipName = null;
+  }
   document.getElementById('modal-equip-title').textContent = '레시피 변경 (프리셋)';
-  renderEquipModalTabs({ equips: editingPresetEquips }, equipTypes);
+  renderEquipModalTabs({ equips: editingPresetEquips });
   renderEquipModalRecipesForPreset();
   document.getElementById('modal-equip').style.display = 'block';
 }
 
 function renderEquipModalRecipesForPreset() {
   const usedIds = new Set(editingPresetEquips.map(e => e.recipeId));
-  const recipes = RECIPES.filter(r => r.equip === modalSelectedEquip);
   const listEl = document.getElementById('modal-equip-list');
+
+  if (!modalSelectedEquipName) {
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">설비를 선택해주세요</div>`;
+    return;
+  }
+
+  const recipes = RECIPES.filter(r => r.equip === modalSelectedEquipName);
+
+  if (recipes.length === 0) {
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">아직 레시피가 없어요<br><span style="font-size:10px;opacity:0.6;">추후 업데이트 예정</span></div>`;
+    return;
+  }
 
   listEl.innerHTML = recipes.map(r => {
     const isDup     = usedIds.has(r.id) && r.id !== pendingChangeRecipeId;
