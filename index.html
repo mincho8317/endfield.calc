@@ -2384,6 +2384,7 @@ if ('visualViewport' in window) {
   </div>
 </div>
 
+<script src="data/recipes.js"></script>
 <script src="data/outposts.js"></script>
 <script src="data/base_data.js"></script>
 <script src="data/operators.js"></script>
@@ -2392,49 +2393,7 @@ if ('visualViewport' in window) {
 
 <script>
 // ========== DATA ==========
-const RECIPES = [
-  { id:0, equip:'천화로', label:'중식양 제조', inputs:[{name:'식양',qty:10},{name:'양정폐액',qty:5}], outputs:[{name:'중식양',qty:1}], speed:10 },
-  { id:1, equip:'천화로', label:'식양 제조 (카본)', inputs:[{name:'카본',qty:2},{name:'청정수',qty:1}], outputs:[{name:'식양',qty:1}], speed:2 },
-  { id:2, equip:'반응기', label:'액화식양 제조', inputs:[{name:'식양',qty:1},{name:'청정수',qty:1}], outputs:[{name:'액화식양',qty:1}], speed:2 },
-  { id:3, equip:'반응기', label:'양정폐액+불양정폐액', inputs:[{name:'액화식양',qty:1},{name:'오염수',qty:1}], outputs:[{name:'양정폐액',qty:1},{name:'불양정폐액',qty:1}], speed:2 },
-  { id:4, equip:'반응기', label:'양정 제조', inputs:[{name:'양정폐액',qty:2},{name:'페리움 광석',qty:1}], outputs:[{name:'양정',qty:1},{name:'오염수',qty:1}], speed:2 },
-  { id:5, equip:'반응기', label:'적동용액 제조', inputs:[{name:'적동',qty:1},{name:'산성침적물',qty:1}], outputs:[{name:'적동용액',qty:1}], speed:2 },
-  { id:6, equip:'반응기', label:'혁동 제조', inputs:[{name:'혁동용액',qty:2},{name:'페리움 광석',qty:1}], outputs:[{name:'혁동',qty:1},{name:'오염수',qty:1}], speed:2 },
-  { id:7, equip:'연마기', label:'고운오리지늄 제조', inputs:[{name:'오리지늄 광석',qty:2}], outputs:[{name:'고운오리지늄',qty:1}], speed:2 },
-  { id:8, equip:'포장기', label:'중용량 배터리', inputs:[{name:'양정',qty:5},{name:'고운오리지늄',qty:20}], outputs:[{name:'중용량 배터리',qty:1}], speed:10 },
-  { id:9, equip:'포장기', label:'고금청', inputs:[{name:'적동',qty:20}], outputs:[{name:'고금청',qty:1}], speed:10 },
-  { id:10, equip:'정련로', label:'적동 정련', inputs:[{name:'적동 광석',qty:1},{name:'청정수',qty:1}], outputs:[{name:'적동',qty:1},{name:'오염수',qty:1}], speed:2 },
-  { id:11, equip:'정제기', label:'혁동용액+산성침적물', inputs:[{name:'적동용액',qty:4}], outputs:[{name:'혁동용액',qty:1},{name:'산성침적물',qty:1}], speed:2 },
-  { id:12, equip:'정제기', label:'양정폐액+청정수', inputs:[{name:'불양정폐액',qty:4}], outputs:[{name:'양정폐액',qty:1},{name:'청정수',qty:1}], speed:2 },
-  { id:13, equip:'채굴기', label:'오리지늄 채굴', inputs:[], outputs:[{name:'오리지늄 광석',qty:1}], speed:1, mineRate:480 },
-  { id:14, equip:'채굴기', label:'페리움 광석 채굴', inputs:[], outputs:[{name:'페리움 광석',qty:1}], speed:1, mineRate:90 },
-  { id:15, equip:'채굴기', label:'적동 광석 채굴', inputs:[], outputs:[{name:'적동 광석',qty:1}], speed:1, mineRate:180 },
-  { id:16, equip:'부품가공기', label:'혁동부품 가공', inputs:[{name:'혁동',qty:5}], outputs:[{name:'혁동부품',qty:1}], speed:10 },
-  { id:17, equip:'성형기', label:'중식양병 성형', inputs:[{name:'중식양',qty:1}], outputs:[{name:'중식양병',qty:2}], speed:20 },
-  { id:18, equip:'부품가공기', label:'중식양부품 가공', inputs:[{name:'중식양',qty:1}], outputs:[{name:'중식양부품',qty:2}], speed:20 },
-  { id:19, equip:'포장기', label:'옥동발산기', inputs:[{name:'중식양부품',qty:1},{name:'혁동',qty:1}], outputs:[{name:'옥동발산기',qty:1}], speed:10 },
-  { id:20, equip:'포장기', label:'식양옥호리병', inputs:[{name:'중식양병',qty:1},{name:'옥동발산기',qty:1}], outputs:[{name:'식양옥호리병',qty:1}], speed:10 },
-  { id:21, equip:'포장기', label:'식양호리병', inputs:[{name:'식양',qty:15}], outputs:[{name:'식양호리병',qty:1}], speed:10 },
-];
-// 공장 배치 탭에서 참조 가능하도록 전역 노출
-window.RECIPES = RECIPES;
 
-// 자원 직접입력 (분당 총 생산량)
-const RESOURCE_ITEMS = [
-  { key:'오리지늄 광석', label:'오리지늄 광석' },
-  { key:'자수정 광석',   label:'자수정 광석' },
-  { key:'페리움 광석',   label:'페리움 광석' },
-  { key:'적동 광석',     label:'적동 광석' },
-  { key:'청정수',        label:'청정수' },
-  { key:'산성침적물',    label:'산성침적물' },
-];
-
-// 관리권 교환 가치 (개당)
-const AUTH_VALUE = {
-  '중용량 배터리': 54, '고야주': 22, '혁동부품': 48,
-  '중식양': 27, '고금청': 22, '식양': 1,
-  '적동부품': 1, '야주': 16, '식양호리병': 40, '식양옥호리병': 120
-};
 
 // ========== 거점 정의 (배포자가 추가) ==========
 // 현재 활성 거점
