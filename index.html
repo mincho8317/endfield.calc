@@ -782,7 +782,31 @@ select option { background: var(--bg-popup); color: var(--text); }
 .ws-mult-input:focus,
 .ws-count-input:focus { border-color: var(--accent); }
 
-/* ── 설비 행 레이아웃 ── */
+/* ── 피드백 버튼 ── */
+.feedback-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--accent);
+  color: #1a1200;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(240,200,22,0.3);
+  transition: all 0.15s;
+}
+.feedback-btn:hover {
+  background: #f8d820;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240,200,22,0.4);
+}
 .ws-equip-row {
   display: flex;
   align-items: center;
@@ -1308,6 +1332,14 @@ select option { background: var(--bg-popup); color: var(--text); }
 
   </div>
 </main>
+
+<!-- 피드백 버튼 -->
+<button class="feedback-btn" onclick="openFeedbackModal()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  피드백
+</button>
 
 <!-- 공장 배치 React 앱 -->
 <script>
@@ -2825,39 +2857,6 @@ function showAddEquipModal(g, recipeId) {
   const modal = document.createElement('div');
   modal.id = 'modal-auto-add';
   modal.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;width:340px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:700;color:var(--accent);">설비 추가</span>
-        <button onclick="document.getElementById('modal-auto-add').remove()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
-      </div>
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
-        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;">
-          ${recipe.outputs[0].name}
-          <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${recipe.equip}</span>
-          ${existing ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">현재 ${existing.count}개 → 합산됨</span>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:11px;color:var(--text-label);">추가 수량</span>
-          <input id="add-equip-count" type="number" min="1" value="1"
-            style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:14px;text-align:center;outline:none;"
-            oninput="updateSubPreview(${recipeId})">
-          <span style="font-size:11px;color:var(--text-label);">개</span>
-        </div>
-      </div>
-      ${hasSubs ? `
-      <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.06);">
-        하위 설비 (입력 수량 기준 자동 계산)
-      </div>
-      <div style="overflow-y:auto;max-height:200px;padding:6px 16px;" id="sub-preview">${subRows}</div>
-      ` : ''}
-      <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">
-        ${hasSubs
-          ? `<button class="btn" onclick="doAddEquip(${g.id},${recipeId},false)">이것만 추가</button>
-             <button class="btn btn-primary" onclick="doAddEquip(${g.id},${recipeId},true)">하위 설비 포함 추가</button>`
-          : `<button class="btn btn-primary" onclick="doAddEquip(${g.id},${recipeId},false)">추가</button>`}
-      </div>
-    </div>`;
   document.body.appendChild(modal);
   document.getElementById('add-equip-count')?.focus();
 }
@@ -3914,7 +3913,12 @@ function switchTab(tab) {
   document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
-  event.target.classList.add('active');
+  // event.target 대신 탭 버튼을 직접 찾아서 active 추가
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${tab}'`)) {
+      t.classList.add('active');
+    }
+  });
   if (tab === 'overview') renderOverviewTab();
   if (tab === 'layout') {
     setTimeout(function() {
@@ -5521,97 +5525,193 @@ function markSaved() {
 
 // ========== 내보내기 ==========
 function openOverlayHelper() {
-  // Tauri 앱 안에서 실행 중인지 확인
-  const isTauriApp = window.__TAURI__ !== undefined;
-
-  if (isTauriApp) {
-    // 앱 내부 → Tauri invoke로 직접 오버레이 열기
+  if (window.__TAURI__) {
     const data = btoa(encodeURIComponent(JSON.stringify(od())));
     window.__TAURI__.invoke('open_overlay', { data });
     return;
   }
-
-  // 브라우저에서 실행 중
-  const hasApp = localStorage.getItem('endfield_app_installed');
-  if (hasApp) {
-    // Custom URL Scheme으로 앱 실행
-    const data = btoa(encodeURIComponent(JSON.stringify(od())));
-    window.location.href = `endfield://overlay?data=${data}`;
-  } else {
-    showOverlayModal();
-  }
+  // URL Scheme 시도 → 2초 후 앱 없으면 다운로드 안내
+  const data = btoa(encodeURIComponent(JSON.stringify(od())));
+  window.location.href = 'endfield://overlay?data=' + data;
+  setTimeout(function() {
+    if (document.visibilityState === 'visible') {
+      showOverlayModal();
+    }
+  }, 2000);
 }
 
 function showOverlayModal() {
-  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/download/v1.0.0/Endfield.Factory.Calc_1.0.0_x64-setup.exe';
+  const DOWNLOAD_URL = 'https://github.com/mincho8317/endfield.calc/releases/latest/download/Endfield-Factory-Calc-setup.exe';
   const modal = document.createElement('div');
-  modal.style.cssText = `
-    position:fixed;inset:0;background:rgba(0,0,0,0.75);
-    z-index:9999;display:flex;align-items:center;justify-content:center;
-  `;
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
 
-  modal.innerHTML = `
-    <div style="
-      background:var(--panel3);border:1px solid rgba(255,255,255,0.1);
-      border-top:2px solid var(--accent);border-radius:8px;
-      padding:28px 28px 24px;max-width:420px;width:90%;
-      box-shadow:0 12px 40px rgba(0,0,0,0.7);
-    ">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-          <path d="M9 10l2 2 4-4" stroke-width="2.5"/>
-        </svg>
-        <span style="font-size:15px;font-weight:700;color:var(--text);">배치 도우미 앱</span>
-      </div>
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--panel3);border:1px solid rgba(255,255,255,0.1);border-top:2px solid var(--accent);border-radius:8px;padding:28px 28px 24px;max-width:420px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.7);';
 
-      <p style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:8px;">
-        배치 도우미 앱을 설치하면 게임 화면 위에<br>
-        <b style="color:var(--text);">반투명 오버레이</b>로 설비 위치를 표시해드려요.
-      </p>
+  box.innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M9 10l2 2 4-4" stroke-width="2.5"/></svg>' +
+      '<span style="font-size:15px;font-weight:700;color:var(--text);">배치 도우미 앱</span>' +
+    '</div>' +
+    '<p style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:8px;">배치 도우미 앱을 설치하면 게임 화면 위에<br><b style="color:var(--text);">반투명 오버레이</b>로 설비 위치를 표시해드려요.</p>' +
+    '<div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:16px;">' +
+      '<div style="font-size:11px;color:var(--text-sub);line-height:1.9;">✓ &nbsp;게임 화면 위 반투명 격자 오버레이<br>✓ &nbsp;설비 위치 / 방향 실시간 표시<br>✓ &nbsp;캘리브레이션으로 해상도 자동 보정<br>✓ &nbsp;마우스 이동/줌 추적</div>' +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 14px;margin-bottom:20px;">' +
+      '<div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">설치 방법</div>' +
+      '<div style="font-size:11px;color:var(--text-sub);line-height:1.8;">1. 아래 버튼으로 .exe 다운로드<br>2. 실행 → 보안 경고 시 "추가 정보" → "실행"<br>3. 설치 완료 후 "설치 완료했어요" 버튼 클릭</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;" id="overlay-modal-btns"></div>';
 
-      <div style="background:rgba(240,200,22,0.06);border:1px solid rgba(240,200,22,0.15);border-radius:6px;padding:12px 14px;margin-bottom:16px;">
-        <div style="font-size:11px;color:var(--text-sub);line-height:1.9;">
-          ✓ &nbsp;게임 화면 위 반투명 격자 오버레이<br>
-          ✓ &nbsp;설비 위치 / 방향 실시간 표시<br>
-          ✓ &nbsp;캘리브레이션으로 해상도 자동 보정<br>
-          ✓ &nbsp;마우스 이동/줌 추적
-        </div>
-      </div>
-
-      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 14px;margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">설치 방법</div>
-        <div style="font-size:11px;color:var(--text-sub);line-height:1.8;">
-          1. 아래 버튼으로 .exe 다운로드<br>
-          2. 실행 → 보안 경고 시 "추가 정보" → "실행"<br>
-          3. 설치 완료 후 사이트에서 버튼 클릭하면 자동 실행
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="this.closest('div[style*=fixed]').remove()"
-          style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);
-          background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">
-          닫기
-        </button>
-        <a href="${DOWNLOAD_URL}" target="_blank"
-          onclick="localStorage.setItem('endfield_app_installed','1');setTimeout(()=>this.closest('div[style*=fixed]')?.remove(),500);"
-          style="padding:7px 18px;border-radius:6px;border:1px solid var(--accent);
-          background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;
-          text-decoration:none;display:flex;align-items:center;gap:5px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          앱 다운로드 (v1.0.0)
-        </a>
-      </div>
-    </div>
-  `;
-
+  modal.appendChild(box);
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  // 버튼들 따로 생성 (템플릿 리터럴 중첩 방지)
+  const btnContainer = box.querySelector('#overlay-modal-btns');
+
+  // 닫기
+  const btnClose = document.createElement('button');
+  btnClose.textContent = '닫기';
+  btnClose.style.cssText = 'padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;';
+  btnClose.onclick = function() { modal.remove(); };
+  btnContainer.appendChild(btnClose);
+
+  // 다운로드
+  const btnDownload = document.createElement('a');
+  btnDownload.href = DOWNLOAD_URL;
+  btnDownload.target = '_blank';
+  btnDownload.style.cssText = 'padding:7px 18px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px;';
+  btnDownload.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>앱 다운로드';
+  btnDownload.onclick = function() { setTimeout(function() { modal.remove(); }, 500); };
+  btnContainer.appendChild(btnDownload);
+}
+
+
+// ── 피드백 ──────────────────────────────────────────
+const FEEDBACK_WEBHOOK = 'https://discord.com/api/webhooks/1511927326487744562/_abO9uTtb_AXNwMTeO-smxdpKtXHJgUyKlowOdhanVQ99nIF-fBh5iERMX082P4QONRN';
+const FEEDBACK_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyZTAPoO07X_wMDC5YO157LjViyqDvjuU6l6FE-1BgqWaRyzvSCmKHGzE5om7HxrlY5/exec';
+
+function openFeedbackModal() {
+  if (document.getElementById('feedback-modal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'feedback-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--panel3);border:1px solid rgba(255,255,255,0.1);border-top:2px solid var(--accent);border-radius:8px;padding:24px;width:90%;max-width:460px;box-shadow:0 12px 40px rgba(0,0,0,0.7);';
+
+  box.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+        '<span style="font-size:14px;font-weight:700;color:var(--text);">피드백 보내기</span>' +
+      '</div>' +
+      '<button id="feedback-close" style="background:transparent;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;">✕</button>' +
+    '</div>' +
+    '<div style="margin-bottom:12px;">' +
+      '<div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">유형</div>' +
+      '<div style="display:flex;gap:6px;" id="feedback-type-btns">' +
+        '<button data-type="버그" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">🐛 버그</button>' +
+        '<button data-type="개선" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">💡 개선</button>' +
+        '<button data-type="데이터" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">📊 데이터</button>' +
+        '<button data-type="기타" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">💬 기타</button>' +
+      '</div>' +
+    '</div>' +
+    '<div style="margin-bottom:12px;">' +
+      '<div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">닉네임 <span style="color:var(--text-muted);font-weight:400;">(선택 · 피드백 반영 시 업데이트 노트에 표시됩니다)</span></div>' +
+      '<input id="feedback-nickname" type="text" placeholder="이름 없는 사용자" maxlength="20" ' +
+        'style="width:100%;background:var(--bg-input);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:var(--text);font-size:12px;padding:8px 10px;font-family:inherit;">' +
+    '</div>' +
+    '<div style="margin-bottom:16px;">' +
+      '<div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">내용 <span style="color:var(--danger);">*</span></div>' +
+      '<textarea id="feedback-text" placeholder="불편한 점, 개선 아이디어, 데이터 오류 등 자유롭게 작성해주세요." ' +
+        'style="width:100%;height:120px;background:var(--bg-input);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:var(--text);font-size:12px;padding:10px;resize:vertical;line-height:1.6;font-family:inherit;"></textarea>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+      '<button id="feedback-cancel" style="padding:7px 18px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">취소</button>' +
+      '<button id="feedback-submit" style="padding:7px 18px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;">전송</button>' +
+    '</div>';
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  // 유형 선택
+  let selectedType = '기타';
+  box.querySelectorAll('[data-type]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      box.querySelectorAll('[data-type]').forEach(b => {
+        b.style.background = 'transparent';
+        b.style.borderColor = 'rgba(255,255,255,0.1)';
+        b.style.color = 'var(--text-sub)';
+      });
+      this.style.background = 'rgba(240,200,22,0.15)';
+      this.style.borderColor = 'rgba(240,200,22,0.4)';
+      this.style.color = '#f0c816';
+      selectedType = this.dataset.type;
+    });
+  });
+
+  // 닫기
+  box.querySelector('#feedback-close').onclick = function() { modal.remove(); };
+  box.querySelector('#feedback-cancel').onclick = function() { modal.remove(); };
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  // 전송
+  box.querySelector('#feedback-submit').onclick = async function() {
+    const text = document.getElementById('feedback-text').value.trim();
+    const nickname = (document.getElementById('feedback-nickname').value.trim()) || '이름 없는 사용자';
+    if (!text) { showToast('내용을 입력해주세요.', 'error'); return; }
+
+    const btn = this;
+    btn.textContent = '전송 중...';
+    btn.disabled = true;
+
+    try {
+      const now = new Date().toLocaleString('ko-KR');
+
+      // Discord + Google Sheets 동시 전송
+      const [discordRes] = await Promise.all([
+        fetch(FEEDBACK_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            embeds: [{
+              title: '📬 새 피드백 — ' + selectedType,
+              description: text,
+              color: selectedType === '버그' ? 0xd04040 :
+                     selectedType === '개선' ? 0x48a870 :
+                     selectedType === '데이터' ? 0x3ab8c8 : 0xf0c816,
+              fields: [{ name: '닉네임', value: nickname, inline: true }],
+              footer: { text: 'Endfield Factory Calc • ' + now }
+            }]
+          })
+        }),
+        fetch(FEEDBACK_SHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: now,
+            type: selectedType,
+            nickname: nickname,
+            content: text
+          })
+        })
+      ]);
+
+      if (discordRes.ok) {
+        modal.remove();
+        showToast('피드백이 전송됐어요! 감사합니다 😊');
+      } else {
+        throw new Error('전송 실패');
+      }
+    } catch(e) {
+      btn.textContent = '전송';
+      btn.disabled = false;
+      showToast('전송에 실패했어요. 다시 시도해주세요.', 'error');
+    }
+  };
 }
 
 function exportData() {
