@@ -775,7 +775,8 @@ select option { background: var(--bg-popup); color: var(--text); }
   max-width: 160px;
 }
 @media (max-width: 480px) {
-  .ws-group-name { max-width: 120px; font-size: 11px; }
+  .ws-group-name { max-width: 100px; font-size: 11px; }
+  .ws-equip-row .ws-count-input { width: 38px !important; max-width: 38px !important; font-size: 11px; }
 }
 .ws-group-name:focus { border-color: var(--accent); }
 
@@ -804,6 +805,24 @@ select option { background: var(--bg-popup); color: var(--text); }
 
   /* 기질 파밍 3열 드롭다운 세로 배치 */
   .essence-selects { grid-template-columns: 1fr !important; }
+
+  /* 관리권 구역 카드 세로 배치 */
+  .zone-card-inner { flex-direction: column !important; }
+  .zone-card-right {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,0.09) !important;
+    padding-left: 0 !important;
+    padding-top: 10px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* 기본 생산량, 배치 오퍼레이터 드롭박스 overflow 방지 */
+  .eff-input { width: 70px !important; }
+  #cs-op-wrap { max-width: 100% !important; }
+  [id^="cs-op-"] { max-width: 100% !important; width: 100% !important; }
 
   /* 오퍼레이터 패널 레이아웃 */
   .op-detail-panel { flex-direction: column !important; }
@@ -2123,7 +2142,7 @@ function FactoryLayout(){
           style:{background:'none',border:'none',color:'var(--text-muted)',fontSize:18,cursor:'pointer'}},'×')
       ),
       ce('div',{style:{padding:'8px 12px',borderBottom:'1px solid var(--border)',flexShrink:0}},
-        ce('input',{type:'text',placeholder:'검색...',value:addFilter,autoFocus:true,
+        ce('input',{type:'text',placeholder:'검색...',value:addFilter,
           onChange:e=>setAddFilter(e.target.value),
           style:{width:'100%',background:'var(--surface2)',border:'1px solid var(--border)',
             borderRadius:6,color:'var(--text)',padding:'7px 10px',fontSize:12,
@@ -5647,7 +5666,7 @@ function openFeedbackModal() {
     '</div>' +
     '<div style="margin-bottom:12px;">' +
       '<div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">유형</div>' +
-      '<div style="display:flex;gap:6px;" id="feedback-type-btns">' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;" id="feedback-type-btns">' +
         '<button data-type="버그" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">🐛 버그</button>' +
         '<button data-type="개선" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">💡 개선</button>' +
         '<button data-type="데이터" style="padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-sub);font-size:11px;cursor:pointer;">📊 데이터</button>' +
