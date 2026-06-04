@@ -1527,7 +1527,8 @@ function getBeltGroup(sk,bm){
 }
 
 function FactoryLayout(){
-  const [activeOid, setActiveOid]=useState(window.activeOutpostId||OUTPOSTS[0].id);
+  const firstZoneId = Object.entries(window.BASE_DATA||{})[0]?.[0]+'__'+(Object.values(window.BASE_DATA||{})[0]?.[0]?.name||'');
+  const [activeOid, setActiveOid]=useState(firstZoneId);
   const [equips,    setEquips]   =useState(()=>{
     try { const d=JSON.parse(localStorage.getItem('endfield_layout_'+( window.activeOutpostId||OUTPOSTS[0].id))||'[]'); return d; } catch(e){return [];} });
   const [bmap,      setBmap]     =useState(()=>{
@@ -1698,12 +1699,12 @@ function FactoryLayout(){
   function c2cell(cx,cy,applyOffset){
     const svg=svgRef.current;if(!svg)return null;
     const r=svg.getBoundingClientRect();
-    // SVG는 W×H 고정, scale은 부모 transform으로 처리
-    // getBoundingClientRect는 scale 적용된 실제 화면 크기를 반환
     const gx=Math.floor((cx-r.left)/r.width*GRID_W);
     const gy=Math.floor((cy-r.top)/r.height*GRID_H);
+    // 중앙 상단: X는 설비 절반 왼쪽, Y는 OFFSET_CELLS 위
+    const fx=applyOffset?Math.max(0,gx-Math.floor(EQUIP_SIZE/2)):gx;
     const fy=applyOffset?Math.max(0,gy-OFFSET_CELLS):gy;
-    return inBounds(gx,fy)?{x:gx,y:fy}:null;
+    return inBounds(fx,fy)?{x:fx,y:fy}:null;
   }
 
   function placeBelt(x,y){
@@ -1726,8 +1727,8 @@ function FactoryLayout(){
       ?c2cell(pt.clientX,pt.clientY,true)
       :rawCell;
 
-    // 터치: 설비 위 롱프레스 (place 모드일 땐 스킵)
-    if(isTouch&&rawCell&&tool!=='place'){
+    // 터치: 설비 위 롱프레스 (pending 없을 때만)
+    if(isTouch&&rawCell&&!(tool==='place'&&pendingRef.current)){
       const eq=equips.find(q=>rawCell.x>=q.x&&rawCell.x<q.x+EQUIP_SIZE&&rawCell.y>=q.y&&rawCell.y<q.y+EQUIP_SIZE);
       if(eq){
         setShowPreview(false);
@@ -2230,17 +2231,19 @@ function FactoryLayout(){
   const sidebar=ce('div',{style:{width:168,flexShrink:0,background:'var(--panel)',
     borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',
     overflowY:'auto',height:'100%'}},
-    // 거점 뱃지
+    // 거점 뱃지 (BASE_DATA 기반)
     ce('div',{style:{padding:'8px 10px 4px',borderBottom:'1px solid var(--border)'}},
       ce('div',{style:{fontSize:10,color:'var(--text-muted)',letterSpacing:'0.08em',fontWeight:700,marginBottom:5}},'거점'),
       ce('div',{style:{display:'flex',flexWrap:'wrap',gap:4}},
-        OUTPOSTS.map(o=>ce('button',{key:o.id,
-          onClick:()=>switchLayoutOutpost(o.id),
-          style:{padding:'3px 8px',fontSize:11,cursor:'pointer',
-            borderRadius:20,border:'1px solid '+(o.id===activeOid?'var(--accent)':'var(--border)'),
-            background:o.id===activeOid?'var(--accent)':'transparent',
-            color:o.id===activeOid?'var(--bg)':'var(--text-muted)',
-            transition:'all 0.15s'}},o.name))
+        Object.entries(window.BASE_DATA||{}).flatMap(([oId,zones])=>
+          zones.map(z=>ce('button',{key:oId+'_'+z.name,
+            onClick:()=>switchLayoutOutpost(oId+'__'+z.name),
+            style:{padding:'3px 8px',fontSize:11,cursor:'pointer',
+              borderRadius:20,border:'1px solid '+((oId+'__'+z.name)===activeOid?'var(--accent)':'var(--border)'),
+              background:(oId+'__'+z.name)===activeOid?'var(--accent)':'transparent',
+              color:(oId+'__'+z.name)===activeOid?'var(--bg)':'var(--text-muted)',
+              transition:'all 0.15s'}},z.name))
+        )
       )
     ),
     ce('div',{style:{padding:'8px 10px 2px',fontSize:10,color:'var(--text-muted)',
@@ -2294,15 +2297,17 @@ function FactoryLayout(){
 
   const mobileBar=ce('div',{style:{background:'var(--panel)',
     borderBottom:'1px solid var(--border)',flexShrink:0}},
-    // 거점 뱃지 (모바일)
+    // 거점 뱃지 (모바일, BASE_DATA 기반)
     ce('div',{style:{display:'flex',gap:4,padding:'6px 8px 4px',borderBottom:'1px solid rgba(255,255,255,0.06)',overflowX:'auto',WebkitOverflowScrolling:'touch'}},
-      OUTPOSTS.map(o=>ce('button',{key:o.id,
-        onClick:()=>switchLayoutOutpost(o.id),
-        style:{padding:'3px 10px',fontSize:11,cursor:'pointer',flexShrink:0,
-          borderRadius:20,border:'1px solid '+(o.id===activeOid?'var(--accent)':'var(--border)'),
-          background:o.id===activeOid?'var(--accent)':'transparent',
-          color:o.id===activeOid?'var(--bg)':'var(--text-muted)',
-          transition:'all 0.15s'}},o.name))
+      Object.entries(window.BASE_DATA||{}).flatMap(([oId,zones])=>
+        zones.map(z=>ce('button',{key:oId+'_'+z.name,
+          onClick:()=>switchLayoutOutpost(oId+'__'+z.name),
+          style:{padding:'3px 10px',fontSize:11,cursor:'pointer',flexShrink:0,
+            borderRadius:20,border:'1px solid '+((oId+'__'+z.name)===activeOid?'var(--accent)':'var(--border)'),
+            background:(oId+'__'+z.name)===activeOid?'var(--accent)':'transparent',
+            color:(oId+'__'+z.name)===activeOid?'var(--bg)':'var(--text-muted)',
+            transition:'all 0.15s'}},z.name))
+      )
     ),
     ce('div',{style:{display:'flex',alignItems:'center',gap:2,padding:'4px 6px',
       overflowX:'auto',WebkitOverflowScrolling:'touch'}},
