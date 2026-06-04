@@ -1527,8 +1527,11 @@ function getBeltGroup(sk,bm){
 }
 
 function FactoryLayout(){
-  const [equips,    setEquips]   =useState([]);
-  const [bmap,      setBmap]     =useState({});
+  const [activeOid, setActiveOid]=useState(window.activeOutpostId||OUTPOSTS[0].id);
+  const [equips,    setEquips]   =useState(()=>{
+    try { const d=JSON.parse(localStorage.getItem('endfield_layout_'+( window.activeOutpostId||OUTPOSTS[0].id))||'[]'); return d; } catch(e){return [];} });
+  const [bmap,      setBmap]     =useState(()=>{
+    try { const d=JSON.parse(localStorage.getItem('endfield_bmap_'+(window.activeOutpostId||OUTPOSTS[0].id))||'{}'); return d; } catch(e){return {};} });
   const [tool,      setTool]     =useState('place');
   const [conn,      setConn]     =useState(null);
   const [hoverCell, setHoverCell]=useState(null);
@@ -1562,7 +1565,8 @@ function FactoryLayout(){
   // 미리보기 표시 여부 (빈 공간 터치 중일 때만)
   const isBeltDrag=useRef(false),longTimer=useRef(null),touchStart=useRef(null);
   const isDragging=useRef(false),isLongRef=useRef(false),dragRef=useRef(null);
-  const rotTouchActive=useRef(false); // 회전 버튼 터치 중 플래그
+  const selEqRef=useRef(null); // 클로저 문제 방지용 ref
+  const rotTouchActive=useRef(false);
   const rotBtnRef=useRef(null);
   useEffect(()=>{
     if(!isLongDrag)return;
@@ -1589,6 +1593,27 @@ function FactoryLayout(){
   },[isLongDrag]);
 
   const svgRef=useRef(null),nid=useRef(1),lastPinch=useRef(null);
+
+  // 거점별 배치 자동 저장
+  useEffect(()=>{
+    try { localStorage.setItem('endfield_layout_'+activeOid, JSON.stringify(equips)); } catch(e){}
+  },[equips, activeOid]);
+  useEffect(()=>{
+    try { localStorage.setItem('endfield_bmap_'+activeOid, JSON.stringify(bmap)); } catch(e){}
+  },[bmap, activeOid]);
+
+  // 거점 전환
+  function switchLayoutOutpost(oid){
+    // 현재 거점 저장
+    try { localStorage.setItem('endfield_layout_'+activeOid, JSON.stringify(equips)); } catch(e){}
+    try { localStorage.setItem('endfield_bmap_'+activeOid, JSON.stringify(bmap)); } catch(e){}
+    // 새 거점 불러오기
+    try { setEquips(JSON.parse(localStorage.getItem('endfield_layout_'+oid)||'[]')); } catch(e){ setEquips([]); }
+    try { setBmap(JSON.parse(localStorage.getItem('endfield_bmap_'+oid)||'{}')); } catch(e){ setBmap({}); }
+    setActiveOid(oid);
+    setSelEq(null);setSelBelt(null);setPending(null);pendingRef.current=null;
+    setRemaining({});remainingRef.current={};
+  }
   const CELL=isMobile?CELL_MB:CELL_PC;
 
   useEffect(()=>{
@@ -1705,8 +1730,8 @@ function FactoryLayout(){
     if(isTouch&&rawCell&&tool!=='place'){
       const eq=equips.find(q=>rawCell.x>=q.x&&rawCell.x<q.x+EQUIP_SIZE&&rawCell.y>=q.y&&rawCell.y<q.y+EQUIP_SIZE);
       if(eq){
-        setShowPreview(false); // 설비 위 터치 시 미리보기 끔
-        setSelEq(eq.id);setSelBelt(null);
+        setShowPreview(false);
+        setSelEq(eq.id);selEqRef.current=eq.id;setSelBelt(null);
         touchStart.current={cx:pt.clientX,cy:pt.clientY,cellX:rawCell.x,cellY:rawCell.y};
         isDragging.current=false;dragRef.current=null;
         clearTimeout(longTimer.current);
@@ -2080,9 +2105,9 @@ function FactoryLayout(){
         flexShrink:0,
       });
       return ce('div',{
-        style:{position:'absolute',
-          left:bx-btnW-gap/2,top:Math.max(4,by),
-          display:'flex',gap:gap,zIndex:200,pointerEvents:'auto'},
+        style:{position:'fixed',
+          left:wr.left+bx-btnW-gap/2,top:wr.top+Math.max(4,by),
+          display:'flex',gap:gap,zIndex:9500,pointerEvents:'auto'},
       },
         ce('div',{onClick:delEq,onTouchEnd:e=>{e.preventDefault();delEq(e);},
           style:btnStyle('rgba(200,64,64,0.92)','rgba(200,80,80,0.9)')
@@ -2205,6 +2230,19 @@ function FactoryLayout(){
   const sidebar=ce('div',{style:{width:168,flexShrink:0,background:'var(--panel)',
     borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',
     overflowY:'auto',height:'100%'}},
+    // 거점 뱃지
+    ce('div',{style:{padding:'8px 10px 4px',borderBottom:'1px solid var(--border)'}},
+      ce('div',{style:{fontSize:10,color:'var(--text-muted)',letterSpacing:'0.08em',fontWeight:700,marginBottom:5}},'거점'),
+      ce('div',{style:{display:'flex',flexWrap:'wrap',gap:4}},
+        OUTPOSTS.map(o=>ce('button',{key:o.id,
+          onClick:()=>switchLayoutOutpost(o.id),
+          style:{padding:'3px 8px',fontSize:11,cursor:'pointer',
+            borderRadius:20,border:'1px solid '+(o.id===activeOid?'var(--accent)':'var(--border)'),
+            background:o.id===activeOid?'var(--accent)':'transparent',
+            color:o.id===activeOid?'var(--bg)':'var(--text-muted)',
+            transition:'all 0.15s'}},o.name))
+      )
+    ),
     ce('div',{style:{padding:'8px 10px 2px',fontSize:10,color:'var(--text-muted)',
       letterSpacing:'0.08em',fontWeight:700}},'도구'),
     TOOLS.map(t=>ce('button',{key:t.id,onClick:()=>{setTool(t.id);setConn(null);},
@@ -2256,6 +2294,16 @@ function FactoryLayout(){
 
   const mobileBar=ce('div',{style:{background:'var(--panel)',
     borderBottom:'1px solid var(--border)',flexShrink:0}},
+    // 거점 뱃지 (모바일)
+    ce('div',{style:{display:'flex',gap:4,padding:'6px 8px 4px',borderBottom:'1px solid rgba(255,255,255,0.06)',overflowX:'auto',WebkitOverflowScrolling:'touch'}},
+      OUTPOSTS.map(o=>ce('button',{key:o.id,
+        onClick:()=>switchLayoutOutpost(o.id),
+        style:{padding:'3px 10px',fontSize:11,cursor:'pointer',flexShrink:0,
+          borderRadius:20,border:'1px solid '+(o.id===activeOid?'var(--accent)':'var(--border)'),
+          background:o.id===activeOid?'var(--accent)':'transparent',
+          color:o.id===activeOid?'var(--bg)':'var(--text-muted)',
+          transition:'all 0.15s'}},o.name))
+    ),
     ce('div',{style:{display:'flex',alignItems:'center',gap:2,padding:'4px 6px',
       overflowX:'auto',WebkitOverflowScrolling:'touch'}},
       TOOLS.map(t=>ce('button',{key:t.id,onClick:()=>{setTool(t.id);setConn(null);},
