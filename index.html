@@ -5690,6 +5690,7 @@ function openFeedbackModal() {
         }),
         fetch(FEEDBACK_SHEET_URL, {
           method: 'POST',
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             date: now,
@@ -5704,7 +5705,7 @@ function openFeedbackModal() {
         modal.remove();
         showToast('피드백이 전송됐어요! 감사합니다 😊');
       } else {
-        throw new Error('전송 실패');
+        throw new Error('Discord 전송 실패');
       }
     } catch(e) {
       btn.textContent = '전송';
