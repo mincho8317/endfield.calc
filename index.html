@@ -2144,7 +2144,7 @@ function FactoryLayout(){
       // 헤더
       ce('div',{style:{padding:'12px 16px',borderBottom:'1px solid var(--border)',
         display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}},
-        ce('span',{style:{fontSize:13,fontWeight:700,color:'var(--accent)}},'🏭 설비 선택'),
+        ce('span',{style:{fontSize:13,fontWeight:700,color:'var(--accent)'}},'설비 선택'),
         ce('button',{onClick:()=>setAddOpen(false),
           style:{background:'none',border:'none',color:'var(--text-muted)',fontSize:18,cursor:'pointer'}},'×')
       ),
@@ -2674,7 +2674,7 @@ function renderGroupHTML(g) {
   return `<div class="ws-group" id="wsgroup-${g.id}">
     <div class="ws-group-inner">
     <div class="ws-group-header" style="flex-direction:column;gap:4px;padding:8px 10px;">
-      <!-- 1줄: 접기 + 그룹명 + 삭제 -->
+      <!-- 1줄: 접기 + 그룹명 + 수량 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%;">
         <button onclick="toggleGroupCollapse(${g.id})"
           style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;line-height:1;">
@@ -2683,17 +2683,18 @@ function renderGroupHTML(g) {
         <input class="ws-group-name" value="${g.name}"
           oninput="updateGroupName(${g.id},this.value)" placeholder="그룹 이름"
           style="flex:1;min-width:0;max-width:none;font-size:12px;">
-        <button class="ws-del-btn" style="font-size:15px;flex-shrink:0;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
-      </div>
-      <!-- 2줄: 수량 + 저장 + 설비 추가 -->
-      <div style="display:flex;align-items:center;gap:6px;padding-left:18px;">
         <div class="ws-group-mult" style="flex-shrink:0;">
           <span style="font-size:11px;color:var(--text-muted);">×</span>
           <input type="number" class="ws-mult-input" min="1" value="${g.mult||1}"
             oninput="updateGroupMult(${g.id},this.value)" style="width:36px;">
         </div>
-        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
+      </div>
+      <!-- 2줄: 설비 추가 + 저장 + 삭제 -->
+      <div style="display:flex;align-items:center;gap:6px;padding-left:18px;">
         <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 10px;font-size:11px;">+ 설비</button>
+        <div style="flex:1;"></div>
+        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
+        <button class="ws-del-btn" style="font-size:15px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
       </div>
     </div>
     ${bodyHTML}
@@ -3594,7 +3595,19 @@ function switchAuthView(type, oId) {
 
 function renderAuthOutpostPanel(oId) {
   const panel = document.getElementById('auth-outpost-panel');
+  const outpost = OUTPOSTS.find(o => o.id === oId);
+  const authTotal = calcOutpostAuthTotal(oId);
+  const fmt = n => Number.isFinite(n) ? n.toFixed(2) : '—';
+
   panel.innerHTML = `
+    <!-- 거점명 + 총 분당 관리권 -->
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.04);">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${outpost?.name || oId}</div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;" id="auth-panel-total-${oId}">${authTotal > 0 ? fmt(authTotal) : '—'}</span>
+        <span style="font-size:12px;color:var(--text-muted);">/분</span>
+      </div>
+    </div>
     <!-- 내부 탭: 관리권 생산 계산 / 관리권 교환 계산 -->
     <div style="display:flex;border-bottom:1px solid var(--border);">
       <div class="inner-tab active" id="atab-base-${oId}" onclick="switchOutpostInnerTab('base','${oId}')">◈ 관리권 생산 계산</div>
@@ -3818,6 +3831,10 @@ function updateOutpostAuthSummary(oId) {
     balEl.textContent = authTotal > 0 ? (balance >= 0 ? '+' : '') + fmt(balance) : '—';
     balEl.style.color = balance >= 0 ? 'var(--success)' : 'var(--danger)';
   }
+
+  // 거점 패널 헤더 총 분당 관리권 업데이트
+  const panelTotalEl = document.getElementById(`auth-panel-total-${oId}`);
+  if (panelTotalEl) panelTotalEl.textContent = authTotal > 0 ? fmt(authTotal) : '—';
 
   updateFactoryAuthBar();
 }
