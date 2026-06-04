@@ -31,7 +31,8 @@
       ]
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "devtools": true
     },
     "windows": [
       {
@@ -45,7 +46,7 @@
         "fullscreen": false,
         "decorations": true,
         "center": true,
-        "url": "index.html"
+        "url": "endfield_factory_calc.html"
       },
       {
         "label": "overlay",
