@@ -75,6 +75,7 @@ const RECIPES = [
   { id:21, equip:'포장기',     category:'합성과 제작',  label:'식양호리병',             inputs:[{name:'식양',qty:15}],                                       outputs:[{name:'식양호리병',qty:1}],                               speed:10 },
 ];
 window.RECIPES = RECIPES;
+window.EQUIPMENT_LIST = EQUIPMENT_LIST;
 
 // ========== 자원 직접입력 ==========
 const RESOURCE_ITEMS = [

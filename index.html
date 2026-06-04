@@ -2673,21 +2673,28 @@ function renderGroupHTML(g) {
 
   return `<div class="ws-group" id="wsgroup-${g.id}">
     <div class="ws-group-inner">
-    <div class="ws-group-header">
-      <button onclick="toggleGroupCollapse(${g.id})"
-        style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;flex-shrink:0;line-height:1;">
-        ${collapsed ? '▶' : '▼'}
-      </button>
-      <input class="ws-group-name" value="${g.name}"
-        oninput="updateGroupName(${g.id},this.value)" placeholder="그룹 이름">
-      <div class="ws-group-mult">
-        <span>×</span>
-        <input type="number" class="ws-mult-input" min="1" value="${g.mult||1}"
-          oninput="updateGroupMult(${g.id},this.value)">
+    <div class="ws-group-header" style="flex-direction:column;gap:4px;padding:8px 10px;">
+      <!-- 1줄: 접기 + 그룹명 + 삭제 -->
+      <div style="display:flex;align-items:center;gap:6px;width:100%;">
+        <button onclick="toggleGroupCollapse(${g.id})"
+          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;line-height:1;">
+          ${collapsed ? '▶' : '▼'}
+        </button>
+        <input class="ws-group-name" value="${g.name}"
+          oninput="updateGroupName(${g.id},this.value)" placeholder="그룹 이름"
+          style="flex:1;min-width:0;max-width:none;font-size:12px;">
+        <button class="ws-del-btn" style="font-size:15px;flex-shrink:0;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
       </div>
-      <button class="btn" style="font-size:10px;padding:3px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
-      <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)">+ 설비</button>
-      <button class="ws-del-btn" style="font-size:16px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
+      <!-- 2줄: 수량 + 저장 + 설비 추가 -->
+      <div style="display:flex;align-items:center;gap:6px;padding-left:18px;">
+        <div class="ws-group-mult" style="flex-shrink:0;">
+          <span style="font-size:11px;color:var(--text-muted);">×</span>
+          <input type="number" class="ws-mult-input" min="1" value="${g.mult||1}"
+            oninput="updateGroupMult(${g.id},this.value)" style="width:36px;">
+        </div>
+        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
+        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 10px;font-size:11px;">+ 설비</button>
+      </div>
     </div>
     ${bodyHTML}
   </div></div>`;
@@ -3714,40 +3721,36 @@ function renderOutpostBaseConfig(oId) {
 
     const totalPct = Math.round((eff.opper + eff.defense + eff.event) * 100);
 
-    return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;background:var(--bg-mid);display:flex;gap:16px;align-items:stretch;" class="zone-card-inner">
-      <!-- 왼쪽: 컨트롤 영역 -->
-      <div style="flex:1;min-width:0;">
-        <!-- 구역명 -->
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">${z.name}</div>
-        <!-- 구역 요구 특성 -->
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${traitTags}</div>
-        <!-- 기본 생산량 -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">기본 생산량</span>
-          <input class="eff-input" type="number" step="1" min="0"
-            value="${e.baseAmt > 0 ? e.baseAmt : ''}" placeholder="0" style="width:90px;"
-            onchange="updateZone('${oId}','${z.name}','baseAmt',+this.value)">
-        </div>
-        <!-- 배치 오퍼레이터 -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">배치 오퍼레이터</span>
-          <div id="cs-op-${oId}-${zid}" style="flex:1;max-width:220px;"></div>
-        </div>
-        <!-- 방어 단계 (있는 경우만) -->
-        ${defenseSection}
-        <!-- 이벤트 -->
+    return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;background:var(--bg-mid);" class="zone-card-inner">
+      <!-- 구역명 + 분당 관리권 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${z.name}</div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">이벤트</span>
-          ${evBtn}
+          <span style="font-size:10px;color:var(--text-label);">분당 관리권</span>
+          <span style="font-size:20px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;line-height:1;" id="rate_${oId}_${zid}">${rate > 0 ? fmt(rate) : '—'}</span>
+          ${totalPct > 0 ? `<span style="font-size:11px;font-weight:600;color:var(--success);">+${totalPct}%</span>` : `<span style="font-size:11px;color:var(--text-label);">+0%</span>`}
         </div>
       </div>
-      <!-- 우측: 분당 관리권 -->
-      <div class="zone-card-right" style="width:90px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid rgba(255,255,255,0.09);padding-left:14px;gap:4px;">
-        <div style="font-size:10px;color:var(--text-label);text-align:center;letter-spacing:0.04em;font-weight:500;">분당<br>관리권</div>
-        <div style="font-size:22px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;text-align:center;line-height:1;" id="rate_${oId}_${zid}">
-          ${rate > 0 ? fmt(rate) : '—'}
-        </div>
-        ${totalPct > 0 ? `<div style="font-size:11px;font-weight:600;color:var(--success);text-align:center;">+${totalPct}%</div>` : `<div style="font-size:11px;color:var(--text-label);text-align:center;">+0%</div>`}
+      <!-- 구역 요구 특성 -->
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${traitTags}</div>
+      <!-- 기본 생산량 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">기본 생산량</span>
+        <input class="eff-input" type="number" step="1" min="0"
+          value="${e.baseAmt > 0 ? e.baseAmt : ''}" placeholder="0" style="width:80px;"
+          onchange="updateZone('${oId}','${z.name}','baseAmt',+this.value)">
+      </div>
+      <!-- 배치 오퍼레이터 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">배치 오퍼레이터</span>
+        <div id="cs-op-${oId}-${zid}" style="flex:1;min-width:0;"></div>
+      </div>
+      <!-- 방어 단계 (있는 경우만) -->
+      ${defenseSection}
+      <!-- 이벤트 -->
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">이벤트</span>
+        ${evBtn}
       </div>
     </div>`;
   }).join('');
