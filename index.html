@@ -772,6 +772,10 @@ select option { background: var(--bg-popup); color: var(--text); }
   font-family: var(--font-body);
   outline: none;
   flex: 1; min-width: 0;
+  max-width: 160px;
+}
+@media (max-width: 480px) {
+  .ws-group-name { max-width: 120px; font-size: 11px; }
 }
 .ws-group-name:focus { border-color: var(--accent); }
 
@@ -790,7 +794,37 @@ select option { background: var(--bg-popup); color: var(--text); }
 .ws-mult-input:focus,
 .ws-count-input:focus { border-color: var(--accent); }
 
-/* ── 피드백 버튼 ── */
+/* ── 모바일 UX ── */
+@media (max-width: 600px) {
+  /* 헤더 서브타이틀 숨김 */
+  .header-sub { display: none; }
+
+  /* 탭 폰트 축소 */
+  .tab { font-size: 11px; padding: 5px 8px; }
+
+  /* 기질 파밍 3열 드롭다운 세로 배치 */
+  .essence-selects { grid-template-columns: 1fr !important; }
+
+  /* 오퍼레이터 패널 레이아웃 */
+  .op-detail-panel { flex-direction: column !important; }
+  .op-growth-col { width: 100% !important; }
+
+  /* 오퍼레이터 돌파+레벨 그리드 세로 배치 */
+  .op-elite-level-grid { grid-template-columns: 1fr !important; }
+
+  /* 오퍼레이터 목록 + 상세 세로 배치 */
+  .op-layout { flex-direction: column !important; }
+  .op-list-col { width: 100% !important; max-height: 200px; overflow-y: auto; }
+  .op-detail-col { width: 100% !important; }
+
+  /* 공장 그룹 헤더 */
+  .ws-group-header { flex-wrap: wrap; gap: 4px; }
+
+  /* 전체 overflow 방지 */
+  .page-view { overflow-x: hidden; }
+  .panel { overflow-x: hidden; }
+}
+
 .feedback-btn {
   position: fixed;
   bottom: 24px;
@@ -833,6 +867,7 @@ select option { background: var(--bg-popup); color: var(--text); }
 /* 수량 입력칸 */
 .ws-equip-row .ws-count-input {
   width: 44px;
+  max-width: 44px;
   border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 4px !important;
   background: rgba(255,255,255,0.05) !important;
@@ -1201,10 +1236,10 @@ select option { background: var(--bg-popup); color: var(--text); }
 
     <!-- ===== 오퍼레이터 육성 탭 ===== -->
     <div id="tab-operator" class="page-view">
-      <div style="display:flex;gap:16px;align-items:flex-start;">
+      <div class="op-layout" style="display:flex;gap:16px;align-items:flex-start;">
 
         <!-- 왼쪽: 오퍼레이터 목록 -->
-        <div style="width:220px;flex-shrink:0;">
+        <div class="op-list-col" style="width:220px;flex-shrink:0;">
           <div class="panel" style="padding:0;overflow:hidden;">
             <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(240,200,22,0.06);">
               <span style="font-size:12px;font-weight:600;color:var(--accent);">오퍼레이터 목록</span>
@@ -1286,7 +1321,7 @@ select option { background: var(--bg-popup); color: var(--text); }
         <div id="epanel-check">
           <div class="panel" style="padding:14px 16px;">
             <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;">보유한 기질의 특성 3가지를 선택하면 장착 가능한 무기를 알려드려요</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div class="essence-selects" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
               <div>
                 <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">주속성 (Primary)</div>
                 <div id="cs-ec-primary"></div>
@@ -2216,6 +2251,25 @@ window.FactoryLayout=FactoryLayout;
 
 })();
 }); // window.onload
+
+// 페이지 이탈 시 마지막 탭 체류시간 전송
+window.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') {
+    trackTabLeave(_currentTab);
+    _tabStartTime = Date.now();
+  }
+});
+
+// 모바일 키보드 올라올 때 input 자동 스크롤
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', function() {
+    const focused = document.activeElement;
+    if (!focused || !['INPUT','TEXTAREA','SELECT'].includes(focused.tagName)) return;
+    setTimeout(function() {
+      focused.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  });
+}
 </script>
 
 <!-- 아이콘 관리 모달 -->
@@ -2963,6 +3017,9 @@ function doAddEquip(gid, recipeId, withSubs) {
       if (sub) { sub.count += cnt; } else { g.equips.push({ recipeId: id, count: cnt }); }
     });
     showToast('🏭 하위 설비가 자동으로 추가됐어요!');
+    gtag('event', 'auto_sub_group_add', { recipe_id: recipeId });
+  } else {
+    gtag('event', 'equip_add', { recipe_id: recipeId });
   }
   closeEquipModal();
   document.getElementById('modal-auto-add')?.remove();
@@ -3022,6 +3079,7 @@ function renderPresetModal() {
 }
 
 function loadPreset(pid) {
+  gtag('event', 'preset_load', { preset_id: pid });
   const p = presets.find(p => p.id === pid);
   if (!p) return;
   const id = od().nextGroupId++;
@@ -3185,6 +3243,7 @@ function confirmPresetEquipSelect(recipeId) {
 }
 
 function savePresetEdit() {
+  gtag('event', 'preset_save');
   const p = presets.find(p => p.id === editingPresetId);
   if (!p) return;
   p.name   = document.getElementById('preset-edit-name').value || p.name;
@@ -3953,7 +4012,23 @@ function renderOverviewTab() {
 }
 
 // ========== TAB SWITCH ==========
+// 탭 체류시간 측정
+let _tabStartTime = Date.now();
+let _currentTab = 'authority';
+
+function trackTabLeave(tab) {
+  const duration = Math.round((Date.now() - _tabStartTime) / 1000);
+  if (duration > 1) {
+    gtag('event', 'tab_leave', { tab_name: tab, duration_sec: duration });
+  }
+}
+
 function switchTab(tab) {
+  // 이전 탭 체류시간 전송
+  trackTabLeave(_currentTab);
+  _currentTab = tab;
+  _tabStartTime = Date.now();
+  gtag('event', 'tab_view', { tab_name: tab });
   document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
@@ -4516,7 +4591,7 @@ function renderOperatorConfig() {
         oninput="updateOpName(${op.id},this.value)">
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border);">
+    <div class="op-elite-level-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border);">
       <!-- 돌파 설정 -->
       <div style="padding:12px 14px;border-right:1px solid var(--border);">
         <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:8px;">돌파 (Elite)</div>
@@ -4845,6 +4920,7 @@ function closeAllCustomSelects() {
 
 // ========== 관리권 교환 계산 → 공장 설비 자동 계산 ==========
 async function autoCalcFactory(oId) {
+  gtag('event', 'auto_calc_target');
   const tr = outpostData[oId]?.targetRates || {};
 
   // 목표가 설정된 품목만 필터
