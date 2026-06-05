@@ -831,6 +831,9 @@ select option { background: var(--bg-popup); color: var(--text); }
   /* 오퍼레이터 돌파+레벨 그리드 세로 배치 */
   .op-elite-level-grid { grid-template-columns: 1fr !important; }
 
+  /* 오퍼레이터 듀얼 패널 모바일 */
+  .op-dual-panel { flex-direction: column !important; }
+
   /* 오퍼레이터 목록 + 상세 세로 배치 */
   .op-layout { flex-direction: column !important; }
   .op-list-col { width: 100% !important; max-height: 200px; overflow-y: auto; }
@@ -4761,92 +4764,252 @@ function renderOperatorConfig() {
     </label>`;
   }).join('');
 
+  // ── 새 UI: 현재/목표 병렬 패널 ──────────────────────────
+  const EQUIP_GRADE = [
+    {idx:12, label:'장비 조합 I',   color:'#4fc3f7', grade:'파랑'},
+    {idx:13, label:'장비 조합 II',  color:'#b39ddb', grade:'보라'},
+    {idx:14, label:'장비 조합 III', color:'#ffd740', grade:'노랑'},
+  ];
+
+  function nodePanel(mode) {
+    const isCur = mode === 'cur';
+    const elite = isCur ? op.currentElite : op.targetElite;
+    const lv    = isCur ? op.currentLevel  : op.targetLevel;
+    const color = isCur ? '#48c880' : '#e8b800';
+    const label = isCur ? '현재' : '목표';
+
+    // 정예화 라인
+    const eliteNodes = [0,1,2,3,4].map(e => {
+      const filled = elite >= e;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <div onclick="updateOpField(${op.id},'${isCur?'currentElite':'targetElite'}',${e})"
+          style="width:32px;height:32px;border-radius:50%;border:2px solid ${filled?color:'rgba(255,255,255,0.2)'};
+            background:${filled?color+'22':'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;
+            transition:all 0.15s;box-shadow:${filled?'0 0 8px '+color+'66':'none'};">
+          <span style="font-size:10px;font-weight:700;color:${filled?color:'var(--text-muted)'};">E${e}</span>
+        </div>
+      </div>`;
+    });
+
+    // 정예화 사이 장비 조합 (E1→E2 사이 파랑, E2→E3 보라, E3→E4 노랑)
+    const equipUnlocks = [
+      {afterE:1, ...EQUIP_GRADE[0]},
+      {afterE:2, ...EQUIP_GRADE[1]},
+      {afterE:3, ...EQUIP_GRADE[2]},
+    ];
+
+    const eliteLine = `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;">
+      ${[0,1,2,3,4].map(e => {
+        const filled = elite >= e;
+        const equipAfter = equipUnlocks.find(u => u.afterE === e);
+        const nodeHtml = `<div onclick="updateOpField(${op.id},'${isCur?'currentElite':'targetElite'}',${e})"
+          style="width:32px;height:32px;border-radius:50%;border:2px solid ${filled?color:'rgba(255,255,255,0.2)'};
+            background:${filled?color+'22':'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;
+            transition:all 0.15s;"
+          title="E${e}">
+          <span style="font-size:9px;font-weight:700;color:${filled?color:'var(--text-muted)'};">E${e}</span>
+        </div>`;
+        const equipHtml = e > 0 && equipAfter ? `
+          <div style="display:flex;align-items:center;gap:3px;">
+            <div style="width:20px;height:2px;background:rgba(255,255,255,0.15);"></div>
+            <div style="width:16px;height:16px;border-radius:3px;border:1.5px solid ${equipAfter.color};
+              background:${equipAfter.color}22;display:flex;align-items:center;justify-content:center;"
+              title="${equipAfter.label}">
+              <span style="font-size:7px;color:${equipAfter.color};">◆</span>
+            </div>
+            <div style="width:20px;height:2px;background:rgba(255,255,255,0.15);"></div>
+          </div>` : e > 0 ? `<div style="width:8px;height:2px;background:rgba(255,255,255,0.15);"></div>` : '';
+        return equipHtml + nodeHtml;
+      }).join('')}
+    </div>`;
+
+    // 레벨
+    const levelHtml = `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+      <span style="font-size:10px;color:var(--text-muted);">Lv</span>
+      <input type="number" min="1" max="90" value="${lv}"
+        class="ws-count-input" style="width:50px;font-size:12px;text-align:center;"
+        onchange="updateOpField(${op.id},'${isCur?'currentLevel':'targetLevel'}',+this.value)">
+      <span style="font-size:10px;color:var(--text-muted);">/90</span>
+    </div>`;
+
+    // 스킬 강화 (기본공격/배틀/콤보/궁극기)
+    const skillHtml = SKILL_TYPES.map((type, i) => {
+      const sk = op.skills?.[i] || { currentLv:1, targetLv:12 };
+      const lv = isCur ? sk.currentLv : sk.targetLv;
+      const maxRank = 12;
+      const bars = Array.from({length:9}, (_,r) => {
+        const rank = r+1;
+        const filled = lv >= rank;
+        return `<div style="height:8px;flex:1;border-radius:2px;background:${filled?color:'rgba(255,255,255,0.12)'};
+          cursor:pointer;transition:background 0.1s;"
+          onclick="updateSkillLv(${op.id},${i},'${isCur?'currentLv':'targetLv'}',${rank})"
+          title="Rank ${rank}"></div>`;
+      }).join('');
+      const hexes = Array.from({length:3}, (_,r) => {
+        const rank = r+10;
+        const filled = lv >= rank;
+        const pts = '12,2 22,7 22,17 12,22 2,17 2,7';
+        return `<svg width="24" height="24" viewBox="0 0 24 24" style="cursor:pointer;"
+          onclick="updateSkillLv(${op.id},${i},'${isCur?'currentLv':'targetLv'}',${rank})"
+          title="Rank ${rank}">
+          <polygon points="${pts}" fill="${filled?color+'33':'transparent'}" stroke="${filled?color:'rgba(255,255,255,0.25)'}" stroke-width="1.5"/>
+          <text x="12" y="15" text-anchor="middle" font-size="7" fill="${filled?color:'rgba(255,255,255,0.4)'}" font-weight="700">${rank}</text>
+        </svg>`;
+      }).join('');
+      return `<div style="margin-bottom:6px;">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">${type}</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="display:flex;gap:2px;flex:1;">${bars}</div>
+          <div style="display:flex;gap:1px;">${hexes}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // 능력치 강화 (원형 4개)
+    const statNodes = TALENT_NODE_COST.slice(0,4).map((node,i) => {
+      const tn = op.talentNodes?.[i] || { enabled:false };
+      const avail = node.requireElite <= elite;
+      const active = tn.enabled && avail;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
+        <div onclick="${avail?`toggleTalentNode(${op.id},${i},${!tn.enabled})`:'void(0)'}"
+          style="width:28px;height:28px;border-radius:50%;border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+            background:${active?color+'22':'transparent'};cursor:${avail?'pointer':'default'};
+            display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">R${i+1}</span>
+        </div>
+        <span style="font-size:8px;color:var(--text-muted);">E${node.requireElite}</span>
+      </div>`;
+    }).join('');
+
+    // 재능 1 (원형 2개)
+    const talent1Nodes = TALENT_NODE_COST.slice(4,6).map((node,i) => {
+      const idx = i+4;
+      const tn = op.talentNodes?.[idx] || { enabled:false };
+      const avail = node.requireElite <= elite;
+      const active = tn.enabled && avail;
+      const labels = ['α','β'];
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
+        <div onclick="${avail?`toggleTalentNode(${op.id},${idx},${!tn.enabled})`:'void(0)'}"
+          style="width:28px;height:28px;border-radius:50%;border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+            background:${active?color+'22':'transparent'};cursor:${avail?'pointer':'default'};
+            display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <span style="font-size:10px;color:${active?color:'var(--text-muted)'};">${labels[i]}</span>
+        </div>
+        <span style="font-size:8px;color:var(--text-muted);">E${node.requireElite}</span>
+      </div>`;
+    }).join('');
+
+    // 재능 2 (원형 2개)
+    const talent2Nodes = TALENT_NODE_COST.slice(6,8).map((node,i) => {
+      const idx = i+6;
+      const tn = op.talentNodes?.[idx] || { enabled:false };
+      const avail = node.requireElite <= elite;
+      const active = tn.enabled && avail;
+      const labels = ['α','β'];
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
+        <div onclick="${avail?`toggleTalentNode(${op.id},${idx},${!tn.enabled})`:'void(0)'}"
+          style="width:28px;height:28px;border-radius:50%;border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+            background:${active?color+'22':'transparent'};cursor:${avail?'pointer':'default'};
+            display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <span style="font-size:10px;color:${active?color:'var(--text-muted)'};">${labels[i]}</span>
+        </div>
+        <span style="font-size:8px;color:var(--text-muted);">E${node.requireElite}</span>
+      </div>`;
+    }).join('');
+
+    // 소셜 스킬 (사각형)
+    const socialNodes = [
+      { label:'소셜1', nodes: TALENT_NODE_COST.slice(8,10) , baseIdx:8 },
+      { label:'소셜2', nodes: TALENT_NODE_COST.slice(10,12), baseIdx:10 },
+    ].map(({label, nodes, baseIdx}) => {
+      const labels = ['α','β'];
+      const nodeHtml = nodes.map((node,i) => {
+        const idx = baseIdx+i;
+        const tn = op.talentNodes?.[idx] || { enabled:false };
+        const avail = node.requireElite <= elite;
+        const active = tn.enabled && avail;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
+          <div onclick="${avail?`toggleTalentNode(${op.id},${idx},${!tn.enabled})`:'void(0)'}"
+            style="width:28px;height:28px;border-radius:4px;border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+              background:${active?color+'22':'transparent'};cursor:${avail?'pointer':'default'};
+              display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+            <span style="font-size:10px;color:${active?color:'var(--text-muted)'};">${labels[i]}</span>
+          </div>
+          <span style="font-size:8px;color:var(--text-muted);">E${node.requireElite}</span>
+        </div>`;
+      }).join('');
+      return `<div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">${label}</div>
+        <div style="display:flex;gap:4px;">${nodeHtml}</div>
+      </div>`;
+    }).join('');
+
+    return `<div style="flex:1;min-width:0;background:var(--panel3);border:1px solid rgba(255,255,255,0.08);
+      border-top:2px solid ${color};border-radius:6px;padding:10px 12px;">
+      <!-- 헤더 -->
+      <div style="font-size:11px;font-weight:700;color:${color};margin-bottom:10px;letter-spacing:0.06em;">${label}</div>
+
+      <!-- 정예화 -->
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">정예화</div>
+        ${eliteLine}
+        ${levelHtml}
+      </div>
+
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:8px 0;"></div>
+
+      <!-- 스킬 강화 -->
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">스킬 강화</div>
+        ${skillHtml}
+      </div>
+
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:8px 0;"></div>
+
+      <!-- 능력치 강화 -->
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">능력치 강화</div>
+        <div style="display:flex;gap:8px;">${statNodes}</div>
+      </div>
+
+      <!-- 재능 -->
+      <div style="margin-bottom:8px;">
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">재능</div>
+        <div style="display:flex;gap:16px;">
+          <div>
+            <div style="font-size:8px;color:var(--text-muted);margin-bottom:3px;">재능 1</div>
+            <div style="display:flex;gap:4px;">${talent1Nodes}</div>
+          </div>
+          <div>
+            <div style="font-size:8px;color:var(--text-muted);margin-bottom:3px;">재능 2</div>
+            <div style="display:flex;gap:4px;">${talent2Nodes}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 소셜 스킬 -->
+      <div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">소셜 스킬</div>
+        <div style="display:flex;gap:12px;">${socialNodes}</div>
+      </div>
+    </div>`;
+  }
+
   panel.innerHTML = `<div class="panel" style="padding:0;overflow:hidden;">
+    <!-- 오퍼레이터명 -->
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;align-items:center;gap:10px;">
       <input value="${op.name}" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-weight:700;outline:none;flex:1;"
         oninput="updateOpName(${op.id},this.value)">
     </div>
 
-    <div class="op-elite-level-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border);">
-      <!-- 돌파 설정 -->
-      <div style="padding:12px 14px;border-right:1px solid var(--border);">
-        <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:8px;">돌파 (Elite)</div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          ${[0,1,2,3,4].map(e => `
-            <label style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;">
-              <div style="display:flex;gap:2px;">
-                <input type="radio" name="op-cur-elite-${op.id}" value="${e}" ${op.currentElite === e ? 'checked' : ''}
-                  onchange="updateOpField(${op.id},'currentElite',${e})"
-                  style="accent-color:var(--success);"> <span style="font-size:10px;color:var(--text-muted);">현재</span>
-              </div>
-              <div style="font-size:12px;font-weight:600;color:${op.currentElite===e||op.targetElite===e?'var(--accent)':'var(--text-muted)'};">E${e}</div>
-              <div style="display:flex;gap:2px;">
-                <input type="radio" name="op-tgt-elite-${op.id}" value="${e}" ${op.targetElite === e ? 'checked' : ''}
-                  onchange="updateOpField(${op.id},'targetElite',${e})"
-                  style="accent-color:var(--danger);"> <span style="font-size:10px;color:var(--text-muted);">목표</span>
-              </div>
-            </label>`).join('')}
-        </div>
-      </div>
-      <!-- 레벨 설정 -->
-      <div style="padding:12px 14px;">
-        <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:8px;">레벨</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div>
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">현재</div>
-            <input type="number" min="1" max="90" value="${op.currentLevel}"
-              class="ws-count-input" style="width:60px;"
-              onchange="updateOpField(${op.id},'currentLevel',+this.value)">
-          </div>
-          <span style="color:var(--text-muted);margin-top:16px;">→</span>
-          <div>
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;">목표</div>
-            <input type="number" min="1" max="90" value="${op.targetLevel}"
-              class="ws-count-input" style="width:60px;"
-              onchange="updateOpField(${op.id},'targetLevel',+this.value)">
-          </div>
-        </div>
-        <div style="margin-top:8px;font-size:10px;color:var(--text-muted);">
-          ${[20,40,60,80,90].map(cap => {
-            const lv = op.targetLevel;
-            return `<span style="color:${lv>=cap?'var(--accent)':'var(--text-muted)'};">Lv${cap}</span>`;
-          }).join(' → ')}
-        </div>
-      </div>
-    </div>
-
-    <!-- 스킬 레벨 -->
-    <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-      <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:8px;">스킬 레벨</div>
-      <div style="display:grid;gap:8px;" class="skill-grid" style="grid-template-columns:repeat(4,1fr)">
-        ${SKILL_TYPES.map((type, i) => {
-          const sk = op.skills?.[i] || { currentLv:1, targetLv:9 };
-          return `<div style="text-align:center;">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">${type}</div>
-            <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
-              <input type="number" min="1" max="12" value="${sk.currentLv}"
-                class="ws-count-input" style="width:40px;font-size:12px;"
-                onchange="updateSkillLv(${op.id},${i},'currentLv',+this.value)">
-              <span style="color:var(--text-muted);font-size:10px;">→</span>
-              <input type="number" min="1" max="12" value="${sk.targetLv}"
-                class="ws-count-input" style="width:40px;font-size:12px;"
-                onchange="updateSkillLv(${op.id},${i},'targetLv',+this.value)">
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- 재능 노드 -->
-    <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-      <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:6px;">어빌리티 매트릭스 (재능/스킬 노드)</div>
-      <div style="display:grid;gap:2px;" class="talent-grid" style="grid-template-columns:1fr 1fr 1fr">
-        ${talentHtml}
-      </div>
+    <!-- 현재 / 목표 병렬 패널 -->
+    <div style="padding:10px;display:flex;gap:8px;align-items:flex-start;" class="op-dual-panel">
+      ${nodePanel('cur')}
+      ${nodePanel('tgt')}
     </div>
 
     <!-- 필요 재료 -->
-    <div style="padding:12px 14px;">
+    <div style="padding:12px 14px;border-top:1px solid var(--border);">
       <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:8px;">📦 필요 재료</div>
       ${matHtml}
     </div>
