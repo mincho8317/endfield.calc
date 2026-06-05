@@ -4751,19 +4751,6 @@ function renderOperatorConfig() {
         </div>`).join('')
     : `<div style="color:var(--text-muted);font-size:11px;padding:8px 0;">목표를 설정하면 재료가 계산됩니다</div>`;
 
-  // 재능 노드 체크박스
-  const talentHtml = TALENT_NODE_COST.map((node, i) => {
-    const tn = op.talentNodes?.[i] || { enabled: true };
-    const available = node.requireElite <= op.targetElite;
-    return `<label style="display:flex;align-items:center;gap:6px;padding:4px 0;cursor:${available ? 'pointer' : 'default'};opacity:${available ? 1 : 0.35};font-size:11px;">
-      <input type="checkbox" ${tn.enabled ? 'checked' : ''} ${!available ? 'disabled' : ''}
-        onchange="toggleTalentNode(${op.id},${i},this.checked)"
-        style="accent-color:var(--accent);width:14px;height:14px;">
-      <span style="color:var(--text);">${node.label}</span>
-      <span style="color:var(--text-muted);font-size:10px;margin-left:auto;">E${node.requireElite} 필요</span>
-    </label>`;
-  }).join('');
-
   // ── 새 UI: 현재/목표 병렬 패널 ──────────────────────────
   const EQUIP_GRADE = [
     {idx:12, label:'장비 조합 I',   color:'#4fc3f7', afterE:1},
@@ -5007,6 +4994,7 @@ function renderOperatorConfig() {
       ${matHtml}
     </div>
   </div>`;
+}
 
 function renderOperatorTotal() {
   const isMobile = window.innerWidth < 768;
