@@ -4767,6 +4767,8 @@ function renderOperatorConfig() {
     const label  = isCur ? '현재' : '목표';
     const tnKey  = isCur ? 'curTalentNodes' : 'tgtTalentNodes';
     const tn     = op[tnKey] || TALENT_NODE_COST.map((_,i)=>({idx:i,enabled:false}));
+    const curTn  = op['curTalentNodes'] || TALENT_NODE_COST.map((_,i)=>({idx:i,enabled:false}));
+    const curChainStep = getChainStep(op, 'cur');
 
     // 헬퍼: 토글 onclick
     const tog = (idx, cur) =>
@@ -4828,18 +4830,19 @@ function renderOperatorConfig() {
 
     // ── 능력치 강화 (E1→R1, E2→R2, E3→R3, E4→R4, 순서 의존) ──
     const statNodes = [0,1,2,3].map(i => {
-      const requireElite = i+1; // R1=E1, R2=E2, R3=E3, R4=E4
+      const requireElite = i+1;
       const cur = tn[i] || {enabled:false};
-      const avail = elite >= requireElite; // 한번에 상위 선택 가능
+      const avail = elite >= requireElite;
       const active = cur.enabled && avail;
+      const curLocked = !isCur && curTn[i]?.enabled && active; // 목표에서 현재값 잠금
       return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
-        <div onclick="${avail?tog(i,cur.enabled):'void(0)'}"
+        <div onclick="${avail&&!curLocked?tog(i,cur.enabled):(avail&&curLocked?'showCurLockedMsg()':'void(0)')}"
           style="width:28px;height:28px;border-radius:50%;
-            border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+            border:2px solid ${active?(curLocked?'rgba(255,100,100,0.6)':color):'rgba(255,255,255,0.2)'};
             background:${active?color+'22':'transparent'};
             cursor:${avail?'pointer':'default'};
             display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-          <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">R${i+1}</span>
+          <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':'R'+(i+1)}</span>
         </div>
         <span style="font-size:8px;color:var(--text-muted);">E${requireElite}</span>
       </div>`;
@@ -4852,19 +4855,22 @@ function renderOperatorConfig() {
     const eliteItemsArr = ELITE_CHAIN.map((c, chainIdx) => {
       const active = curStep >= chainIdx;
       const lvOk = lv >= c.lvReq;
-      const canClick = lvOk; // 레벨 조건만 맞으면 한번에 상위 단계 선택 가능
-      const clickFn = 'toggleEliteChain(' + op.id + ',' + chainIdx + ',\'' + mode + '\')';
+      const canClick = lvOk;
+      const tgtLocked = !isCur && active && curChainStep >= chainIdx;
+      const clickFn = tgtLocked
+        ? 'showCurLockedMsg()'
+        : 'toggleEliteChain(' + op.id + ',' + chainIdx + ',\'' + mode + '\')';
 
       if (c.type === 'elite') {
         const locked = !active && !canClick;
         return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:1px;min-height:44px;opacity:${locked?0.35:1};">
           <div onclick="${canClick||active?clickFn:'void(0)'}"
             style="width:30px;height:30px;border-radius:50%;
-              border:2px solid ${active?color:locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
+              border:2px solid ${active?(tgtLocked?'rgba(255,100,100,0.6)':color):locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
               background:${active?color+'22':'transparent'};
               cursor:${canClick||active?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:9px;font-weight:700;color:${active?color:locked?'rgba(255,255,255,0.15)':'var(--text-muted)'};">E${c.elite}</span>
+            <span style="font-size:9px;font-weight:700;color:${active?color:locked?'rgba(255,255,255,0.15)':'var(--text-muted)'};">${tgtLocked?'🔒':'E'+c.elite}</span>
           </div>
           <span style="font-size:7px;color:${!active&&canClick?'var(--text-muted)':'transparent'};">Lv${c.lvReq}</span>
         </div>`;
@@ -4875,11 +4881,11 @@ function renderOperatorConfig() {
           <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"></div>
           <div onclick="${canClick||active?clickFn:'void(0)'}"
             style="width:20px;height:20px;border-radius:3px;
-              border:1.5px solid ${active?eqColor:locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
+              border:1.5px solid ${active?(tgtLocked?'rgba(255,100,100,0.6)':eqColor):locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
               background:${active?eqColor+'22':'transparent'};
               cursor:${canClick||active?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:9px;color:${active?eqColor:'rgba(255,255,255,0.3)'};">◆</span>
+            <span style="font-size:9px;color:${active?(tgtLocked?'rgba(255,100,100,0.8)':eqColor):'rgba(255,255,255,0.3)'};">${tgtLocked?'🔒':'◆'}</span>
           </div>
           <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"></div>
         </div>`;
@@ -4897,14 +4903,15 @@ function renderOperatorConfig() {
         const cur = tn[idx] || {enabled:false};
         const avail = elite >= req; // 한번에 상위 선택 가능
         const active = cur.enabled && avail;
+        const curLocked = !isCur && curTn[idx]?.enabled && active;
         return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
-          <div onclick="${avail?tog(idx,cur.enabled):'void(0)'}"
+          <div onclick="${avail&&!curLocked?tog(idx,cur.enabled):(avail&&curLocked?'showCurLockedMsg()':'void(0)')}"
             style="width:26px;height:26px;border-radius:50%;
-              border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+              border:2px solid ${active?(curLocked?'rgba(255,100,100,0.6)':color):'rgba(255,255,255,0.2)'};
               background:${active?color+'22':'transparent'};
               cursor:${avail?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${i+1}</span>
+            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':(i+1)}</span>
           </div>
           <span style="font-size:8px;color:var(--text-muted);">${lbl}</span>
         </div>`;
@@ -4926,14 +4933,15 @@ function renderOperatorConfig() {
         const cur = tn[idx] || {enabled:false};
         const avail = elite >= req; // 한번에 상위 선택 가능
         const active = cur.enabled && avail;
+        const curLocked = !isCur && curTn[idx]?.enabled && active;
         return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
-          <div onclick="${avail?tog(idx,cur.enabled):'void(0)'}"
+          <div onclick="${avail&&!curLocked?tog(idx,cur.enabled):(avail&&curLocked?'showCurLockedMsg()':'void(0)')}"
             style="width:26px;height:26px;border-radius:4px;
-              border:2px solid ${active?color:'rgba(255,255,255,0.2)'};
+              border:2px solid ${active?(curLocked?'rgba(255,100,100,0.6)':color):'rgba(255,255,255,0.2)'};
               background:${active?color+'22':'transparent'};
               cursor:${avail?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${i+1}</span>
+            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':(i+1)}</span>
           </div>
           <span style="font-size:8px;color:var(--text-muted);">${lbl}</span>
         </div>`;
@@ -5210,18 +5218,43 @@ function toggleEliteChain(id, chainIdx, mode) {
   const op = operators.find(o => o.id === id);
   if (!op) return;
   const lv = mode === 'cur' ? op.currentLevel : op.targetLevel;
+
   // 레벨 조건 확인
   for (let i = 0; i <= chainIdx; i++) {
-    if (lv < ELITE_CHAIN[i].lvReq) return; // 레벨 부족
+    if (lv < ELITE_CHAIN[i].lvReq) {
+      showToast(`Lv${ELITE_CHAIN[i].lvReq} 이상이어야 해요`, 'error');
+      return;
+    }
   }
+
   const curStep = getChainStep(op, mode);
+
+  // 목표 패널에서 현재보다 낮게 선택 시 불가
+  if (mode === 'tgt') {
+    const curChainStep = getChainStep(op, 'cur');
+    const newStep = curStep >= chainIdx ? chainIdx - 1 : chainIdx;
+    if (newStep < curChainStep) {
+      showToast('현재 단계보다 낮게 설정할 수 없어요', 'error');
+      return;
+    }
+  }
+
   if (curStep >= chainIdx) {
-    // 이미 활성화 → 이 단계 직전까지로 해제
-    applyChainStep(op, mode, chainIdx - 1);
+    // 현재 패널에서 해제 시 목표도 같이 낮아져야 함
+    if (mode === 'cur') {
+      const newStep = chainIdx - 1;
+      applyChainStep(op, 'cur', newStep);
+      // 목표가 현재보다 높으면 그대로, 낮으면 현재 수준으로 맞춤
+      if (getChainStep(op, 'tgt') < newStep) {
+        applyChainStep(op, 'tgt', newStep);
+      }
+    } else {
+      applyChainStep(op, mode, chainIdx - 1);
+    }
   } else {
-    // 비활성화 → 이 단계까지 활성화
     applyChainStep(op, mode, chainIdx);
   }
+
   enforceDepGroups(op, mode);
   renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
 }
@@ -5229,10 +5262,12 @@ function toggleEliteChain(id, chainIdx, mode) {
 function toggleTalentNode(id, idx, checked, mode) {
   const op = operators.find(o => o.id === id);
   if (!op) return;
-  const key = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
-  if (!op[key]) op[key] = TALENT_NODE_COST.map((_,i) => ({idx:i,enabled:false}));
+  const curKey = 'curTalentNodes';
+  const tgtKey = 'tgtTalentNodes';
+  if (!op[curKey]) op[curKey] = TALENT_NODE_COST.map((_,i) => ({idx:i,enabled:false}));
+  if (!op[tgtKey]) op[tgtKey] = TALENT_NODE_COST.map((_,i) => ({idx:i,enabled:false}));
+  const key = mode === 'cur' ? curKey : tgtKey;
 
-  // 순서 의존 그룹
   const depGroups = [
     [0,1,2,3],   // 능력치
     [4,5],        // 재능1
@@ -5242,7 +5277,7 @@ function toggleTalentNode(id, idx, checked, mode) {
   ];
 
   if (checked) {
-    // 활성화 시 해당 그룹에서 이 idx까지 중간 단계 모두 채우기
+    // 목표에서 활성화 - 현재보다 낮을 수 없으므로 항상 허용
     depGroups.forEach(group => {
       const pos = group.indexOf(idx);
       if (pos === -1) return;
@@ -5251,7 +5286,16 @@ function toggleTalentNode(id, idx, checked, mode) {
       }
     });
   } else {
-    // 비활성화 시 이 idx 이후 모두 해제
+    // 비활성화
+    if (mode === 'tgt') {
+      // 목표에서 해제 시 현재보다 낮아지면 불가
+      const curEnabled = op[curKey][idx]?.enabled;
+      if (curEnabled) {
+        showToast('현재 단계보다 낮게 설정할 수 없어요', 'error');
+        return;
+      }
+    }
+    // 해제 + 이후 연쇄 해제
     op[key][idx].enabled = false;
     depGroups.forEach(group => {
       const pos = group.indexOf(idx);
@@ -5260,9 +5304,21 @@ function toggleTalentNode(id, idx, checked, mode) {
         op[key][group[i]].enabled = false;
       }
     });
+    // 현재에서 해제 시 목표도 같이 낮아져야 함
+    if (mode === 'cur') {
+      op[tgtKey][idx].enabled = false;
+      depGroups.forEach(group => {
+        const pos = group.indexOf(idx);
+        if (pos === -1) return;
+        for (let i = pos + 1; i < group.length; i++) {
+          op[tgtKey][group[i]].enabled = false;
+        }
+      });
+    }
   }
 
-  enforceDepGroups(op, mode);
+  enforceDepGroups(op, 'cur');
+  enforceDepGroups(op, 'tgt');
   renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
 }
 // ========== 커스텀 드롭박스 ==========
@@ -6377,6 +6433,9 @@ function loadFromURL() {
 }
 
 // ========== 토스트 알림 ==========
+function showCurLockedMsg() {
+  showToast('현재 단계보다 낮게 설정할 수 없어요', 'error');
+}
 function showToast(msg, type = 'info') {
   const existing = document.getElementById('toast-msg');
   if (existing) existing.remove();
