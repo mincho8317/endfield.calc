@@ -4818,7 +4818,7 @@ function renderOperatorConfig() {
         </svg>`;
       }).join('');
       return `<div style="margin-bottom:5px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:2px;">${type} <span style="color:${color};font-size:8px;">max ${skillMax}</span></div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:2px;">${type} <span style="color:${color};font-size:8px;">Rank ${curLv}/${skillMax}</span></div>
         <div style="display:flex;align-items:center;gap:3px;">
           <div style="display:flex;gap:2px;flex:1;">${bars}</div>
           <div style="display:flex;gap:1px;">${hexes}</div>
@@ -4855,25 +4855,37 @@ function renderOperatorConfig() {
     ];
     const LV_REQ = [0,20,40,60,80];
 
-    // 정예화 클릭 가능 여부 계산
-    function canElite(e) {
-      if (e === 0) return false; // E0는 기본값, 클릭 불필요
-      const prevEquip = EQUIP_GRADE.find(g => g.afterE === e-1 && e > 1);
-      const prevEquipOk = !prevEquip || (tn[prevEquip.idx]?.enabled);
-      return lv >= LV_REQ[e] && prevEquipOk;
+    // 정예화 가능 여부 (레벨 + 장비 해금 조건)
+    function canDoElite(e) {
+      if (e === 0) return false;
+      // 레벨 조건
+      const lvReqs = [0,20,40,60,80];
+      if (lv < lvReqs[e]) return false;
+      // 이전 장비 해금 조건
+      const equipNeeded = [{e:2,idx:12},{e:3,idx:13},{e:4,idx:14}];
+      for (const eq of equipNeeded) {
+        if (e >= eq.e && !(tn[eq.idx]?.enabled)) return false;
+      }
+      return true;
     }
 
     const eliteItems = [];
     [0,1,2,3,4].forEach(e => {
       const filled = elite >= e;
-      eliteItems.push(`<div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-        <div onclick="${e>0?('updateOpField('+op.id+',\''+(isCur?'currentElite':'targetElite')+'\','+e+')'):'void(0)'}"
+      const clickable = e === 0 ? false : canDoElite(e);
+      const locked = e > 0 && !filled && !clickable;
+      const eliteField = isCur ? 'currentElite' : 'targetElite';
+      const eliteClick = (clickable||filled) && e > 0
+        ? 'updateOpField(' + op.id + ',\'' + eliteField + '\',' + e + ')'
+        : 'void(0)';
+      eliteItems.push(`<div style="display:flex;flex-direction:column;align-items:center;gap:1px;opacity:${locked?0.4:1};">
+        <div onclick="${eliteClick}"
           style="width:30px;height:30px;border-radius:50%;
-            border:2px solid ${filled?color:'rgba(255,255,255,0.2)'};
+            border:2px solid ${filled?color:locked?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.2)'};
             background:${filled?color+'22':'transparent'};
-            cursor:${e>0?'pointer':'default'};
+            cursor:${(clickable||filled)&&e>0?'pointer':'default'};
             display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-          <span style="font-size:9px;font-weight:700;color:${filled?color:'var(--text-muted)'};">E${e}</span>
+          <span style="font-size:9px;font-weight:700;color:${filled?color:locked?'rgba(255,255,255,0.2)':'var(--text-muted)'};">${locked?'🔒':'E'+e}</span>
         </div>
       </div>`);
       // 장비 해금 노드 (E1뒤 파랑, E2뒤 보라, E3뒤 노랑)
@@ -5083,10 +5095,65 @@ function updateOpName(id, val) {
   if (op) { op.name = val; renderOperatorList(); renderOperatorTotal(); saveData(); }
 }
 
+// 정예화 조건 체크 헬퍼
+function eliteRequirements(elite) {
+  // { lvReq, equipIdx } - equipIdx: 이전 장비 해금 인덱스
+  const reqs = [
+    { lvReq:  0, equipIdx: null }, // E0
+    { lvReq: 20, equipIdx: null }, // E1
+    { lvReq: 40, equipIdx: 12   }, // E2: 파랑(idx12) 필요
+    { lvReq: 60, equipIdx: 13   }, // E3: 보라(idx13) 필요
+    { lvReq: 80, equipIdx: 14   }, // E4: 노랑(idx14) 필요
+  ];
+  return reqs[elite] || reqs[0];
+}
+
+// 정예화 가능 여부
+function canReachElite(op, targetE, mode) {
+  const lv = mode === 'cur' ? op.currentLevel : op.targetLevel;
+  const tnKey = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
+  const tn = op[tnKey] || [];
+  for (let e = 1; e <= targetE; e++) {
+    const req = eliteRequirements(e);
+    if (lv < req.lvReq) return false;
+    if (req.equipIdx !== null && !(tn[req.equipIdx]?.enabled)) return false;
+  }
+  return true;
+}
+
+// 스킬 최대 랭크
+function skillMaxRank(elite) {
+  return [1,3,6,9,12][elite] || 1;
+}
+
 function updateOpField(id, field, val) {
   const op = operators.find(o => o.id === id);
   if (!op) return;
-  op[field] = val;
+
+  // 정예화 변경 시 조건 검사
+  if (field === 'currentElite' || field === 'targetElite') {
+    const mode = field === 'currentElite' ? 'cur' : 'tgt';
+    const oldVal = op[field];
+    op[field] = val;
+
+    // 정예화 조건 미충족 시 원복
+    if (!canReachElite(op, val, mode)) {
+      op[field] = oldVal;
+      renderOperatorConfig();
+      return;
+    }
+
+    // 정예화 낮아지면 스킬 최대 랭크 제한
+    const maxRank = skillMaxRank(op[field]);
+    const lvField = mode === 'cur' ? 'currentLv' : 'targetLv';
+    if (op.skills) {
+      op.skills.forEach(sk => {
+        if (sk[lvField] > maxRank) sk[lvField] = maxRank;
+      });
+    }
+  } else {
+    op[field] = val;
+  }
 
   // 역전 방지
   if (field === 'currentElite' && op.currentElite > op.targetElite)  op.targetElite  = op.currentElite;
@@ -5094,7 +5161,6 @@ function updateOpField(id, field, val) {
   if (field === 'currentLevel' && op.currentLevel > op.targetLevel)  op.targetLevel  = op.currentLevel;
   if (field === 'targetLevel'  && op.targetLevel  < op.currentLevel) op.currentLevel = op.targetLevel;
 
-  // 범위 제한
   op.currentLevel = Math.max(1, Math.min(90, op.currentLevel || 1));
   op.targetLevel  = Math.max(1, Math.min(90, op.targetLevel  || 1));
 
@@ -5107,7 +5173,10 @@ function updateOpField(id, field, val) {
 function updateSkillLv(id, idx, field, val) {
   const op = operators.find(o => o.id === id);
   if (!op || !op.skills[idx]) return;
-  op.skills[idx][field] = Math.max(1, Math.min(12, val));
+
+  const elite = field === 'currentLv' ? op.currentElite : op.targetElite;
+  const maxRank = skillMaxRank(elite);
+  op.skills[idx][field] = Math.max(1, Math.min(maxRank, val));
 
   // 역전 방지
   if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv)
@@ -5126,7 +5195,56 @@ function toggleTalentNode(id, idx, checked, mode) {
   if (!op) return;
   const key = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
   if (!op[key]) op[key] = TALENT_NODE_COST.map((_,i) => ({ idx: i, enabled: false }));
+
   op[key][idx].enabled = checked;
+
+  // 하위 해제 시 상위 연쇄 해제
+  if (!checked) {
+    // 순서 의존 그룹 정의
+    const depGroups = [
+      [0,1,2,3],    // 능력치 R1~R4
+      [4,5],         // 재능1
+      [6,7],         // 재능2
+      [8,9],         // 인프라α
+      [10,11],       // 인프라β
+      [12,13,14],    // 장비 해금 (파랑→보라→노랑)
+    ];
+    depGroups.forEach(group => {
+      const pos = group.indexOf(idx);
+      if (pos === -1) return;
+      // 이 idx 이후의 모든 노드 해제
+      for (let i = pos + 1; i < group.length; i++) {
+        op[key][group[i]].enabled = false;
+      }
+    });
+
+    // 장비 해금 해제 시 해당 정예화도 해제
+    // 파랑(12) 해제 → E2 이상 불가 → 정예화도 낮춤
+    const eliteField = mode === 'cur' ? 'currentElite' : 'targetElite';
+    const equipEliteMap = { 12: 2, 13: 3, 14: 4 };
+    if (equipEliteMap[idx] !== undefined) {
+      const maxElite = equipEliteMap[idx] - 1;
+      if (op[eliteField] >= equipEliteMap[idx]) {
+        op[eliteField] = maxElite;
+        // 스킬도 제한
+        const maxRank = skillMaxRank(maxElite);
+        const lvField = mode === 'cur' ? 'currentLv' : 'targetLv';
+        if (op.skills) op.skills.forEach(sk => {
+          if (sk[lvField] > maxRank) sk[lvField] = maxRank;
+        });
+      }
+    }
+  }
+
+  // 장비 해금 체크 시 정예화 조건 재확인
+  if (checked && [12,13,14].includes(idx)) {
+    const eliteField = mode === 'cur' ? 'currentElite' : 'targetElite';
+    // 조건 미충족 시 해제
+    if (!canReachElite(op, op[eliteField], mode)) {
+      op[key][idx].enabled = false;
+    }
+  }
+
   renderOperatorList();
   renderOperatorConfig();
   renderOperatorTotal();
