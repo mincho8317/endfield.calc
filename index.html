@@ -4830,8 +4830,7 @@ function renderOperatorConfig() {
     const statNodes = [0,1,2,3].map(i => {
       const requireElite = i+1; // R1=E1, R2=E2, R3=E3, R4=E4
       const cur = tn[i] || {enabled:false};
-      const prevOk = i === 0 || (tn[i-1]?.enabled);
-      const avail = elite >= requireElite && prevOk;
+      const avail = elite >= requireElite; // 한번에 상위 선택 가능
       const active = cur.enabled && avail;
       return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
         <div onclick="${avail?tog(i,cur.enabled):'void(0)'}"
@@ -4896,8 +4895,7 @@ function renderOperatorConfig() {
     const talentHtml = talentGroups.map(({label, nodes}) => {
       const nodeHtml = nodes.map(({idx,req,label:lbl}, i) => {
         const cur = tn[idx] || {enabled:false};
-        const prevOk = i === 0 || (tn[nodes[i-1].idx]?.enabled);
-        const avail = elite >= req && prevOk;
+        const avail = elite >= req; // 한번에 상위 선택 가능
         const active = cur.enabled && avail;
         return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
           <div onclick="${avail?tog(idx,cur.enabled):'void(0)'}"
@@ -4926,8 +4924,7 @@ function renderOperatorConfig() {
     const infraHtml = infraGroups.map(({label, nodes}) => {
       const nodeHtml = nodes.map(({idx,req,label:lbl}, i) => {
         const cur = tn[idx] || {enabled:false};
-        const prevOk = i === 0 || (tn[nodes[i-1].idx]?.enabled);
-        const avail = elite >= req && prevOk;
+        const avail = elite >= req; // 한번에 상위 선택 가능
         const active = cur.enabled && avail;
         return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${avail?1:0.3};">
           <div onclick="${avail?tog(idx,cur.enabled):'void(0)'}"
@@ -5182,11 +5179,10 @@ function updateOpField(id, field, val) {
   if (field === 'currentLevel') enforceChainByLevel(op, 'cur');
   if (field === 'targetLevel')  enforceChainByLevel(op, 'tgt');
 
-  // 역전 방지
+  // 역전 방지 - 현재값이 고정, 목표가 변수
+  if (field === 'currentLevel' && op.currentLevel > op.targetLevel)  op.targetLevel  = op.currentLevel; // 현재 올리면 목표 최솟값 올림
   if (field === 'currentElite' && op.currentElite > op.targetElite)  op.targetElite  = op.currentElite;
-  if (field === 'targetElite'  && op.targetElite  < op.currentElite) op.currentElite = op.targetElite;
-  if (field === 'currentLevel' && op.currentLevel > op.targetLevel)  op.targetLevel  = op.currentLevel;
-  if (field === 'targetLevel'  && op.targetLevel  < op.currentLevel) op.currentLevel = op.targetLevel;
+  if (field === 'targetElite'  && op.targetElite  < op.currentElite) op.targetElite  = op.currentElite; // 목표 낮추면 현재값까지만
 
   enforceDepGroups(op, 'cur');
   enforceDepGroups(op, 'tgt');
