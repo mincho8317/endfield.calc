@@ -4846,76 +4846,50 @@ function renderOperatorConfig() {
       </div>`;
     }).join('');
 
-    // ── 정예화 + 장비 해금 규칙 ──
-    // E1: lv>=20, E2: 파랑+lv>=40, E3: 보라+lv>=60, E4: 노랑+lv>=80
-    const EQUIP_GRADE = [
-      {idx:12, color:'#4fc3f7', afterE:1, label:'파랑 장비'},
-      {idx:13, color:'#b39ddb', afterE:2, label:'보라 장비'},
-      {idx:14, color:'#ffd740', afterE:3, label:'노랑 장비'},
-    ];
-    const LV_REQ = [0,20,40,60,80];
+    // ── 정예화 + 장비 해금 (ELITE_CHAIN 기반) ──
+    const curStep = getChainStep(op, mode);
+    const CHAIN_EQUIP_COLORS = ['#4fc3f7','#b39ddb','#ffd740'];
 
-    // 정예화 가능 여부 (레벨 + 장비 해금 조건)
-    function canDoElite(e) {
-      if (e === 0) return false;
-      // 레벨 조건
-      const lvReqs = [0,20,40,60,80];
-      if (lv < lvReqs[e]) return false;
-      // 이전 장비 해금 조건
-      const equipNeeded = [{e:2,idx:12},{e:3,idx:13},{e:4,idx:14}];
-      for (const eq of equipNeeded) {
-        if (e >= eq.e && !(tn[eq.idx]?.enabled)) return false;
-      }
-      return true;
-    }
+    const eliteItemsArr = ELITE_CHAIN.map((c, chainIdx) => {
+      const active = curStep >= chainIdx;
+      const lvOk = lv >= c.lvReq;
+      const prevOk = chainIdx === 0 || curStep >= chainIdx - 1;
+      const canClick = lvOk && prevOk;
+      const clickFn = 'toggleEliteChain(' + op.id + ',' + chainIdx + ',\'' + mode + '\')';
 
-    const eliteItems = [];
-    [0,1,2,3,4].forEach(e => {
-      const filled = elite >= e;
-      const clickable = e === 0 ? false : canDoElite(e);
-      const locked = e > 0 && !filled && !clickable;
-      const eliteField = isCur ? 'currentElite' : 'targetElite';
-      const eliteClick = (clickable||filled) && e > 0
-        ? 'updateOpField(' + op.id + ',\'' + eliteField + '\',' + e + ')'
-        : 'void(0)';
-      eliteItems.push(`<div style="display:flex;flex-direction:column;align-items:center;gap:1px;opacity:${locked?0.4:1};">
-        <div onclick="${eliteClick}"
-          style="width:30px;height:30px;border-radius:50%;
-            border:2px solid ${filled?color:locked?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.2)'};
-            background:${filled?color+'22':'transparent'};
-            cursor:${(clickable||filled)&&e>0?'pointer':'default'};
-            display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-          <span style="font-size:9px;font-weight:700;color:${filled?color:locked?'rgba(255,255,255,0.2)':'var(--text-muted)'};">${locked?'🔒':'E'+e}</span>
-        </div>
-      </div>`);
-      // 장비 해금 노드 (E1뒤 파랑, E2뒤 보라, E3뒤 노랑)
-      const equip = EQUIP_GRADE.find(g => g.afterE === e && e >= 1 && e <= 3);
-      if (equip) {
-        const eqTn = tn[equip.idx] || {enabled:false};
-        const eqAvail = elite >= equip.afterE;
-        const eqActive = eqTn.enabled && eqAvail;
-        eliteItems.push(`<div style="display:flex;align-items:center;gap:2px;">
+      if (c.type === 'elite') {
+        const locked = !active && !canClick;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;opacity:${locked?0.35:1};">
+          <div onclick="${canClick||active?clickFn:'void(0)'}"
+            style="width:30px;height:30px;border-radius:50%;
+              border:2px solid ${active?color:locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
+              background:${active?color+'22':'transparent'};
+              cursor:${canClick||active?'pointer':'default'};
+              display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+            <span style="font-size:9px;font-weight:700;color:${active?color:locked?'rgba(255,255,255,0.15)':'var(--text-muted)'};">${locked?'🔒':'E'+c.elite}</span>
+          </div>
+          ${!active&&canClick?`<span style="font-size:7px;color:var(--text-muted);">Lv${c.lvReq}</span>`:''}
+        </div>`;
+      } else {
+        const eqColor = CHAIN_EQUIP_COLORS[Math.floor((chainIdx-1)/2)];
+        const locked = !active && !canClick;
+        return `<div style="display:flex;align-items:center;gap:2px;opacity:${locked?0.35:1};">
           <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"></div>
-          <div onclick="${eqAvail?tog(equip.idx,eqTn.enabled):'void(0)'}"
+          <div onclick="${canClick||active?clickFn:'void(0)'}"
             style="width:20px;height:20px;border-radius:3px;
-              border:1.5px solid ${eqActive?equip.color:'rgba(255,255,255,0.2)'};
-              background:${eqActive?equip.color+'22':'transparent'};
-              cursor:${eqAvail?'pointer':'default'};
-              display:flex;align-items:center;justify-content:center;transition:all 0.15s;
-              opacity:${eqAvail?1:0.3};"
-            title="${equip.label}">
-            <span style="font-size:9px;color:${eqActive?equip.color:'rgba(255,255,255,0.3)'};">◆</span>
+              border:1.5px solid ${active?eqColor:locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
+              background:${active?eqColor+'22':'transparent'};
+              cursor:${canClick||active?'pointer':'default'};
+              display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+            <span style="font-size:9px;color:${active?eqColor:'rgba(255,255,255,0.3)'};">◆</span>
           </div>
           <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"></div>
-        </div>`);
-      } else if (e < 4) {
-        eliteItems.push(`<div style="width:8px;height:2px;background:rgba(255,255,255,0.12);margin-top:14px;"></div>`);
+        </div>`;
       }
     });
-    const eliteLine = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:1px;">${eliteItems.join('')}</div>`;
+    const eliteLine = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:1px;">${eliteItemsArr.join('')}</div>`;
 
     // ── 재능 ──
-    // E1→재능1-1단계, E2→재능1-2단계+재능2-1단계, E3→재능2-2단계
     const talentGroups = [
       { label:'재능 1', nodes:[{idx:4,req:1,label:'1단계'},{idx:5,req:2,label:'2단계'}] },
       { label:'재능 2', nodes:[{idx:6,req:2,label:'1단계'},{idx:7,req:3,label:'2단계'}] },
@@ -5013,7 +4987,7 @@ function renderOperatorConfig() {
         <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">정예화</div>
         ${eliteLine}
         <div style="font-size:9px;color:var(--text-muted);margin-top:4px;">
-          Lv ${LV_REQ[elite+1]||'-'} 필요 (현재 E${elite})
+          <span style="font-size:9px;color:var(--text-muted);">E${elite} / 다음: Lv${[0,20,40,60,80][elite+1]||'MAX'} 필요</span>
         </div>
       </div>
     </div>`;
@@ -5096,64 +5070,118 @@ function updateOpName(id, val) {
 }
 
 // 정예화 조건 체크 헬퍼
-function eliteRequirements(elite) {
-  // { lvReq, equipIdx } - equipIdx: 이전 장비 해금 인덱스
-  const reqs = [
-    { lvReq:  0, equipIdx: null }, // E0
-    { lvReq: 20, equipIdx: null }, // E1
-    { lvReq: 40, equipIdx: 12   }, // E2: 파랑(idx12) 필요
-    { lvReq: 60, equipIdx: 13   }, // E3: 보라(idx13) 필요
-    { lvReq: 80, equipIdx: 14   }, // E4: 노랑(idx14) 필요
-  ];
-  return reqs[elite] || reqs[0];
-}
-
-// 정예화 가능 여부
-function canReachElite(op, targetE, mode) {
-  const lv = mode === 'cur' ? op.currentLevel : op.targetLevel;
-  const tnKey = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
-  const tn = op[tnKey] || [];
-  for (let e = 1; e <= targetE; e++) {
-    const req = eliteRequirements(e);
-    if (lv < req.lvReq) return false;
-    if (req.equipIdx !== null && !(tn[req.equipIdx]?.enabled)) return false;
-  }
-  return true;
-}
+// ── 정예화+장비 체인 ──────────────────────────────────────
+// 체인: [E1, 파랑, E2, 보라, E3, 노랑, E4]
+// 각 단계의 레벨 조건 (해당 단계를 활성화하려면 필요한 레벨)
+const ELITE_CHAIN = [
+  { type:'elite', elite:1, lvReq:20,  tnIdx:null },
+  { type:'equip', elite:1, lvReq:20,  tnIdx:12   }, // 파랑
+  { type:'elite', elite:2, lvReq:40,  tnIdx:null },
+  { type:'equip', elite:2, lvReq:40,  tnIdx:13   }, // 보라
+  { type:'elite', elite:3, lvReq:60,  tnIdx:null },
+  { type:'equip', elite:3, lvReq:60,  tnIdx:14   }, // 노랑
+  { type:'elite', elite:4, lvReq:80,  tnIdx:null },
+];
 
 // 스킬 최대 랭크
 function skillMaxRank(elite) {
   return [1,3,6,9,12][elite] || 1;
 }
 
+// 체인에서 현재 활성화 단계 수 가져오기
+function getChainStep(op, mode) {
+  const eliteField = mode === 'cur' ? 'currentElite' : 'targetElite';
+  const tnKey = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
+  const tn = op[tnKey] || [];
+  const elite = op[eliteField] || 0;
+  // 체인에서 마지막으로 활성화된 단계 인덱스 찾기
+  let step = -1;
+  for (let i = 0; i < ELITE_CHAIN.length; i++) {
+    const c = ELITE_CHAIN[i];
+    if (c.type === 'elite' && elite >= c.elite) step = i;
+    else if (c.type === 'equip' && tn[c.tnIdx]?.enabled) step = i;
+    else break; // 체인이 끊기면 중단
+  }
+  return step;
+}
+
+// 체인을 step까지 활성화 (이후는 모두 해제)
+function applyChainStep(op, mode, step) {
+  const eliteField = mode === 'cur' ? 'currentElite' : 'targetElite';
+  const lvField    = mode === 'cur' ? 'currentLv'    : 'targetLv';
+  const tnKey      = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
+  if (!op[tnKey]) op[tnKey] = TALENT_NODE_COST.map((_,i) => ({idx:i,enabled:false}));
+
+  let maxElite = 0;
+  for (let i = 0; i <= step && i < ELITE_CHAIN.length; i++) {
+    const c = ELITE_CHAIN[i];
+    if (c.type === 'elite') maxElite = c.elite;
+    else if (c.type === 'equip') op[tnKey][c.tnIdx].enabled = true;
+  }
+  // step 이후 모두 해제
+  for (let i = step + 1; i < ELITE_CHAIN.length; i++) {
+    const c = ELITE_CHAIN[i];
+    if (c.type === 'equip') op[tnKey][c.tnIdx].enabled = false;
+  }
+  op[eliteField] = maxElite;
+
+  // 스킬 최대 랭크 제한
+  const maxRank = skillMaxRank(maxElite);
+  if (op.skills) op.skills.forEach(sk => {
+    if (sk[lvField] > maxRank) sk[lvField] = maxRank;
+  });
+}
+
+// 레벨 변경 시 조건 미충족 체인 단계 자동 해제
+function enforceChainByLevel(op, mode) {
+  const lv     = mode === 'cur' ? op.currentLevel : op.targetLevel;
+  const tnKey  = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
+  const tn     = op[tnKey] || [];
+  // 레벨 조건 미충족 첫 단계 찾기
+  for (let i = 0; i < ELITE_CHAIN.length; i++) {
+    const c = ELITE_CHAIN[i];
+    if (lv < c.lvReq) {
+      // 이 단계부터 모두 해제
+      applyChainStep(op, mode, i - 1);
+      return;
+    }
+  }
+}
+
+// 능력치/재능/인프라 그룹 순서 강제
+function enforceDepGroups(op, mode) {
+  const tnKey = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
+  const tn = op[tnKey] || [];
+  const elite = mode === 'cur' ? op.currentElite : op.targetElite;
+  const depGroups = [
+    { nodes:[{idx:0,req:1},{idx:1,req:2},{idx:2,req:3},{idx:3,req:4}] }, // 능력치
+    { nodes:[{idx:4,req:1},{idx:5,req:2}] },                              // 재능1
+    { nodes:[{idx:6,req:2},{idx:7,req:3}] },                              // 재능2
+    { nodes:[{idx:8,req:1},{idx:9,req:3}] },                              // 인프라α
+    { nodes:[{idx:10,req:2},{idx:11,req:4}] },                            // 인프라β
+  ];
+  depGroups.forEach(({nodes}) => {
+    let broken = false;
+    nodes.forEach(({idx,req}, i) => {
+      if (broken || elite < req || (i > 0 && !tn[nodes[i-1].idx]?.enabled)) {
+        tn[idx] = {idx, enabled:false};
+        broken = true;
+      }
+    });
+  });
+}
+
 function updateOpField(id, field, val) {
   const op = operators.find(o => o.id === id);
   if (!op) return;
 
-  // 정예화 변경 시 조건 검사
-  if (field === 'currentElite' || field === 'targetElite') {
-    const mode = field === 'currentElite' ? 'cur' : 'tgt';
-    const oldVal = op[field];
-    op[field] = val;
+  op[field] = val;
+  op.currentLevel = Math.max(1, Math.min(90, op.currentLevel || 1));
+  op.targetLevel  = Math.max(1, Math.min(90, op.targetLevel  || 1));
 
-    // 정예화 조건 미충족 시 원복
-    if (!canReachElite(op, val, mode)) {
-      op[field] = oldVal;
-      renderOperatorConfig();
-      return;
-    }
-
-    // 정예화 낮아지면 스킬 최대 랭크 제한
-    const maxRank = skillMaxRank(op[field]);
-    const lvField = mode === 'cur' ? 'currentLv' : 'targetLv';
-    if (op.skills) {
-      op.skills.forEach(sk => {
-        if (sk[lvField] > maxRank) sk[lvField] = maxRank;
-      });
-    }
-  } else {
-    op[field] = val;
-  }
+  // 레벨 변경 시 체인 강제
+  if (field === 'currentLevel') enforceChainByLevel(op, 'cur');
+  if (field === 'targetLevel')  enforceChainByLevel(op, 'tgt');
 
   // 역전 방지
   if (field === 'currentElite' && op.currentElite > op.targetElite)  op.targetElite  = op.currentElite;
@@ -5161,8 +5189,8 @@ function updateOpField(id, field, val) {
   if (field === 'currentLevel' && op.currentLevel > op.targetLevel)  op.targetLevel  = op.currentLevel;
   if (field === 'targetLevel'  && op.targetLevel  < op.currentLevel) op.currentLevel = op.targetLevel;
 
-  op.currentLevel = Math.max(1, Math.min(90, op.currentLevel || 1));
-  op.targetLevel  = Math.max(1, Math.min(90, op.targetLevel  || 1));
+  enforceDepGroups(op, 'cur');
+  enforceDepGroups(op, 'tgt');
 
   renderOperatorList();
   renderOperatorConfig();
@@ -5173,82 +5201,44 @@ function updateOpField(id, field, val) {
 function updateSkillLv(id, idx, field, val) {
   const op = operators.find(o => o.id === id);
   if (!op || !op.skills[idx]) return;
-
   const elite = field === 'currentLv' ? op.currentElite : op.targetElite;
-  const maxRank = skillMaxRank(elite);
-  op.skills[idx][field] = Math.max(1, Math.min(maxRank, val));
-
-  // 역전 방지
+  op.skills[idx][field] = Math.max(1, Math.min(skillMaxRank(elite), val));
   if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv)
     op.skills[idx].targetLv = op.skills[idx].currentLv;
   if (field === 'targetLv'  && op.skills[idx].targetLv  < op.skills[idx].currentLv)
     op.skills[idx].currentLv = op.skills[idx].targetLv;
+  renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
+}
 
-  renderOperatorList();
-  renderOperatorConfig();
-  renderOperatorTotal();
-  saveData();
+// 체인 클릭 핸들러 - 이미 활성화된 단계 클릭 시 해제, 아니면 해당 단계까지 활성화
+function toggleEliteChain(id, chainIdx, mode) {
+  const op = operators.find(o => o.id === id);
+  if (!op) return;
+  const lv = mode === 'cur' ? op.currentLevel : op.targetLevel;
+  // 레벨 조건 확인
+  for (let i = 0; i <= chainIdx; i++) {
+    if (lv < ELITE_CHAIN[i].lvReq) return; // 레벨 부족
+  }
+  const curStep = getChainStep(op, mode);
+  if (curStep >= chainIdx) {
+    // 이미 활성화 → 이 단계 직전까지로 해제
+    applyChainStep(op, mode, chainIdx - 1);
+  } else {
+    // 비활성화 → 이 단계까지 활성화
+    applyChainStep(op, mode, chainIdx);
+  }
+  enforceDepGroups(op, mode);
+  renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
 }
 
 function toggleTalentNode(id, idx, checked, mode) {
   const op = operators.find(o => o.id === id);
   if (!op) return;
   const key = mode === 'cur' ? 'curTalentNodes' : 'tgtTalentNodes';
-  if (!op[key]) op[key] = TALENT_NODE_COST.map((_,i) => ({ idx: i, enabled: false }));
-
+  if (!op[key]) op[key] = TALENT_NODE_COST.map((_,i) => ({idx:i,enabled:false}));
   op[key][idx].enabled = checked;
-
-  // 하위 해제 시 상위 연쇄 해제
-  if (!checked) {
-    // 순서 의존 그룹 정의
-    const depGroups = [
-      [0,1,2,3],    // 능력치 R1~R4
-      [4,5],         // 재능1
-      [6,7],         // 재능2
-      [8,9],         // 인프라α
-      [10,11],       // 인프라β
-      [12,13,14],    // 장비 해금 (파랑→보라→노랑)
-    ];
-    depGroups.forEach(group => {
-      const pos = group.indexOf(idx);
-      if (pos === -1) return;
-      // 이 idx 이후의 모든 노드 해제
-      for (let i = pos + 1; i < group.length; i++) {
-        op[key][group[i]].enabled = false;
-      }
-    });
-
-    // 장비 해금 해제 시 해당 정예화도 해제
-    // 파랑(12) 해제 → E2 이상 불가 → 정예화도 낮춤
-    const eliteField = mode === 'cur' ? 'currentElite' : 'targetElite';
-    const equipEliteMap = { 12: 2, 13: 3, 14: 4 };
-    if (equipEliteMap[idx] !== undefined) {
-      const maxElite = equipEliteMap[idx] - 1;
-      if (op[eliteField] >= equipEliteMap[idx]) {
-        op[eliteField] = maxElite;
-        // 스킬도 제한
-        const maxRank = skillMaxRank(maxElite);
-        const lvField = mode === 'cur' ? 'currentLv' : 'targetLv';
-        if (op.skills) op.skills.forEach(sk => {
-          if (sk[lvField] > maxRank) sk[lvField] = maxRank;
-        });
-      }
-    }
-  }
-
-  // 장비 해금 체크 시 정예화 조건 재확인
-  if (checked && [12,13,14].includes(idx)) {
-    const eliteField = mode === 'cur' ? 'currentElite' : 'targetElite';
-    // 조건 미충족 시 해제
-    if (!canReachElite(op, op[eliteField], mode)) {
-      op[key][idx].enabled = false;
-    }
-  }
-
-  renderOperatorList();
-  renderOperatorConfig();
-  renderOperatorTotal();
-  saveData();
+  enforceDepGroups(op, mode);
+  renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
 }
 // ========== 커스텀 드롭박스 ==========
 // createCustomSelect(containerId, options, selectedValue, onChange, placeholder)
