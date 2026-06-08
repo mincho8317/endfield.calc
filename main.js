@@ -2229,6 +2229,7 @@ function selectOperatorByName(name) {
   activeOperatorId = name;
   renderOperatorList();
   renderOperatorConfig();
+  saveData();
 }
 
 // 오퍼레이터 상태 가져오기 - opStates 기반
@@ -2285,7 +2286,7 @@ function renderOperatorConfig() {
 
     // 헬퍼: 토글 onclick
     const tog = (idx, cur) =>
-      `toggleTalentNode(${op.id},${idx},${!cur},'${mode}')`;
+      `toggleTalentNode('${op.id}',${idx},${!cur},'${mode}')`;
 
     // ── 규칙 상수 ──
     // 스킬 최대 랭크: E0→1, E1→3, E2→6, E3→9, E4→12
@@ -2297,7 +2298,7 @@ function renderOperatorConfig() {
       <span style="font-size:10px;color:var(--text-muted);">Lv</span>
       <input type="number" min="1" max="90" value="${lv}"
         class="ws-count-input" style="width:50px;font-size:12px;text-align:center;"
-        onchange="updateOpField(${op.id},'${isCur?'currentLevel':'targetLevel'}',+this.value)">
+        onchange="updateOpField('${op.id}','${isCur?'currentLevel':'targetLevel'}',+this.value)">
       <span style="font-size:10px;color:var(--text-muted);">/90</span>
     </div>`;
 
@@ -2312,7 +2313,7 @@ function renderOperatorConfig() {
         return `<div style="height:8px;flex:1;border-radius:2px;
           background:${filled?color:locked?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.12)'};
           cursor:${locked?'default':'pointer'};opacity:${locked?0.3:1};transition:background 0.1s;"
-          onclick="${locked?'':('updateSkillLv('+op.id+','+si+',\''+( isCur?'currentLv':'targetLv')+'\',' +rank+')')}"
+          onclick="${locked?'':('updateSkillLv(\''+op.id+'\',' +si+',\''+( isCur?'currentLv':'targetLv')+'\',' +rank+')')}"
           title="Rank ${rank}${locked?' (잠김)':''}"></div>`;
       }).join('');
       const hexes = Array.from({length:3}, (_,r) => {
@@ -2322,7 +2323,7 @@ function renderOperatorConfig() {
         const pts = '12,2 22,7 22,17 12,22 2,17 2,7';
         return `<svg width="22" height="22" viewBox="0 0 24 24"
           style="cursor:${locked?'default':'pointer'};opacity:${locked?0.3:1};"
-          onclick="${locked?'':('updateSkillLv('+op.id+','+si+',\''+( isCur?'currentLv':'targetLv')+'\',' +rank+')')}"
+          onclick="${locked?'':('updateSkillLv(\''+op.id+'\',' +si+',\''+( isCur?'currentLv':'targetLv')+'\',' +rank+')')}"
           title="Rank ${rank}${locked?' (잠김)':''}">
           <polygon points="${pts}"
             fill="${filled?color+'33':'transparent'}"
@@ -2372,7 +2373,7 @@ function renderOperatorConfig() {
       const tgtLocked = !isCur && active && curChainStep >= chainIdx;
       const clickFn = tgtLocked
         ? 'showCurLockedMsg()'
-        : 'toggleEliteChain(' + op.id + ',' + chainIdx + ',\'' + mode + '\')';
+        : 'toggleEliteChain(\'' + op.id + '\','  + chainIdx + ',\'' + mode + '\')';
 
       if (c.type === 'elite') {
         const locked = !active && !canClick;
@@ -2512,7 +2513,7 @@ function renderOperatorConfig() {
   panel.innerHTML = `<div class="panel" style="padding:0;overflow:hidden;">
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;align-items:center;gap:10px;">
       <input value="${op.name}" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-weight:700;outline:none;flex:1;"
-        oninput="updateOpName(${op.id},this.value)">
+        oninput="updateOpName('${op.id}',this.value)">
     </div>
     <div style="padding:10px;display:flex;gap:8px;align-items:flex-start;" class="op-dual-panel">
       ${nodePanel('cur')}
@@ -3916,8 +3917,8 @@ function shareLink() {
       baseEff,
       presets,
       activeOutpostId,
-      operators,
-      nextOperatorId,
+      opStates,
+      activeOperatorName,
     };
     const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
     const url = `${location.origin}${location.pathname}?d=${encoded}`;
