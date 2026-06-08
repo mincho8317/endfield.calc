@@ -1700,13 +1700,11 @@ function FactoryLayout(){
   // 화면좌표 → 그리드셀. applyOffset=true면 손가락보다 OFFSET_CELLS 위(y감소)
   function c2cell(cx,cy,applyOffset){
     const wrap=wrapRef.current;if(!wrap)return null;
-    const wr=wrap.getBoundingClientRect();
-    // wrap 내 상대 좌표 (스크롤 포함)
-    const rx=cx - wr.left + wrap.scrollLeft;
-    const ry=cy - wr.top  + wrap.scrollTop;
-    // scale 역변환 → 그리드 셀
-    const gx=Math.floor(rx/CELL/scale);
-    const gy=Math.floor(ry/CELL/scale);
+    const scaleDiv=wrap.firstElementChild;if(!scaleDiv)return null;
+    const sr=scaleDiv.getBoundingClientRect();
+    const scaledCell=CELL*(sr.width/W);
+    const gx=Math.floor((cx-sr.left)/scaledCell);
+    const gy=Math.floor((cy-sr.top)/scaledCell);
     const fx=applyOffset?Math.max(0,gx-Math.floor(EQUIP_SIZE/2)):gx;
     const fy=applyOffset?Math.max(0,gy-OFFSET_CELLS):gy;
     return inBounds(fx,fy)?{x:fx,y:fy}:null;
@@ -2094,12 +2092,16 @@ function FactoryLayout(){
       const eq=selEqData;
       const wrap=wrapRef.current;
       if(!wrap)return null;
-      const wr=wrap.getBoundingClientRect();
-      // 설비 중앙 X, 상단 Y (스크롤 고려)
-      const centerX = wr.left + (eq.x + EQUIP_SIZE/2) * CELL * scale - wrap.scrollLeft;
-      const topY    = wr.top  + eq.y * CELL * scale - wrap.scrollTop;
-      const btnW=44, btnH=44, gap=12;
-      const totalW = btnW*2 + gap;
+      // scale div (wrapRef의 첫번째 자식)
+      const scaleDiv=wrap.firstElementChild;
+      if(!scaleDiv)return null;
+      const sr=scaleDiv.getBoundingClientRect();
+      // scale 적용된 셀 크기
+      const scaledCell=CELL*(sr.width/(W));
+      // 설비 중앙 화면 좌표
+      const centerX=sr.left+(eq.x+EQUIP_SIZE/2)*scaledCell;
+      const topY   =sr.top +eq.y*scaledCell;
+      const btnW=44,btnH=44,gap=12;
       function delEq(e){
         e.stopPropagation();
         const del=equips.find(q=>q.id===eq.id);
@@ -2115,13 +2117,12 @@ function FactoryLayout(){
         background:bg,border:'2px solid '+border,
         display:'flex',alignItems:'center',justifyContent:'center',
         fontSize:20,cursor:'pointer',userSelect:'none',
-        boxShadow:'0 2px 8px rgba(0,0,0,0.5)',
-        flexShrink:0,
+        boxShadow:'0 2px 8px rgba(0,0,0,0.5)',flexShrink:0,
       });
       return ce('div',{
         style:{position:'fixed',
-          left:centerX - totalW/2,
-          top:Math.max(4, topY - btnH - 8),
+          left:centerX-(btnW*2+gap)/2,
+          top:Math.max(4,topY-btnH-8),
           display:'flex',gap:gap,zIndex:9500,pointerEvents:'auto'},
       },
         ce('div',{onClick:delEq,onTouchEnd:e=>{e.preventDefault();delEq(e);},
