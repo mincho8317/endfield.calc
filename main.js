@@ -1823,7 +1823,7 @@ function saveData() {
         nextGroupId:   outpostData[o.id].nextGroupId,
       };
     });
-    const data = { outpostData: savedOutpostData, baseEff, presets, activeOutpostId, operators, nextOperatorId };
+    const data = { outpostData: savedOutpostData, baseEff, presets, activeOutpostId, opStates, activeOperatorName };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     markSaved();
   } catch(e) { console.warn('저장 실패:', e); }
@@ -1870,8 +1870,13 @@ function loadData() {
       });
     }
     if (data.presets) presets = data.presets;
-    if (data.operators) { operators = data.operators; }
-    if (data.nextOperatorId) nextOperatorId = data.nextOperatorId;
+    if (data.opStates) { opStates = data.opStates; }
+    if (data.activeOperatorName) activeOperatorName = data.activeOperatorName;
+    // 구 버전 호환
+    if (data.operators && !data.opStates) {
+      data.operators.forEach(op => { opStates[op.name] = op; });
+      if (data.operators.length > 0) activeOperatorName = data.operators[data.operators.length-1].name;
+    }
   } catch(e) { console.warn('불러오기 실패:', e); }
 }
 
@@ -2050,17 +2055,33 @@ function selectOperatorFromRoster(name) {
   saveData();
 }
 
-// 오퍼레이터 데이터
+// 오퍼레이터별 육성 상태 맵 { name: opData }
+let opStates = {};
+let activeOperatorName = null;
+
+// 하위호환 - operators/activeOperatorId 접근 코드와 호환
+function getActiveOp() {
+  if (!activeOperatorName) return null;
+  if (!opStates[activeOperatorName]) {
+    opStates[activeOperatorName] = getDefaultOperator(activeOperatorName);
+  }
+  return opStates[activeOperatorName];
+}
+
+// 구 코드 호환용
 let operators = [];
 let activeOperatorId = null;
 let nextOperatorId = 1;
 
-function getDefaultOperator(id) {
+function getDefaultOperator(name) {
+  const roster = OPERATOR_ROSTER.find(o => o.name === name);
   return {
-    id, name: `오퍼레이터 ${id}`,
-    currentElite: 0, targetElite: 4,
-    currentLevel: 1, targetLevel: 90,
-    skills: SKILL_TYPES.map(type => ({ type, currentLv: 1, targetLv: 12 })),
+    id: name,  // id를 name으로 사용
+    name,
+    rarity: roster?.rarity || 5,
+    currentElite: 0, targetElite: 0,
+    currentLevel: 1, targetLevel: 1,
+    skills: SKILL_TYPES.map(type => ({ type, currentLv: 1, targetLv: 1 })),
     curTalentNodes: TALENT_NODE_COST.map((n, i) => ({ idx: i, enabled: false })),
     tgtTalentNodes: TALENT_NODE_COST.map((n, i) => ({ idx: i, enabled: false })),
   };
@@ -2143,109 +2164,81 @@ function calcOperatorMats(op) {
   return result;
 }
 
-// 전체 오퍼레이터 합산
+// 선택된 오퍼레이터 재료 계산
 function calcTotalMats() {
-  const total = {};
-  operators.forEach(op => {
-    const mats = calcOperatorMats(op);
-    Object.entries(mats).forEach(([k, v]) => { total[k] = (total[k] || 0) + v; });
-  });
-  return total;
+  const op = getActiveOp();
+  if (!op) return {};
+  return calcOperatorMats(op);
 }
 
 // ===== 렌더링 =====
+// 등급별 이름 색상
+const RARITY_NAME_COLOR = { 6: '#ff6b6b', 5: '#e8b800', 4: '#b39ddb' };
+
 function renderOperatorList() {
   const el = document.getElementById('operator-list');
   if (!el) return;
-  const isMobile = window.innerWidth < 768;
 
-  if (operators.length === 0) {
-    el.innerHTML = isMobile
-      ? `<div style="padding:8px 4px;color:var(--text-muted);font-size:11px;white-space:nowrap;">+ 추가로 오퍼레이터를 선택하세요</div>`
-      : `<div class="empty-state" style="padding:24px;font-size:12px;">
-          <div class="icon">👤</div>
-          <div style="line-height:1.8;"><b>+ 추가</b> 버튼을 눌러<br>오퍼레이터를 선택하세요</div>
-        </div>`;
+  const roster = OPERATOR_ROSTER;
+  if (!roster || roster.length === 0) {
+    el.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:12px;">오퍼레이터 데이터 없음</div>';
     return;
   }
 
-  if (isMobile) {
-    // 모바일 — 가로 칩 (flex-wrap)
-    el.innerHTML = operators.map(op => {
-      const isActive = op.id === activeOperatorId;
-      const rc = RARITY_COLOR[op.rarity] || 'var(--text-muted)';
-      return `<div onclick="selectOperator(${op.id})"
-        style="display:inline-flex;align-items:center;gap:5px;
-          padding:5px 8px 5px 10px;cursor:pointer;flex-shrink:0;
-          border-radius:4px;border:1px solid ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.1)'};
-          background:${isActive ? 'rgba(240,200,22,0.12)' : 'rgba(255,255,255,0.04)'};
-          transition:all 0.15s;">
-        ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
-        <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
-        <button onmousedown="deleteOperatorChip(event,${op.id})"
-          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;">×</button>
-      </div>`;
-    }).join('');
-  } else {
-    // PC — 세로 목록
-    el.innerHTML = operators.map(op => {
-      const isActive = op.id === activeOperatorId;
-      const mats = calcOperatorMats(op);
-      const matCount = Object.keys(mats).length;
-      const rc = RARITY_COLOR[op.rarity] || 'var(--text-muted)';
-      return `<div onclick="selectOperator(${op.id})"
-        style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);
-          background:${isActive ? 'rgba(240,200,22,0.09)' : 'transparent'};
-          border-left:3px solid ${isActive ? 'var(--accent)' : 'transparent'};
-          transition:background 0.15s;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
-            <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
-          </div>
-        <button onmousedown="deleteOperatorChip(event,${op.id})"
-            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;">×</button>
+  // 등급별 그룹
+  const groups = [6, 5, 4];
+  let html = '';
+  groups.forEach(rarity => {
+    const ops = roster.filter(o => o.rarity === rarity);
+    if (!ops.length) return;
+    const rc = RARITY_NAME_COLOR[rarity] || 'var(--text-muted)';
+    html += `<div style="padding:6px 10px 2px;font-size:10px;font-weight:700;color:${rc};letter-spacing:0.06em;">★${rarity}</div>`;
+    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;padding:0 8px 8px;">`;
+    ops.forEach(o => {
+      const isActive = activeOperatorName === o.name;
+      const state = opStates[o.name];
+      const hasData = state && (state.currentElite > 0 || state.targetElite > 0 || state.currentLevel > 1);
+      html += `<div onclick="selectOperatorByName('${o.name}')"
+        style="cursor:pointer;border-radius:6px;overflow:hidden;
+          border:2px solid ${isActive ? 'var(--accent)' : hasData ? rc+'66' : 'rgba(255,255,255,0.1)'};
+          background:${isActive ? 'rgba(240,200,22,0.1)' : 'rgba(255,255,255,0.03)'};
+          transition:all 0.15s;text-align:center;">
+        <div style="width:100%;aspect-ratio:1;background:rgba(255,255,255,0.05);
+          display:flex;align-items:center;justify-content:center;font-size:20px;">
+          👤
         </div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">
-          E${op.currentElite}→E${op.targetElite} · Lv${op.currentLevel}→${op.targetLevel}
-          ${matCount > 0 ? `· <span style="color:var(--accent2);">재료 ${matCount}종</span>` : ''}
+        <div style="padding:3px 2px;font-size:10px;font-weight:600;
+          color:${isActive ? 'var(--accent)' : rc};
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${o.name}
         </div>
       </div>`;
-    }).join('');
-  }
+    });
+    html += `</div>`;
+  });
+
+  el.innerHTML = html;
 }
 
-function selectOperator(id) {
-  activeOperatorId = id;
+function selectOperatorByName(name) {
+  activeOperatorName = name;
+  if (!opStates[name]) {
+    opStates[name] = getDefaultOperator(name);
+  }
+  // 구 코드 호환
+  activeOperatorId = name;
   renderOperatorList();
   renderOperatorConfig();
 }
 
-function addOperator() {
-  openOperatorSelectModal();
-}
-
-async function deleteOperatorChip(e, id) {
-  if (e) { e.stopPropagation(); e.preventDefault(); }
-  const op = operators.find(o => o.id === id);
-  if (!op) return;
-  const ok = await dialogConfirm(`"${op.name}"을(를) 목록에서 제거할까요?`);
-  if (!ok) return;
-  operators = operators.filter(o => o.id !== id);
-  if (activeOperatorId === id) {
-    activeOperatorId = operators.length > 0 ? operators[operators.length - 1].id : null;
+// 오퍼레이터 상태 가져오기 - opStates 기반
+function getActiveOp() {
+  if (!activeOperatorName) return null;
+  if (!opStates[activeOperatorName]) {
+    opStates[activeOperatorName] = getDefaultOperator(activeOperatorName);
   }
-  renderOperatorList();
-  renderOperatorConfig();
-  renderOperatorTotal();
-  saveData();
+  return opStates[activeOperatorName];
 }
-
-function deleteOperator(id) {
-  deleteOperatorChip(null, id);
-}
-
-function getActiveOp() { return operators.find(o => o.id === activeOperatorId); }
 
 function renderOperatorConfig() {
   const panel = document.getElementById('operator-config-panel');
@@ -2535,7 +2528,7 @@ function renderOperatorConfig() {
 function renderOperatorTotal() {
   const isMobile = window.innerWidth < 768;
   const mats = calcTotalMats();
-  const hasMats = operators.length > 0 && Object.keys(mats).length > 0;
+  const hasMats = !!getActiveOp() && Object.keys(mats).length > 0;
   const sorted = Object.entries(mats).sort((a,b) => b[1]-a[1]);
 
   if (isMobile) {
@@ -2589,7 +2582,7 @@ function toggleOpTotalBar() {
 }
 
 function updateOpName(id, val) {
-  const op = operators.find(o => o.id === id);
+  const op = opStates[id] || null;
   if (op) { op.name = val; renderOperatorList(); renderOperatorTotal(); saveData(); }
 }
 
@@ -2696,7 +2689,7 @@ function enforceDepGroups(op, mode) {
 }
 
 function updateOpField(id, field, val) {
-  const op = operators.find(o => o.id === id);
+  const op = opStates[id] || null;
   if (!op) return;
 
   op[field] = val;
@@ -2731,7 +2724,7 @@ function updateOpField(id, field, val) {
 }
 
 function updateSkillLv(id, idx, field, val) {
-  const op = operators.find(o => o.id === id);
+  const op = opStates[id] || null;
   if (!op || !op.skills[idx]) return;
   const elite = field === 'currentLv' ? op.currentElite : op.targetElite;
   op.skills[idx][field] = Math.max(1, Math.min(skillMaxRank(elite), val));
@@ -2747,7 +2740,7 @@ function updateSkillLv(id, idx, field, val) {
 
 // 체인 클릭 핸들러 - 이미 활성화된 단계 클릭 시 해제, 아니면 해당 단계까지 활성화
 function toggleEliteChain(id, chainIdx, mode) {
-  const op = operators.find(o => o.id === id);
+  const op = opStates[id] || null;
   if (!op) return;
   const lv = mode === 'cur' ? op.currentLevel : op.targetLevel;
 
@@ -2792,7 +2785,7 @@ function toggleEliteChain(id, chainIdx, mode) {
 }
 
 function toggleTalentNode(id, idx, checked, mode) {
-  const op = operators.find(o => o.id === id);
+  const op = opStates[id] || null;
   if (!op) return;
   const curKey = 'curTalentNodes';
   const tgtKey = 'tgtTalentNodes';

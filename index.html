@@ -1260,14 +1260,13 @@ select option { background: var(--bg-popup); color: var(--text); }
     <div id="tab-operator" class="page-view">
       <div class="op-layout" style="display:flex;gap:16px;align-items:flex-start;">
 
-        <!-- 왼쪽: 오퍼레이터 목록 -->
-        <div class="op-list-col" style="width:220px;flex-shrink:0;">
+        <!-- 왼쪽: 오퍼레이터 그리드 -->
+        <div class="op-list-col" style="width:260px;flex-shrink:0;">
           <div class="panel" style="padding:0;overflow:hidden;">
-            <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(240,200,22,0.06);">
-              <span style="font-size:12px;font-weight:600;color:var(--accent);">오퍼레이터 목록</span>
-              <button class="btn btn-primary" style="font-size:11px;padding:3px 10px;" onclick="addOperator()">+ 추가</button>
+            <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);">
+              <span style="font-size:12px;font-weight:600;color:var(--accent);">오퍼레이터 선택</span>
             </div>
-            <div id="operator-list" style="max-height:calc(100vh - 240px);overflow-y:auto;"></div>
+            <div id="operator-list" style="max-height:calc(100vh - 200px);overflow-y:auto;"></div>
           </div>
         </div>
 
