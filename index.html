@@ -3660,7 +3660,7 @@ function renderAuthOutpostPanel(oId) {
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.04);">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${outpost?.name || oId}</div>
       <div style="display:flex;align-items:baseline;gap:8px;">
-        <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;" id="auth-panel-total-${oId}">${authTotal > 0 ? fmt(authTotal) : '—'}</span>
+        <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:var(--font-mono);" id="auth-panel-total-${oId}">${authTotal > 0 ? fmt(authTotal) : '—'}</span>
         <span style="font-size:12px;color:var(--text-muted);">/분</span>
       </div>
     </div>
@@ -4792,33 +4792,39 @@ function renderOperatorConfig() {
     const skillHtml = SKILL_TYPES.map((type, si) => {
       const sk = op.skills?.[si] || { currentLv:1, targetLv:1 };
       const curLv = isCur ? sk.currentLv : sk.targetLv;
+      const curSkillLv = sk.currentLv;
       const bars = Array.from({length:9}, (_,r) => {
         const rank = r+1;
         const locked = rank > skillMax;
+        const tgtBelow = !isCur && rank < curSkillLv;
         const filled = !locked && curLv >= rank;
+        const clickFn = locked ? '' : tgtBelow ? 'showCurLockedMsg()'
+          : ('updateSkillLv('+op.id+','+si+',\''+(isCur?'currentLv':'targetLv')+'\',' +rank+')');
         return `<div style="height:8px;flex:1;border-radius:2px;
-          background:${filled?color:locked?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.12)'};
+          background:${filled?(tgtBelow?'rgba(255,80,80,0.35)':color):locked?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.12)'};
           cursor:${locked?'default':'pointer'};opacity:${locked?0.3:1};transition:background 0.1s;"
-          onclick="${locked?'':('updateSkillLv('+op.id+','+si+',\''+( isCur?'currentLv':'targetLv')+'\',' +rank+')')}"
-          title="Rank ${rank}${locked?' (잠김)':''}"></div>`;
+          onclick="${clickFn}"
+          title="Rank ${rank}${locked?' (잠김)':''}${tgtBelow?' (현재보다 낮음)':''}"></div>`;
       }).join('');
       const hexes = Array.from({length:3}, (_,r) => {
         const rank = r+10;
         const locked = rank > skillMax;
+        const tgtBelow = !isCur && rank < curSkillLv;
         const filled = !locked && curLv >= rank;
         const pts = '12,2 22,7 22,17 12,22 2,17 2,7';
+        const clickFn = locked ? '' : tgtBelow ? 'showCurLockedMsg()'
+          : ('updateSkillLv('+op.id+','+si+',\''+(isCur?'currentLv':'targetLv')+'\',' +rank+')');
         return `<svg width="22" height="22" viewBox="0 0 24 24"
           style="cursor:${locked?'default':'pointer'};opacity:${locked?0.3:1};"
-          onclick="${locked?'':('updateSkillLv('+op.id+','+si+',\''+( isCur?'currentLv':'targetLv')+'\',' +rank+')')}"
-          title="Rank ${rank}${locked?' (잠김)':''}">
+          onclick="${clickFn}"
+          title="Rank ${rank}${locked?' (잠김)':''}${tgtBelow?' (현재보다 낮음)':''}">
           <polygon points="${pts}"
-            fill="${filled?color+'33':'transparent'}"
-            stroke="${filled?color:locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'}"
+            fill="${filled?(tgtBelow?'rgba(255,80,80,0.2)':color+'33'):'transparent'}"
+            stroke="${filled?(tgtBelow?'rgba(255,80,80,0.6)':color):locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'}"
             stroke-width="1.5"/>
           <text x="12" y="15" text-anchor="middle" font-size="7"
             fill="${filled?color:'rgba(255,255,255,0.4)'}" font-weight="700">${rank}</text>
         </svg>`;
-      }).join('');
       return `<div style="margin-bottom:5px;">
         <div style="font-size:9px;color:var(--text-muted);margin-bottom:2px;">${type} <span style="color:${color};font-size:8px;">Rank ${curLv}/${skillMax}</span></div>
         <div style="display:flex;align-items:center;gap:3px;">
@@ -4991,7 +4997,7 @@ function renderOperatorConfig() {
         <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">정예화</div>
         ${eliteLine}
         <div style="font-size:9px;color:var(--text-muted);margin-top:4px;">
-          <span style="font-size:9px;color:var(--text-muted);">E${elite} / 다음: Lv${[0,20,40,60,80][elite+1]||'MAX'} 필요</span>
+          <span style="font-size:9px;color:var(--text-muted);">E${elite} / 다음: Lv${[0,20,40,60,80][elite+1]||0} 필요</span>
         </div>
       </div>
     </div>`;
@@ -5188,9 +5194,29 @@ function updateOpField(id, field, val) {
   if (field === 'targetLevel')  enforceChainByLevel(op, 'tgt');
 
   // 역전 방지 - 현재값이 고정, 목표가 변수
-  if (field === 'currentLevel' && op.currentLevel > op.targetLevel)  op.targetLevel  = op.currentLevel; // 현재 올리면 목표 최솟값 올림
-  if (field === 'currentElite' && op.currentElite > op.targetElite)  op.targetElite  = op.currentElite;
-  if (field === 'targetElite'  && op.targetElite  < op.currentElite) op.targetElite  = op.currentElite; // 목표 낮추면 현재값까지만
+  if (field === 'currentLevel' && op.currentLevel > op.targetLevel)
+    op.targetLevel = op.currentLevel;
+  if (field === 'targetLevel' && op.targetLevel < op.currentLevel) {
+    op.targetLevel = op.currentLevel;
+    showCurLockedMsg();
+  }
+  if (field === 'currentElite' && op.currentElite > op.targetElite) {
+    op.targetElite = op.currentElite;
+    // 현재 체인 단계가 목표보다 높으면 목표도 맞춤
+    const curStep = getChainStep(op, 'cur');
+    const tgtStep = getChainStep(op, 'tgt');
+    if (curStep > tgtStep) applyChainStep(op, 'tgt', curStep);
+  }
+  if (field === 'targetElite' && op.targetElite < op.currentElite) {
+    op.targetElite = op.currentElite;
+    showCurLockedMsg();
+  }
+
+  // 현재 능력치/재능/인프라 올릴 때 목표도 최솟값 연동은 toggleTalentNode에서 처리
+  // 현재 체인 올릴 때 목표 체인도 최솟값 맞춤
+  const curStep2 = getChainStep(op, 'cur');
+  const tgtStep2 = getChainStep(op, 'tgt');
+  if (curStep2 > tgtStep2) applyChainStep(op, 'tgt', curStep2);
 
   enforceDepGroups(op, 'cur');
   enforceDepGroups(op, 'tgt');
@@ -5206,10 +5232,14 @@ function updateSkillLv(id, idx, field, val) {
   if (!op || !op.skills[idx]) return;
   const elite = field === 'currentLv' ? op.currentElite : op.targetElite;
   op.skills[idx][field] = Math.max(1, Math.min(skillMaxRank(elite), val));
-  if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv)
+
+  if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv) {
     op.skills[idx].targetLv = op.skills[idx].currentLv;
-  if (field === 'targetLv'  && op.skills[idx].targetLv  < op.skills[idx].currentLv)
-    op.skills[idx].currentLv = op.skills[idx].targetLv;
+  }
+  if (field === 'targetLv' && op.skills[idx].targetLv < op.skills[idx].currentLv) {
+    op.skills[idx].targetLv = op.skills[idx].currentLv;
+    showCurLockedMsg();
+  }
   renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
 }
 
@@ -5244,8 +5274,9 @@ function toggleEliteChain(id, chainIdx, mode) {
     if (mode === 'cur') {
       const newStep = chainIdx - 1;
       applyChainStep(op, 'cur', newStep);
-      // 목표가 현재보다 높으면 그대로, 낮으면 현재 수준으로 맞춤
-      if (getChainStep(op, 'tgt') < newStep) {
+      if (getChainStep(op, 'tgt') > newStep) {
+        // 목표가 현재보다 높으면 그대로
+      } else {
         applyChainStep(op, 'tgt', newStep);
       }
     } else {
@@ -5253,6 +5284,13 @@ function toggleEliteChain(id, chainIdx, mode) {
     }
   } else {
     applyChainStep(op, mode, chainIdx);
+    // 현재 활성화 시 목표가 현재보다 낮으면 목표도 올림
+    if (mode === 'cur') {
+      const newCurStep = getChainStep(op, 'cur');
+      if (getChainStep(op, 'tgt') < newCurStep) {
+        applyChainStep(op, 'tgt', newCurStep);
+      }
+    }
   }
 
   enforceDepGroups(op, mode);
