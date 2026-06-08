@@ -2174,6 +2174,7 @@ function calcTotalMats() {
 // ===== 렌더링 =====
 // 등급별 이름 색상
 const RARITY_NAME_COLOR = { 6: '#ff6b6b', 5: '#e8b800', 4: '#b39ddb' };
+const RARITY_BG_COLOR   = { 6: 'rgba(255,107,107,0.25)', 5: 'rgba(232,184,0,0.25)', 4: 'rgba(179,157,219,0.25)' };
 
 function renderOperatorList() {
   const el = document.getElementById('operator-list');
@@ -2185,13 +2186,13 @@ function renderOperatorList() {
     return;
   }
 
-  // 등급별 그룹
   const groups = [6, 5, 4];
   let html = '';
   groups.forEach(rarity => {
     const ops = roster.filter(o => o.rarity === rarity);
     if (!ops.length) return;
-    const rc = RARITY_NAME_COLOR[rarity] || 'var(--text-muted)';
+    const rc  = RARITY_NAME_COLOR[rarity] || 'var(--text-muted)';
+    const rbg = RARITY_BG_COLOR[rarity]   || 'rgba(255,255,255,0.1)';
     html += `<div style="padding:6px 10px 2px;font-size:10px;font-weight:700;color:${rc};letter-spacing:0.06em;">★${rarity}</div>`;
     html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;padding:0 8px 8px;">`;
     ops.forEach(o => {
@@ -2200,7 +2201,7 @@ function renderOperatorList() {
       const hasData = state && (state.currentElite > 0 || state.targetElite > 0 || state.currentLevel > 1);
       html += `<div onclick="selectOperatorByName('${o.name}')"
         style="cursor:pointer;border-radius:6px;overflow:hidden;
-          border:2px solid ${isActive ? 'var(--accent)' : hasData ? rc+'66' : 'rgba(255,255,255,0.1)'};
+          border:2px solid ${isActive ? 'var(--accent)' : hasData ? rc+'88' : 'rgba(255,255,255,0.1)'};
           background:${isActive ? 'rgba(240,200,22,0.1)' : 'rgba(255,255,255,0.03)'};
           transition:all 0.15s;text-align:center;">
         <div style="width:100%;aspect-ratio:1;background:rgba(255,255,255,0.05);
@@ -2208,7 +2209,8 @@ function renderOperatorList() {
           👤
         </div>
         <div style="padding:3px 2px;font-size:10px;font-weight:600;
-          color:${isActive ? 'var(--accent)' : rc};
+          color:var(--text);
+          background:${isActive ? 'rgba(240,200,22,0.3)' : rbg};
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
           ${o.name}
         </div>
@@ -2766,11 +2768,10 @@ function toggleEliteChain(id, chainIdx, mode) {
   }
 
   if (curStep >= chainIdx) {
-    // 현재 패널에서 해제 시 목표도 같이 낮아져야 함
+    // 해제
     if (mode === 'cur') {
       const newStep = chainIdx - 1;
       applyChainStep(op, 'cur', newStep);
-      // 목표가 현재보다 높으면 그대로, 낮으면 현재 수준으로 맞춤
       if (getChainStep(op, 'tgt') < newStep) {
         applyChainStep(op, 'tgt', newStep);
       }
@@ -2778,7 +2779,15 @@ function toggleEliteChain(id, chainIdx, mode) {
       applyChainStep(op, mode, chainIdx - 1);
     }
   } else {
+    // 활성화
     applyChainStep(op, mode, chainIdx);
+    // 현재 올릴 때 목표도 최솟값 맞춤
+    if (mode === 'cur') {
+      const tgtStep = getChainStep(op, 'tgt');
+      if (tgtStep < chainIdx) {
+        applyChainStep(op, 'tgt', chainIdx);
+      }
+    }
   }
 
   enforceDepGroups(op, mode);
@@ -2803,7 +2812,7 @@ function toggleTalentNode(id, idx, checked, mode) {
   ];
 
   if (checked) {
-    // 목표에서 활성화 - 현재보다 낮을 수 없으므로 항상 허용
+    // 활성화 - 중간 단계도 채우기
     depGroups.forEach(group => {
       const pos = group.indexOf(idx);
       if (pos === -1) return;
@@ -2811,6 +2820,18 @@ function toggleTalentNode(id, idx, checked, mode) {
         op[key][group[i]].enabled = true;
       }
     });
+    // 현재에서 활성화 시 목표도 최솟값으로 맞춤
+    if (mode === 'cur') {
+      depGroups.forEach(group => {
+        const pos = group.indexOf(idx);
+        if (pos === -1) return;
+        for (let i = 0; i <= pos; i++) {
+          if (!op[tgtKey][group[i]].enabled) {
+            op[tgtKey][group[i]].enabled = true;
+          }
+        }
+      });
+    }
   } else {
     // 비활성화
     if (mode === 'tgt') {
