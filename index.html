@@ -1699,11 +1699,14 @@ function FactoryLayout(){
 
   // 화면좌표 → 그리드셀. applyOffset=true면 손가락보다 OFFSET_CELLS 위(y감소)
   function c2cell(cx,cy,applyOffset){
-    const svg=svgRef.current;if(!svg)return null;
-    const r=svg.getBoundingClientRect();
-    const gx=Math.floor((cx-r.left)/r.width*GRID_W);
-    const gy=Math.floor((cy-r.top)/r.height*GRID_H);
-    // 중앙 상단: X는 설비 절반 왼쪽, Y는 OFFSET_CELLS 위
+    const wrap=wrapRef.current;if(!wrap)return null;
+    const wr=wrap.getBoundingClientRect();
+    // wrap 내 상대 좌표 (스크롤 포함)
+    const rx=cx - wr.left + wrap.scrollLeft;
+    const ry=cy - wr.top  + wrap.scrollTop;
+    // scale 역변환 → 그리드 셀
+    const gx=Math.floor(rx/CELL/scale);
+    const gy=Math.floor(ry/CELL/scale);
     const fx=applyOffset?Math.max(0,gx-Math.floor(EQUIP_SIZE/2)):gx;
     const fy=applyOffset?Math.max(0,gy-OFFSET_CELLS):gy;
     return inBounds(fx,fy)?{x:fx,y:fy}:null;
@@ -2089,14 +2092,14 @@ function FactoryLayout(){
     // 선택된 설비 위 삭제/회전 버튼 (HTML, scale 영향 없음)
     selEqData&&(()=>{
       const eq=selEqData;
-      // scale 변환 적용된 화면 좌표로 직접 계산
       const wrap=wrapRef.current;
       if(!wrap)return null;
       const wr=wrap.getBoundingClientRect();
-      // scale div 기준 설비 위치 → 화면 좌표
-      const bx=(eq.x+EQUIP_SIZE/2)*CELL*scale - 44 - 8;
-      const by=eq.y*CELL*scale - 50;
-      const btnW=44, btnH=44, gap=16;
+      // 설비 중앙 X, 상단 Y (스크롤 고려)
+      const centerX = wr.left + (eq.x + EQUIP_SIZE/2) * CELL * scale - wrap.scrollLeft;
+      const topY    = wr.top  + eq.y * CELL * scale - wrap.scrollTop;
+      const btnW=44, btnH=44, gap=12;
+      const totalW = btnW*2 + gap;
       function delEq(e){
         e.stopPropagation();
         const del=equips.find(q=>q.id===eq.id);
@@ -2117,7 +2120,8 @@ function FactoryLayout(){
       });
       return ce('div',{
         style:{position:'fixed',
-          left:wr.left+bx-btnW-gap/2,top:wr.top+Math.max(4,by),
+          left:centerX - totalW/2,
+          top:Math.max(4, topY - btnH - 8),
           display:'flex',gap:gap,zIndex:9500,pointerEvents:'auto'},
       },
         ce('div',{onClick:delEq,onTouchEnd:e=>{e.preventDefault();delEq(e);},
