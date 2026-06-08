@@ -2703,6 +2703,15 @@ function updateOpField(id, field, val) {
   op.currentLevel = Math.max(1, Math.min(90, op.currentLevel || 1));
   op.targetLevel  = Math.max(1, Math.min(90, op.targetLevel  || 1));
 
+  // 레벨 역전 방지
+  if (field === 'currentLevel' && op.currentLevel > op.targetLevel) {
+    op.targetLevel = op.currentLevel; // 현재 올리면 목표도 올림
+  }
+  if (field === 'targetLevel' && op.targetLevel < op.currentLevel) {
+    op.targetLevel = op.currentLevel; // 목표를 현재 이하로 못 낮춤
+    showCurLockedMsg();
+  }
+
   // 레벨 변경 시 체인 강제
   if (field === 'currentLevel') enforceChainByLevel(op, 'cur');
   if (field === 'targetLevel')  enforceChainByLevel(op, 'tgt');
@@ -2726,10 +2735,13 @@ function updateSkillLv(id, idx, field, val) {
   if (!op || !op.skills[idx]) return;
   const elite = field === 'currentLv' ? op.currentElite : op.targetElite;
   op.skills[idx][field] = Math.max(1, Math.min(skillMaxRank(elite), val));
-  if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv)
-    op.skills[idx].targetLv = op.skills[idx].currentLv;
-  if (field === 'targetLv'  && op.skills[idx].targetLv  < op.skills[idx].currentLv)
-    op.skills[idx].currentLv = op.skills[idx].targetLv;
+  if (field === 'currentLv' && op.skills[idx].currentLv > op.skills[idx].targetLv) {
+    op.skills[idx].targetLv = op.skills[idx].currentLv; // 현재 올리면 목표도 올림
+  }
+  if (field === 'targetLv' && op.skills[idx].targetLv < op.skills[idx].currentLv) {
+    op.skills[idx].targetLv = op.skills[idx].currentLv; // 목표를 현재 이하로 못 낮춤
+    showCurLockedMsg();
+  }
   renderOperatorList(); renderOperatorConfig(); renderOperatorTotal(); saveData();
 }
 
