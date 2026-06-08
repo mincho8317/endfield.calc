@@ -2614,12 +2614,12 @@ function renderResourceInputs() {
     const val = rr[r.key] || 0;
     html += `<div class="resource-row">
       <div>
-        <div class="resource-name" style="color:var(--text-sub)">${r.label}</div>
-        <div class="resource-unit">분당 총 생산량</div>
-      </div>
+        <div class="resource-name" style="color:var(--text-sub)">${r.label}<\/div>
+        <div class="resource-unit">분당 총 생산량<\/div>
+      <\/div>
       <input type="number" class="resource-input" min="0" step="0.1" value="${val||''}" placeholder="0"
         oninput="updateResource('${r.key}', this.value)">
-    </div>`;
+    <\/div>`;
   });
   document.getElementById('resource-inputs').innerHTML = html;
 }
@@ -2664,14 +2664,14 @@ function renderWorkspace() {
   const gs = od().groups;
   if (gs.length === 0) {
     ws.innerHTML = `<div class="empty-state" style="padding:32px;">
-    <div class="icon">🏭</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비가 없어요</div>
+    <div class="icon">🏭<\/div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비가 없어요<\/div>
     <div style="font-size:11px;color:var(--text-label);line-height:1.8;text-align:left;display:inline-block;">
-      1️⃣ <b>+ 그룹 추가</b> 버튼으로 그룹을 만들고<br>
-      2️⃣ 그룹 안의 <b>+ 설비 추가</b>로 설비를 선택한 뒤<br>
-      3️⃣ 설비 <b>수량을 입력</b>하면 생산량이 계산돼요
-    </div>
-  </div>`;
+      1️⃣ <b>+ 그룹 추가<\/b> 버튼으로 그룹을 만들고<br>
+      2️⃣ 그룹 안의 <b>+ 설비 추가<\/b>로 설비를 선택한 뒤<br>
+      3️⃣ 설비 <b>수량을 입력<\/b>하면 생산량이 계산돼요
+    <\/div>
+  <\/div>`;
     updateActiveCount();
     return;
   }
@@ -2690,41 +2690,41 @@ function renderGroupHTML(g) {
       const rate = totalCnt > 0 ? fmt((60 / recipe.speed) * item.qty * totalCnt) : null;
       return `<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:1px 0;font-size:10px;">
         <span style="display:flex;align-items:center;min-width:0;gap:2px;">
-          <span style="color:${color};font-weight:700;flex-shrink:0;font-size:9px;">${sign}</span>
+          <span style="color:${color};font-weight:700;flex-shrink:0;font-size:9px;">${sign}<\/span>
           ${itemIcon(item.name, 14)}
-          <span style="color:var(--text-sub);">${item.name}</span>
-        </span>
+          <span style="color:var(--text-sub);">${item.name}<\/span>
+        <\/span>
         ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:9px;flex-shrink:0;">${rate}/분</span>` : ''}
-      </div>`;
+      <\/div>`;
     }).join('');
 
     const outLines = makeLines(recipe.outputs, '+', 'var(--success)');
     const inLines  = recipe.inputs.length > 0
       ? makeLines(recipe.inputs,  '−', 'var(--danger)')
-      : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+      : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재<\/div>`;
 
     const divider = recipe.inputs.length > 0 && recipe.outputs.length > 0
-      ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:4px 0;"></div>`
+      ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:4px 0;"><\/div>`
       : '';
 
     return `<div class="ws-equip-row">
       <div style="min-width:0;flex:1;cursor:pointer;" onclick="openEquipModal(${g.id}, ${e.recipeId})" title="클릭해서 레시피 변경">
-        <div id="wsout-${g.id}-${e.recipeId}">${outLines}</div>
+        <div id="wsout-${g.id}-${e.recipeId}">${outLines}<\/div>
         ${divider}
-        <div id="wsin-${g.id}-${e.recipeId}">${inLines}</div>
-      </div>
+        <div id="wsin-${g.id}-${e.recipeId}">${inLines}<\/div>
+      <\/div>
       <input type="number" class="ws-count-input" min="0"
         value="${cnt||''}" placeholder="0"
         oninput="updateEquipCount(${g.id},${e.recipeId},this.value)">
-      <button class="ws-del-btn" onclick="removeEquip(${g.id},${e.recipeId})" title="제거">✕</button>
-    </div>`;
+      <button class="ws-del-btn" onclick="removeEquip(${g.id},${e.recipeId})" title="제거">✕<\/button>
+    <\/div>`;
   }).join('');
 
   const collapsed = g.collapsed || false;
   const bodyHTML = collapsed ? '' : `
     <div style="display:flex;flex-direction:column;gap:4px;padding:8px;">
       ${equipRows}
-    </div>
+    <\/div>
   `;
 
   return `<div class="ws-group" id="wsgroup-${g.id}">
@@ -2735,26 +2735,26 @@ function renderGroupHTML(g) {
         <button onclick="toggleGroupCollapse(${g.id})"
           style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;line-height:1;">
           ${collapsed ? '▶' : '▼'}
-        </button>
+        <\/button>
         <input class="ws-group-name" value="${g.name}"
           oninput="updateGroupName(${g.id},this.value)" placeholder="그룹 이름"
           style="flex:1;min-width:0;max-width:none;font-size:12px;">
         <div class="ws-group-mult" style="flex-shrink:0;">
-          <span style="font-size:11px;color:var(--text-muted);">×</span>
+          <span style="font-size:11px;color:var(--text-muted);">×<\/span>
           <input type="number" class="ws-mult-input" min="1" value="${g.mult||1}"
             oninput="updateGroupMult(${g.id},this.value)" style="width:36px;">
-        </div>
-      </div>
+        <\/div>
+      <\/div>
       <!-- 2줄: 설비 추가 + 저장 + 삭제 -->
       <div style="display:flex;align-items:center;gap:6px;padding-left:18px;">
-        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 10px;font-size:11px;">+ 설비</button>
-        <div style="flex:1;"></div>
-        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
-        <button class="ws-del-btn" style="font-size:15px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
-      </div>
-    </div>
+        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 10px;font-size:11px;">+ 설비<\/button>
+        <div style="flex:1;"><\/div>
+        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장<\/button>
+        <button class="ws-del-btn" style="font-size:15px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑<\/button>
+      <\/div>
+    <\/div>
     ${bodyHTML}
-  </div></div>`;
+  <\/div><\/div>`;
 }
 
 function toggleGroupCollapse(gid) {
@@ -2822,12 +2822,12 @@ function updateWsRateSpan(g, e) {
     const rate = cnt > 0 ? fmt((60 / recipe.speed) * item.qty * cnt) : null;
     return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:1px 0;">
       <span style="display:flex;align-items:center;min-width:0;">
-        <span style="color:${color};font-weight:700;margin-right:4px;flex-shrink:0;">${sign}</span>
+        <span style="color:${color};font-weight:700;margin-right:4px;flex-shrink:0;">${sign}<\/span>
         ${itemIcon(item.name, 32)}
-        <span style="color:var(--text);">${item.name}</span>
-      </span>
+        <span style="color:var(--text);">${item.name}<\/span>
+      <\/span>
       ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${rate}/분</span>` : ''}
-    </div>`;
+    <\/div>`;
   }).join('');
 
   const outEl = document.getElementById(`wsout-${g.id}-${e.recipeId}`);
@@ -2835,7 +2835,7 @@ function updateWsRateSpan(g, e) {
   if (outEl) outEl.innerHTML = makeLines(recipe.outputs, '+', 'var(--success)');
   if (inEl)  inEl.innerHTML  = recipe.inputs.length > 0
     ? makeLines(recipe.inputs, '−', 'var(--danger)')
-    : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+    : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재<\/div>`;
 }
 
 function removeEquip(gid, recipeId) {
@@ -2917,7 +2917,7 @@ function renderEquipModalTabs(g) {
         border-radius:20px;border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'};
         background:${isActive ? 'var(--accent)' : 'transparent'};
         color:${isActive ? 'var(--bg)' : 'var(--text-muted)'};
-        transition:all 0.15s;">${cat}</button>`;
+        transition:all 0.15s;">${cat}<\/button>`;
   }).join('');
 
   // 설비명 뱃지 (선택된 카테고리)
@@ -2931,12 +2931,12 @@ function renderEquipModalTabs(g) {
         background:${isActive ? 'rgba(42,184,200,0.15)' : 'transparent'};
         color:${isActive ? 'var(--teal)' : hasRecipe ? 'var(--text-sub)' : 'var(--text-muted)'};
         opacity:${hasRecipe ? '1' : '0.5'};
-        transition:all 0.15s;">${e.name}${hasRecipe ? '' : ' (준비중)'}</button>`;
+        transition:all 0.15s;">${e.name}${hasRecipe ? '' : ' (준비중)'}<\/button>`;
   }).join('');
 
   tabsEl.innerHTML = `
-    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">${catHtml}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:5px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">${equipHtml}</div>`;
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">${catHtml}<\/div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">${equipHtml}<\/div>`;
 
   renderEquipModalRecipes(g);
 }
@@ -2976,14 +2976,14 @@ function renderEquipModalRecipes(g) {
 
   // 설비 미선택 상태
   if (!modalSelectedEquipName) {
-    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">설비를 선택해주세요</div>`;
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">설비를 선택해주세요<\/div>`;
     return;
   }
 
   const recipes = RECIPES.filter(r => r.equip === modalSelectedEquipName);
 
   if (recipes.length === 0) {
-    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">아직 레시피가 없어요<br><span style="font-size:10px;opacity:0.6;">추후 업데이트 예정</span></div>`;
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">아직 레시피가 없어요<br><span style="font-size:10px;opacity:0.6;">추후 업데이트 예정<\/span><\/div>`;
     return;
   }
 
@@ -2993,24 +2993,24 @@ function renderEquipModalRecipes(g) {
 
     const outLines = r.outputs.map(o =>
       `<div style="padding:1px 0;">
-        <span style="color:var(--success);font-weight:700;">+</span>
-        <span style="color:var(--text);margin-left:4px;">${o.name}</span>
-        <span style="color:var(--text-muted);font-size:10px;margin-left:4px;">×${o.qty}</span>
-      </div>`
+        <span style="color:var(--success);font-weight:700;">+<\/span>
+        <span style="color:var(--text);margin-left:4px;">${o.name}<\/span>
+        <span style="color:var(--text-muted);font-size:10px;margin-left:4px;">×${o.qty}<\/span>
+      <\/div>`
     ).join('');
 
     const inLines = r.inputs.length > 0
       ? r.inputs.map(i =>
           `<div style="padding:1px 0;">
-            <span style="color:var(--danger);font-weight:700;">−</span>
-            <span style="color:var(--text);margin-left:4px;">${i.name}</span>
-            <span style="color:var(--text-muted);font-size:10px;margin-left:4px;">×${i.qty}</span>
-          </div>`
+            <span style="color:var(--danger);font-weight:700;">−<\/span>
+            <span style="color:var(--text);margin-left:4px;">${i.name}<\/span>
+            <span style="color:var(--text-muted);font-size:10px;margin-left:4px;">×${i.qty}<\/span>
+          <\/div>`
         ).join('')
-      : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+      : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재<\/div>`;
 
     const divider = r.inputs.length > 0
-      ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:5px 0;"></div>`
+      ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:5px 0;"><\/div>`
       : '';
 
     let cardBorder, cardBg;
@@ -3028,16 +3028,16 @@ function renderEquipModalRecipes(g) {
       ${isDup ? '' : `onmouseenter="this.style.borderColor='var(--accent)';this.style.background='rgba(240,200,22,0.07)'"
         onmouseleave="this.style.borderColor='${cardBorder}';this.style.background='${cardBg}'"` }>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
-        <div style="flex:1;font-size:12px;">${outLines}</div>
+        <div style="flex:1;font-size:12px;">${outLines}<\/div>
         <div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-          ${isDup     ? '<span style="font-size:10px;color:var(--warning);">중복</span>'  : ''}
-          ${isCurrent ? '<span style="font-size:10px;color:var(--accent);">현재</span>'   : ''}
-        </div>
-      </div>
+          ${isDup     ? '<span style="font-size:10px;color:var(--warning);">중복<\/span>'  : ''}
+          ${isCurrent ? '<span style="font-size:10px;color:var(--accent);">현재<\/span>'   : ''}
+        <\/div>
+      <\/div>
       ${divider}
-      <div style="font-size:11px;">${inLines}</div>
-    </div>`;
-  }).join('') || `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">레시피 없음</div>`;
+      <div style="font-size:11px;">${inLines}<\/div>
+    <\/div>`;
+  }).join('') || `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">레시피 없음<\/div>`;
 }
 
 // ========== 하위 설비 자동 계산 ==========
@@ -3102,11 +3102,11 @@ function showAddEquipModal(g, recipeId) {
     if (!r) return '';
     const inGroup = g.equips.find(e => e.recipeId === parseInt(rid));
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.0.2);font-size:11px;">
-      <span style="color:var(--text);">${r.outputs[0].name} <span style="color:var(--text-muted);font-size:10px;">(${r.equip})</span>
+      <span style="color:var(--text);">${r.outputs[0].name} <span style="color:var(--text-muted);font-size:10px;">(${r.equip})<\/span>
       ${inGroup ? `<span style="font-size:9px;color:var(--accent2);margin-left:4px;">기존 ${inGroup.count}개+</span>` : ''}
-      </span>
-      <span style="color:var(--accent);font-weight:700;" id="sub-cnt-${rid}">×${cnt}</span>
-    </div>`;
+      <\/span>
+      <span style="color:var(--accent);font-weight:700;" id="sub-cnt-${rid}">×${cnt}<\/span>
+    <\/div>`;
   }).join('');
 
   const modal = document.createElement('div');
@@ -3114,27 +3114,27 @@ function showAddEquipModal(g, recipeId) {
   modal.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;';
   modal.innerHTML = `
     <div style="background:var(--panel3);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:8px;padding:20px;width:90%;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,0.7);">
-      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px;">설비 추가</div>
-      <div style="font-size:12px;color:var(--text);margin-bottom:6px;">${recipe?.outputs[0]?.name || ''} <span style="color:var(--text-muted);font-size:11px;">(${recipe?.equip || ''})</span></div>
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px;">설비 추가<\/div>
+      <div style="font-size:12px;color:var(--text);margin-bottom:6px;">${recipe?.outputs[0]?.name || ''} <span style="color:var(--text-muted);font-size:11px;">(${recipe?.equip || ''})<\/span><\/div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <span style="font-size:11px;color:var(--text-muted);">수량</span>
+        <span style="font-size:11px;color:var(--text-muted);">수량<\/span>
         <input id="add-equip-count" type="number" min="1" value="${existing ? existing.count : 1}"
           oninput="updateSubPreview(${recipeId})"
           style="width:70px;padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:12px;text-align:center;">
-      </div>
+      <\/div>
       ${hasSubs ? `
         <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">하위 설비 자동 추가 예정</div>
         <div style="background:var(--bg);border-radius:4px;padding:8px 10px;margin-bottom:14px;max-height:120px;overflow-y:auto;">${subRows}</div>
       ` : ''}
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button onclick="document.getElementById('modal-auto-add')?.remove();"
-          style="padding:6px 16px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">취소</button>
+          style="padding:6px 16px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">취소<\/button>
         ${hasSubs ? `<button onclick="doAddEquip(${pendingGroupId},${recipeId},false)"
           style="padding:6px 16px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-sub);font-size:12px;cursor:pointer;">단독 추가</button>` : ''}
         <button onclick="doAddEquip(${pendingGroupId},${recipeId},${hasSubs})"
-          style="padding:6px 16px;border-radius:4px;border:1px solid var(--accent);background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;">${hasSubs ? '하위 포함 추가' : '추가'}</button>
-      </div>
-    </div>`;
+          style="padding:6px 16px;border-radius:4px;border:1px solid var(--accent);background:var(--accent);color:#1a1200;font-size:12px;font-weight:700;cursor:pointer;">${hasSubs ? '하위 포함 추가' : '추가'}<\/button>
+      <\/div>
+    <\/div>`;
   document.body.appendChild(modal);
   document.getElementById('add-equip-count')?.focus();
 }
@@ -3206,7 +3206,7 @@ function closePresetModal() {
 function renderPresetModal() {
   const el = document.getElementById('modal-preset-list');
   if (presets.length === 0) {
-    el.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:13px;">저장된 프리셋이 없어요<br><span style="font-size:11px;">그룹의 "저장" 버튼으로 추가하세요</span></div>`;
+    el.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:13px;">저장된 프리셋이 없어요<br><span style="font-size:11px;">그룹의 "저장" 버튼으로 추가하세요<\/span><\/div>`;
     return;
   }
   el.innerHTML = presets.map(p => {
@@ -3216,13 +3216,13 @@ function renderPresetModal() {
     }).filter(Boolean).join('  ·  ');
     return `<div class="preset-item">
       <div style="flex:1;min-width:0;">
-        <div class="preset-name">${p.name}</div>
-        <div class="preset-detail" style="margin-top:3px;">${detail || '설비 없음'}</div>
-      </div>
-      <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;flex-shrink:0;" onclick="loadPreset(${p.id})">공장에 추가</button>
-      <button class="btn" style="font-size:11px;padding:4px 10px;flex-shrink:0;" onclick="openPresetEditModal(${p.id})">수정</button>
-      <button class="ws-del-btn" style="font-size:16px;flex-shrink:0;" onclick="deletePreset(${p.id})">🗑</button>
-    </div>`;
+        <div class="preset-name">${p.name}<\/div>
+        <div class="preset-detail" style="margin-top:3px;">${detail || '설비 없음'}<\/div>
+      <\/div>
+      <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;flex-shrink:0;" onclick="loadPreset(${p.id})">공장에 추가<\/button>
+      <button class="btn" style="font-size:11px;padding:4px 10px;flex-shrink:0;" onclick="openPresetEditModal(${p.id})">수정<\/button>
+      <button class="ws-del-btn" style="font-size:16px;flex-shrink:0;" onclick="deletePreset(${p.id})">🗑<\/button>
+    <\/div>`;
   }).join('');
 }
 
@@ -3272,33 +3272,33 @@ function closePresetEditModal() {
 function renderPresetEditBody() {
   const el = document.getElementById('preset-edit-body');
   if (editingPresetEquips.length === 0) {
-    el.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:24px;font-size:12px;">설비가 없어요<br>아래 버튼으로 추가하세요</div>`;
+    el.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:24px;font-size:12px;">설비가 없어요<br>아래 버튼으로 추가하세요<\/div>`;
     return;
   }
   el.innerHTML = editingPresetEquips.map((e, idx) => {
     const recipe = RECIPES.find(r => r.id === e.recipeId);
     if (!recipe) return '';
     const outLines = recipe.outputs.map(o =>
-      `<div style="padding:1px 0;"><span style="color:var(--success);font-weight:700;">+</span> <span style="color:var(--text);">${o.name}</span></div>`
+      `<div style="padding:1px 0;"><span style="color:var(--success);font-weight:700;">+<\/span> <span style="color:var(--text);">${o.name}<\/span><\/div>`
     ).join('');
     const inLines = recipe.inputs.length > 0
       ? recipe.inputs.map(i =>
-          `<div style="padding:1px 0;"><span style="color:var(--danger);font-weight:700;">−</span> <span style="color:var(--text);">${i.name}</span> <span style="color:var(--text-muted);font-size:10px;">×${i.qty}</span></div>`
+          `<div style="padding:1px 0;"><span style="color:var(--danger);font-weight:700;">−<\/span> <span style="color:var(--text);">${i.name}<\/span> <span style="color:var(--text-muted);font-size:10px;">×${i.qty}<\/span><\/div>`
         ).join('')
-      : `<div style="color:var(--text-muted);font-size:10px;">원자재</div>`;
-    const divider = recipe.inputs.length > 0 ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:4px 0;"></div>` : '';
+      : `<div style="color:var(--text-muted);font-size:10px;">원자재<\/div>`;
+    const divider = recipe.inputs.length > 0 ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:4px 0;"><\/div>` : '';
 
     return `<div style="border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:10px 12px;background:var(--bg-mid);display:grid;grid-template-columns:1fr 56px 28px 28px;gap:6px;align-items:start;">
       <div style="cursor:pointer;" onclick="openEquipModalForPresetChange(${idx})" title="클릭해서 레시피 변경">
-        <div style="font-size:11px;">${outLines}</div>
+        <div style="font-size:11px;">${outLines}<\/div>
         ${divider}
-        <div style="font-size:11px;">${inLines}</div>
-      </div>
+        <div style="font-size:11px;">${inLines}<\/div>
+      <\/div>
       <input type="number" min="0" value="${e.count||''}" placeholder="0"
         class="ws-count-input"
         onchange="updatePresetEquipCount(${idx}, this.value)">
-      <button class="ws-del-btn" onclick="removePresetEquip(${idx})" title="제거" style="font-size:14px;padding-top:4px;">×</button>
-    </div>`;
+      <button class="ws-del-btn" onclick="removePresetEquip(${idx})" title="제거" style="font-size:14px;padding-top:4px;">×<\/button>
+    <\/div>`;
   }).join('');
 }
 
@@ -3355,14 +3355,14 @@ function renderEquipModalRecipesForPreset() {
   const listEl = document.getElementById('modal-equip-list');
 
   if (!modalSelectedEquipName) {
-    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">설비를 선택해주세요</div>`;
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">설비를 선택해주세요<\/div>`;
     return;
   }
 
   const recipes = RECIPES.filter(r => r.equip === modalSelectedEquipName);
 
   if (recipes.length === 0) {
-    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">아직 레시피가 없어요<br><span style="font-size:10px;opacity:0.6;">추후 업데이트 예정</span></div>`;
+    listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">아직 레시피가 없어요<br><span style="font-size:10px;opacity:0.6;">추후 업데이트 예정<\/span><\/div>`;
     return;
   }
 
@@ -3370,12 +3370,12 @@ function renderEquipModalRecipesForPreset() {
     const isDup     = usedIds.has(r.id) && r.id !== pendingChangeRecipeId;
     const isCurrent = r.id === pendingChangeRecipeId;
     const outLines  = r.outputs.map(o =>
-      `<div style="padding:1px 0;"><span style="color:var(--success);font-weight:700;">+</span> <span style="color:var(--text);margin-left:4px;">${o.name}</span> <span style="color:var(--text-muted);font-size:10px;">×${o.qty}</span></div>`
+      `<div style="padding:1px 0;"><span style="color:var(--success);font-weight:700;">+<\/span> <span style="color:var(--text);margin-left:4px;">${o.name}<\/span> <span style="color:var(--text-muted);font-size:10px;">×${o.qty}<\/span><\/div>`
     ).join('');
     const inLines = r.inputs.length > 0
-      ? r.inputs.map(i => `<div style="padding:1px 0;"><span style="color:var(--danger);font-weight:700;">−</span> <span style="color:var(--text);margin-left:4px;">${i.name}</span> <span style="color:var(--text-muted);font-size:10px;">×${i.qty}</span></div>`).join('')
-      : `<div style="color:var(--text-muted);font-size:10px;">원자재</div>`;
-    const divider = r.inputs.length > 0 ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:5px 0;"></div>` : '';
+      ? r.inputs.map(i => `<div style="padding:1px 0;"><span style="color:var(--danger);font-weight:700;">−<\/span> <span style="color:var(--text);margin-left:4px;">${i.name}<\/span> <span style="color:var(--text-muted);font-size:10px;">×${i.qty}<\/span><\/div>`).join('')
+      : `<div style="color:var(--text-muted);font-size:10px;">원자재<\/div>`;
+    const divider = r.inputs.length > 0 ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:5px 0;"><\/div>` : '';
     let cardBorder = isCurrent ? 'var(--accent)' : isDup ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.1)';
     let cardBg     = isCurrent ? 'rgba(240,200,22,0.08)' : 'rgba(255,255,255,0.04)';
 
@@ -3385,13 +3385,13 @@ function renderEquipModalRecipesForPreset() {
       ${isDup ? '' : `onmouseenter="this.style.borderColor='var(--accent)';this.style.background='rgba(240,200,22,0.07)'"
         onmouseleave="this.style.borderColor='${cardBorder}';this.style.background='${cardBg}'"` }>
       <div style="display:flex;justify-content:space-between;">
-        <div style="font-size:12px;">${outLines}</div>
-        <div>${isDup ? '<span style="font-size:10px;color:var(--warning);">중복</span>' : ''} ${isCurrent ? '<span style="font-size:10px;color:var(--accent);">현재</span>' : ''}</div>
-      </div>
+        <div style="font-size:12px;">${outLines}<\/div>
+        <div>${isDup ? '<span style="font-size:10px;color:var(--warning);">중복<\/span>' : ''} ${isCurrent ? '<span style="font-size:10px;color:var(--accent);">현재<\/span>' : ''}<\/div>
+      <\/div>
       ${divider}
-      <div style="font-size:11px;">${inLines}</div>
-    </div>`;
-  }).join('') || `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">레시피 없음</div>`;
+      <div style="font-size:11px;">${inLines}<\/div>
+    <\/div>`;
+  }).join('') || `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">레시피 없음<\/div>`;
 }
 
 function confirmPresetEquipSelect(recipeId) {
@@ -3448,19 +3448,19 @@ function renderIconList() {
       <!-- 현재 아이콘 미리보기 -->
       <div style="width:32px;height:32px;border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;background:var(--bg);flex-shrink:0;overflow:hidden;">
         ${cur ? `<img src="${cur}" width="28" height="28" style="object-fit:contain;" onerror="this.parentElement.innerHTML='?'">` : `<span style="color:var(--text-muted);font-size:12px;">?</span>`}
-      </div>
+      <\/div>
       <!-- 이름 -->
-      <span style="flex:1;font-size:12px;">${name}</span>
+      <span style="flex:1;font-size:12px;">${name}<\/span>
       <!-- 상태 뱃지 -->
       ${custom ? `<span style="font-size:10px;color:var(--success);margin-right:4px;">커스텀</span>` : wiki ? `<span style="font-size:10px;color:var(--text-muted);margin-right:4px;">위키</span>` : ''}
       <!-- 업로드 버튼 -->
       <label style="cursor:pointer;" title="이미지 업로드">
         <input type="file" accept="image/*" style="display:none;" onchange="handleIconUpload('${name}', this)">
-        <span class="btn" style="font-size:10px;padding:3px 8px;">업로드</span>
-      </label>
+        <span class="btn" style="font-size:10px;padding:3px 8px;">업로드<\/span>
+      <\/label>
       <!-- 커스텀 삭제 버튼 -->
       ${custom ? `<button class="ws-del-btn" onclick="deleteCustomIcon('${name}');renderIconList();" title="커스텀 아이콘 삭제" style="font-size:14px;">×</button>` : ''}
-    </div>`;
+    <\/div>`;
   }).join('');
 }
 
@@ -3480,11 +3480,11 @@ function renderResults() {
   const keys = Object.keys(totals);
   if (keys.length === 0) {
     document.getElementById('results-grid').innerHTML = `<div class="empty-state" style="padding:24px;">
-      <div class="icon">🏭</div>
+      <div class="icon">🏭<\/div>
       <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
         공업생산품 탭에서<br>설비를 추가하고 수량을 입력하면<br>재료 수지가 여기에 표시돼요
-      </div>
-    </div>`;
+      <\/div>
+    <\/div>`;
     document.getElementById('summary-bar').style.display = 'none';
     return;
   }
@@ -3507,15 +3507,15 @@ function renderResults() {
 
     html += `<div class="compact-item">
       <div style="display:flex;align-items:center;gap:6px;min-width:0;">
-        <div class="compact-dot ${cls}"></div>
-        <span class="compact-name">${k}</span>
+        <div class="compact-dot ${cls}"><\/div>
+        <span class="compact-name">${k}<\/span>
         ${authVal ? `<span style="font-size:9px;color:var(--accent2);font-family:'Share Tech Mono',monospace;flex-shrink:0;">◈${authVal}</span>` : ''}
-      </div>
+      <\/div>
       <span style="font-size:10px;color:var(--text-muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;">
         ${produce > 0.01 ? `▲${fmt(produce)}` : ''}${consume > 0.01 ? ` ▼${fmt(consume)}` : ''}
-      </span>
-      <span class="compact-balance" style="color:${balColor};">${sign}${fmt(Math.abs(balance))}</span>
-    </div>`;
+      <\/span>
+      <span class="compact-balance" style="color:${balColor};">${sign}${fmt(Math.abs(balance))}<\/span>
+    <\/div>`;
   });
 
   document.getElementById('results-grid').innerHTML = html || '<div class="empty-state" style="padding:16px;"><div class="icon">🔍</div>해당 조건 없음</div>';
@@ -3635,7 +3635,7 @@ function renderAuthOutpostTabs() {
     return `<div class="inner-tab ${isActive ? 'active' : ''}"
       onclick="switchAuthView('outpost','${o.id}')">
       ${o.name}
-    </div>`;
+    <\/div>`;
   }).join('');
 }
 
@@ -3658,29 +3658,29 @@ function renderAuthOutpostPanel(oId) {
   panel.innerHTML = `
     <!-- 거점명 + 총 분당 관리권 -->
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.04);">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${outpost?.name || oId}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${outpost?.name || oId}<\/div>
       <div style="display:flex;align-items:baseline;gap:8px;">
-        <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:var(--font-mono);" id="auth-panel-total-${oId}">${authTotal > 0 ? fmt(authTotal) : `—`}</span>
-        <span style="font-size:12px;color:var(--text-muted);">/분</span>
-      </div>
-    </div>
+        <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:var(--font-mono);" id="auth-panel-total-${oId}">${authTotal > 0 ? fmt(authTotal) : `—`}<\/span>
+        <span style="font-size:12px;color:var(--text-muted);">/분<\/span>
+      <\/div>
+    <\/div>
     <!-- 내부 탭: 관리권 생산 계산 / 관리권 교환 계산 -->
     <div style="display:flex;border-bottom:1px solid var(--border);">
-      <div class="inner-tab active" id="atab-base-${oId}" onclick="switchOutpostInnerTab('base','${oId}')">◈ 관리권 생산 계산</div>
-      <div class="inner-tab" id="atab-product-${oId}" onclick="switchOutpostInnerTab('product','${oId}')">🔄 관리권 교환 계산</div>
-    </div>
+      <div class="inner-tab active" id="atab-base-${oId}" onclick="switchOutpostInnerTab('base','${oId}')">◈ 관리권 생산 계산<\/div>
+      <div class="inner-tab" id="atab-product-${oId}" onclick="switchOutpostInnerTab('product','${oId}')">🔄 관리권 교환 계산<\/div>
+    <\/div>
     <div id="auth-inner-base-${oId}">
-      <div id="base-config-${oId}"></div>
-    </div>
+      <div id="base-config-${oId}"><\/div>
+    <\/div>
     <div id="auth-inner-product-${oId}" style="display:none;">
       <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:10px;color:var(--text-muted);">목표 분당 생산량을 입력하면 관리권 소모량과 달성 가능 여부를 계산합니다</span>
+        <span style="font-size:10px;color:var(--text-muted);">목표 분당 생산량을 입력하면 관리권 소모량과 달성 가능 여부를 계산합니다<\/span>
         <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;flex-shrink:0;" onclick="autoCalcFactory('${oId}')">
           ⚙ 공장 설비 자동 계산
-        </button>
-      </div>
-      <div id="auth-product-body-${oId}" style="padding:8px;display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
+        <\/button>
+      <\/div>
+      <div id="auth-product-body-${oId}" style="padding:8px;display:flex;flex-direction:column;gap:6px;"><\/div>
+    <\/div>
   `;
   renderOutpostBaseConfig(oId);
   renderOutpostProducts(oId);
@@ -3730,7 +3730,7 @@ function renderOutpostBaseConfig(oId) {
         background:${isAuth ? 'rgba(240,200,22,0.18)' : 'rgba(255,255,255,0.06)'};
         color:${isAuth ? 'var(--accent)' : 'var(--text-muted)'};
         border:1px solid ${isAuth ? 'rgba(240,200,22,0.4)' : 'rgba(255,255,255,0.15)'};">
-        ✓ ${m.label}</span>`;
+        ✓ ${m.label}<\/span>`;
     }).join('');
 
     // 구역 요구 특성 뱃지 — 슬롯 타입 + 조건값 + 매칭 여부
@@ -3757,7 +3757,7 @@ function renderOutpostBaseConfig(oId) {
         background:${bgColor};color:${typeColor};
         border:1px solid ${borderColor};
         cursor:default;display:inline-flex;align-items:center;gap:3px;">
-        ${isMatch ? '✓' : '○'} <b>${label}</b> · ${slot.value}</span>`;
+        ${isMatch ? '✓' : '○'} <b>${label}<\/b> · ${slot.value}<\/span>`;
     }).join('');
 
     // 방어 단계 버튼
@@ -3768,16 +3768,16 @@ function renderOutpostBaseConfig(oId) {
           border:1px solid ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.1)'};
           background:${isActive ? 'var(--accent)' : 'transparent'};
           color:${isActive ? 'var(--accent-text)' : 'var(--text-label)'};
-          font-weight:${isActive ? '700' : '400'};">${lv}단계</button>`;
+          font-weight:${isActive ? '700' : '400'};">${lv}단계<\/button>`;
     }).join('');
 
     // 방어 단계 섹션 (hasDefense가 true인 거점만 표시)
     const defenseSection = z.hasDefense ? `
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-        <span style="font-size:11px;color:var(--text-sub);flex-shrink:0;font-weight:500;">방어</span>
-        <div style="display:flex;gap:3px;flex-wrap:wrap;">${defBtns}</div>
+        <span style="font-size:11px;color:var(--text-sub);flex-shrink:0;font-weight:500;">방어<\/span>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;">${defBtns}<\/div>
         ${eff.defense > 0 ? `<span style="font-size:10px;color:var(--success);">+${Math.round(eff.defense*100)}%</span>` : ''}
-      </div>` : '';
+      <\/div>` : '';
 
     // 이벤트 토글
     const evOn = e.eventOn;
@@ -3786,42 +3786,42 @@ function renderOutpostBaseConfig(oId) {
         border:1px solid ${evOn ? 'var(--success)' : 'var(--border)'};
         background:${evOn ? 'rgba(72,168,112,0.15)' : 'transparent'};
         color:${evOn ? 'var(--success)' : 'var(--text-label)'};">
-      ${evOn ? '✓ ON (+50%)' : 'OFF'}</button>`;
+      ${evOn ? '✓ ON (+50%)' : 'OFF'}<\/button>`;
 
     const totalPct = Math.round((eff.opper + eff.defense + eff.event) * 100);
 
     return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;background:var(--bg-mid);" class="zone-card-inner">
       <!-- 구역명 + 분당 관리권 -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;color:var(--text);">${z.name}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${z.name}<\/div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:10px;color:var(--text-label);">분당 관리권</span>
-          <span style="font-size:20px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;line-height:1;" id="rate_${oId}_${zid}">${rate > 0 ? fmt(rate) : '—'}</span>
+          <span style="font-size:10px;color:var(--text-label);">분당 관리권<\/span>
+          <span style="font-size:20px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;line-height:1;" id="rate_${oId}_${zid}">${rate > 0 ? fmt(rate) : '—'}<\/span>
           ${totalPct > 0 ? `<span style="font-size:11px;font-weight:600;color:var(--success);">+${totalPct}%</span>` : `<span style="font-size:11px;color:var(--text-label);">+0%</span>`}
-        </div>
-      </div>
+        <\/div>
+      <\/div>
       <!-- 구역 요구 특성 -->
-      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${traitTags}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${traitTags}<\/div>
       <!-- 기본 생산량 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">기본 생산량</span>
+        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">기본 생산량<\/span>
         <input class="eff-input" type="number" step="1" min="0"
           value="${e.baseAmt > 0 ? e.baseAmt : ''}" placeholder="0" style="width:80px;"
           onchange="updateZone('${oId}','${z.name}','baseAmt',+this.value)">
-      </div>
+      <\/div>
       <!-- 배치 오퍼레이터 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">배치 오퍼레이터</span>
-        <div id="cs-op-${oId}-${zid}" style="flex:1;min-width:0;"></div>
-      </div>
+        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">배치 오퍼레이터<\/span>
+        <div id="cs-op-${oId}-${zid}" style="flex:1;min-width:0;"><\/div>
+      <\/div>
       <!-- 방어 단계 (있는 경우만) -->
       ${defenseSection}
       <!-- 이벤트 -->
       <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">이벤트</span>
+        <span style="font-size:11px;color:var(--text-sub);width:80px;flex-shrink:0;font-weight:500;">이벤트<\/span>
         ${evBtn}
-      </div>
-    </div>`;
+      <\/div>
+    <\/div>`;
   }).join('');
 
   const el = document.getElementById(`base-config-${oId}`);
@@ -3908,16 +3908,16 @@ function renderOutpostProducts(oId) {
 }
 
 function getAchieveHtml(factoryRate, targetRate, authTotal, val) {
-  if (targetRate <= 0) return `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
+  if (targetRate <= 0) return `<span style="color:var(--text-muted);font-size:11px;">—<\/span>`;
   const needed      = val * targetRate;
   const canProduce  = factoryRate >= targetRate - 0.001;
   const canAfford   = authTotal   >= needed     - 0.001;
   if (canProduce && canAfford)
-    return `<span style="color:var(--success);font-weight:700;">✓ 가능</span>`;
+    return `<span style="color:var(--success);font-weight:700;">✓ 가능<\/span>`;
   const r = [];
   if (!canProduce) r.push('생산 부족');
   if (!canAfford)  r.push('관리권 부족');
-  return `<span style="color:var(--danger);font-size:10px;" title="${r.join(', ')}">✗ ${r[0]}</span>`;
+  return `<span style="color:var(--danger);font-size:10px;" title="${r.join(', ')}">✗ ${r[0]}<\/span>`;
 }
 
 // ── PC: 테이블 ──────────────────────────────────────────
@@ -3927,12 +3927,12 @@ function renderProductsTable(el, oId, factoryRates, authTotal, tr) {
   el.innerHTML = `
     <table class="auth-product-table">
       <thead><tr>
-        <th>품명</th><th>관리권/개</th>
-        <th>현재 생산<br><span style="color:var(--accent);font-size:9px;">공장 연동</span></th>
-        <th>목표 생산<br><span style="color:var(--warning);font-size:9px;">직접 입력</span></th>
-        <th>필요 관리권<br><span style="font-size:9px;">/분</span></th>
-        <th>달성 여부</th>
-      </tr></thead>
+        <th>품명<\/th><th>관리권/개<\/th>
+        <th>현재 생산<br><span style="color:var(--accent);font-size:9px;">공장 연동<\/span><\/th>
+        <th>목표 생산<br><span style="color:var(--warning);font-size:9px;">직접 입력<\/span><\/th>
+        <th>필요 관리권<br><span style="font-size:9px;">/분<\/span><\/th>
+        <th>달성 여부<\/th>
+      <\/tr><\/thead>
       <tbody>${
         Object.entries(AUTH_VALUE).map(([name, val]) => {
           const factoryRate = factoryRates[name] || 0;
@@ -3949,8 +3949,8 @@ function renderProductsTable(el, oId, factoryRates, authTotal, tr) {
             <td>${getAchieveHtml(factoryRate, targetRate, authTotal, val)}</td>
           </tr>`;
         }).join('')
-      }</tbody>
-    </table>`;
+      }<\/tbody>
+    <\/table>`;
 }
 
 // ── 모바일: 카드 ─────────────────────────────────────────
@@ -3965,33 +3965,33 @@ function renderProductsCards(el, oId, factoryRates, authTotal, tr) {
     return `<div style="border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:10px 12px;background:var(--bg-mid);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">${name}</span>
-          <span class="badge badge-orange active">◈${val}</span>
-        </div>
-        <div id="achieve-${safeId}">${getAchieveHtml(factoryRate, targetRate, authTotal, val)}</div>
-      </div>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">${name}<\/span>
+          <span class="badge badge-orange active">◈${val}<\/span>
+        <\/div>
+        <div id="achieve-${safeId}">${getAchieveHtml(factoryRate, targetRate, authTotal, val)}<\/div>
+      <\/div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
         <div style="background:rgba(0,0,0,0.15);border-radius:4px;padding:6px 4px;">
-          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">현재 생산<br><span style="color:var(--accent);">공장 연동</span></div>
-          <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${factoryRate>0?'var(--accent)':'var(--text-muted)'};">${fmt(factoryRate)}</div>
-          <div style="font-size:9px;color:var(--text-muted);">/분</div>
-        </div>
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">현재 생산<br><span style="color:var(--accent);">공장 연동<\/span><\/div>
+          <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${factoryRate>0?'var(--accent)':'var(--text-muted)'};">${fmt(factoryRate)}<\/div>
+          <div style="font-size:9px;color:var(--text-muted);">/분<\/div>
+        <\/div>
         <div style="background:rgba(0,0,0,0.15);border-radius:4px;padding:6px 4px;">
-          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">목표 생산<br><span style="color:var(--warning);">직접 입력</span></div>
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">목표 생산<br><span style="color:var(--warning);">직접 입력<\/span><\/div>
           <input type="number" min="0" step="0.1"
             value="${targetRate > 0 ? targetRate : ''}" placeholder="0"
             onchange="updateTargetRateInline('${oId}','${name}','${safeId}',this.value,${factoryRate},${authTotal},${val})"
             style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;
               color:var(--text);font-size:12px;font-family:'Share Tech Mono',monospace;
               text-align:center;padding:2px 4px;outline:none;box-sizing:border-box;">
-        </div>
+        <\/div>
         <div style="background:rgba(0,0,0,0.15);border-radius:4px;padding:6px 4px;">
-          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">필요 관리권<br>&nbsp;</div>
-          <div id="needed-${safeId}" style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${needed>0?'var(--warning)':'var(--text-muted)'};">${needed > 0 ? fmt(needed) : '—'}</div>
-          <div style="font-size:9px;color:var(--text-muted);">/분</div>
-        </div>
-      </div>
-    </div>`;
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">필요 관리권<br>&nbsp;<\/div>
+          <div id="needed-${safeId}" style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${needed>0?'var(--warning)':'var(--text-muted)'};">${needed > 0 ? fmt(needed) : '—'}<\/div>
+          <div style="font-size:9px;color:var(--text-muted);">/분<\/div>
+        <\/div>
+      <\/div>
+    <\/div>`;
   }).join('');
 }
 
@@ -4087,105 +4087,105 @@ function renderOverviewTab() {
     const makeItems = (items, valueKey, color, emptyLabel) => items.length > 0
       ? items.map(item => `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.0.2);gap:8px;">
-            <span style="color:var(--text);font-size:11px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${itemIcon(item.name,14)}${item.name}</span>
-            <span style="color:${color};font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${fmt(item[valueKey] ?? item.rate)}/분</span>
-          </div>`).join('')
-      : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">없음</div>`;
+            <span style="color:var(--text);font-size:11px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${itemIcon(item.name,14)}${item.name}<\/span>
+            <span style="color:${color};font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${fmt(item[valueKey] ?? item.rate)}/분<\/span>
+          <\/div>`).join('')
+      : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">없음<\/div>`;
 
     if (isMobile) {
       // ── 모바일: 수치 3열 → 세로, 품목 섹션 → 세로 ──
       html += `<div style="border:1px solid rgba(255,255,255,0.12);border-radius:4px;overflow:hidden;">
         <!-- 헤더 -->
         <div style="padding:10px 14px;background:rgba(240,200,22,0.07);border-bottom:1px solid rgba(255,255,255,0.09);">
-          <span style="font-size:13px;font-weight:700;color:var(--accent);">◈ ${o.name}</span>
-        </div>
+          <span style="font-size:13px;font-weight:700;color:var(--accent);">◈ ${o.name}<\/span>
+        <\/div>
         <!-- 관리권 수치 3열 -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 12px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:center;">
           <div>
-            <div style="font-size:9px;color:var(--text-muted);">생산</div>
-            <div style="font-size:13px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${authTotal > 0 ? fmt(authTotal) : '—'}</div>
-            <div style="font-size:9px;color:var(--text-muted);">/분</div>
-          </div>
+            <div style="font-size:9px;color:var(--text-muted);">생산<\/div>
+            <div style="font-size:13px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${authTotal > 0 ? fmt(authTotal) : '—'}<\/div>
+            <div style="font-size:9px;color:var(--text-muted);">/분<\/div>
+          <\/div>
           <div>
-            <div style="font-size:9px;color:var(--text-muted);">소모</div>
-            <div style="font-size:13px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(outpostConsume)}</div>
-            <div style="font-size:9px;color:var(--text-muted);">/분</div>
-          </div>
+            <div style="font-size:9px;color:var(--text-muted);">소모<\/div>
+            <div style="font-size:13px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(outpostConsume)}<\/div>
+            <div style="font-size:9px;color:var(--text-muted);">/분<\/div>
+          <\/div>
           <div>
-            <div style="font-size:9px;color:var(--text-muted);">잔여</div>
-            <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${authBalance>=0?'var(--success)':'var(--danger)'};">${authTotal>0?(authBalance>=0?'+':'')+fmt(authBalance):'—'}</div>
-            <div style="font-size:9px;color:var(--text-muted);">/분</div>
-          </div>
-        </div>
+            <div style="font-size:9px;color:var(--text-muted);">잔여<\/div>
+            <div style="font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${authBalance>=0?'var(--success)':'var(--danger)'};">${authTotal>0?(authBalance>=0?'+':'')+fmt(authBalance):'—'}<\/div>
+            <div style="font-size:9px;color:var(--text-muted);">/분<\/div>
+          <\/div>
+        <\/div>
         <!-- 품목 섹션 세로 나열 -->
         <div style="padding:10px 14px;display:flex;flex-direction:column;gap:10px;">
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:4px;">관리권 교환 품목</div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:4px;">관리권 교환 품목<\/div>
             ${makeItems(authItems, 'rate', 'var(--accent)', '없음')}
-          </div>
+          <\/div>
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;">생산 품목</div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;">생산 품목<\/div>
             ${makeItems(factoryItems, 'balance', 'var(--success)', '없음')}
-          </div>
+          <\/div>
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--danger);margin-bottom:4px;">부족 품목</div>
+            <div style="font-size:10px;font-weight:700;color:var(--danger);margin-bottom:4px;">부족 품목<\/div>
             ${makeItems(deficitItems, 'balance', 'var(--danger)', '없음')}
-          </div>
-        </div>
-      </div>`;
+          <\/div>
+        <\/div>
+      <\/div>`;
     } else {
       // ── PC: 기존 레이아웃 ──
       html += `<div style="border:1px solid rgba(255,255,255,0.12);border-radius:4px;overflow:hidden;">
         <div style="padding:12px 16px;background:rgba(240,200,22,0.07);border-bottom:1px solid rgba(255,255,255,0.09);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:14px;font-weight:700;color:var(--accent);">◈ ${o.name}</span>
+          <span style="font-size:14px;font-weight:700;color:var(--accent);">◈ ${o.name}<\/span>
           <div style="display:flex;gap:16px;font-family:'Share Tech Mono',monospace;font-size:11px;">
-            <span style="color:var(--success);">생산 ${authTotal > 0 ? fmt(authTotal) : '—'}/분</span>
-            <span style="color:var(--danger);">소모 ${fmt(outpostConsume)}/분</span>
-            <span style="color:${authBalance>=0?'var(--success)':'var(--danger)'};">잔여 ${authTotal>0?(authBalance>=0?'+':'')+fmt(authBalance):'—'}/분</span>
-          </div>
-        </div>
+            <span style="color:var(--success);">생산 ${authTotal > 0 ? fmt(authTotal) : '—'}/분<\/span>
+            <span style="color:var(--danger);">소모 ${fmt(outpostConsume)}/분<\/span>
+            <span style="color:${authBalance>=0?'var(--success)':'var(--danger)'};">잔여 ${authTotal>0?(authBalance>=0?'+':'')+fmt(authBalance):'—'}/분<\/span>
+          <\/div>
+        <\/div>
         <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);">관리권 교환 품목</div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);">관리권 교환 품목<\/div>
             ${makeItems(authItems, 'rate', 'var(--accent)', '없음')}
-          </div>
+          <\/div>
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);">생산 품목</div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);">생산 품목<\/div>
             ${makeItems(factoryItems, 'balance', 'var(--success)', '없음')}
-          </div>
+          <\/div>
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--danger);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);">부족 품목</div>
+            <div style="font-size:10px;font-weight:700;color:var(--danger);letter-spacing:0.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);">부족 품목<\/div>
             ${makeItems(deficitItems, 'balance', 'var(--danger)', '없음')}
-          </div>
-        </div>
-      </div>`;
+          <\/div>
+        <\/div>
+      <\/div>`;
     }
   });
 
   // 전체 합산 카드 (공통)
   const totalBalance = totalAuthProduce - totalAuthConsume;
   html += `<div style="border:1px solid rgba(240,200,22,0.35);border-radius:4px;padding:14px 16px;background:rgba(240,200,22,0.06);">
-    <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">📊 전체 합산 — 관리권</div>
+    <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">📊 전체 합산 — 관리권<\/div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
       <div>
-        <div style="font-size:10px;color:var(--text-label);font-weight:500;">총 생산</div>
-        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${totalAuthProduce > 0 ? fmt(totalAuthProduce) : '—'}</div>
-        <div style="font-size:10px;color:var(--text-muted);">/분</div>
-      </div>
+        <div style="font-size:10px;color:var(--text-label);font-weight:500;">총 생산<\/div>
+        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">${totalAuthProduce > 0 ? fmt(totalAuthProduce) : '—'}<\/div>
+        <div style="font-size:10px;color:var(--text-muted);">/분<\/div>
+      <\/div>
       <div>
-        <div style="font-size:10px;color:var(--text-muted);">총 목표 소모</div>
-        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(totalAuthConsume)}</div>
-        <div style="font-size:10px;color:var(--text-muted);">/분</div>
-      </div>
+        <div style="font-size:10px;color:var(--text-muted);">총 목표 소모<\/div>
+        <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;">${fmt(totalAuthConsume)}<\/div>
+        <div style="font-size:10px;color:var(--text-muted);">/분<\/div>
+      <\/div>
       <div>
-        <div style="font-size:10px;color:var(--text-muted);">총 잔여</div>
+        <div style="font-size:10px;color:var(--text-muted);">총 잔여<\/div>
         <div style="font-size:${isMobile?'16':'20'}px;font-weight:700;font-family:'Share Tech Mono',monospace;color:${totalBalance>=0?'var(--success)':'var(--danger)'};">
           ${totalAuthProduce > 0 ? (totalBalance >= 0 ? '+' : '') + fmt(totalBalance) : '—'}
-        </div>
-        <div style="font-size:10px;color:var(--text-muted);">/분</div>
-      </div>
-    </div>
-  </div>`;
+        <\/div>
+        <div style="font-size:10px;color:var(--text-muted);">/분<\/div>
+      <\/div>
+    <\/div>
+  <\/div>`;
 
   el.innerHTML = html;
 }
@@ -4243,7 +4243,7 @@ function renderFactoryOutpostTabs() {
         color:${isActive ? 'var(--accent-text)' : 'var(--text-label)'};
         font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;">
       ${o.name}
-    </button>`;
+    <\/button>`;
   }).join('');
 }
 
@@ -4269,7 +4269,7 @@ function renderAuthOutpostTabs() {
         color:${isActive ? 'var(--accent-text)' : 'var(--text-label)'};
         font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;">
       ${o.name}
-    </button>`;
+    <\/button>`;
   }).join('');
 }
 
@@ -4479,7 +4479,7 @@ function renderOperatorSelectGrid() {
   });
 
   if (list.length === 0) {
-    grid.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:12px;">검색 결과 없음</div>`;
+    grid.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:12px;">검색 결과 없음<\/div>`;
     return;
   }
 
@@ -4501,14 +4501,14 @@ function renderOperatorSelectGrid() {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>
           ${isAdded
-            ? `<span style="font-size:9px;color:var(--accent);">추가됨</span>`
-            : `<span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"></span>`}
+            ? `<span style="font-size:9px;color:var(--accent);">추가됨<\/span>`
+            : `<span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"><\/span>`}
         </div>
         <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;">${op.name}</div>
         <div style="font-size:10px;color:var(--text-muted);">${CLASS_KR[op.class] || op.class}</div>
       </div>`;
     }).join('')}
-  </div>`;
+  <\/div>`;
 }
 
 function selectOperatorFromRoster(name) {
@@ -4641,11 +4641,11 @@ function renderOperatorList() {
 
   if (operators.length === 0) {
     el.innerHTML = isMobile
-      ? `<div style="padding:8px 4px;color:var(--text-muted);font-size:11px;white-space:nowrap;">+ 추가로 오퍼레이터를 선택하세요</div>`
+      ? `<div style="padding:8px 4px;color:var(--text-muted);font-size:11px;white-space:nowrap;">+ 추가로 오퍼레이터를 선택하세요<\/div>`
       : `<div class="empty-state" style="padding:24px;font-size:12px;">
-          <div class="icon">👤</div>
-          <div style="line-height:1.8;"><b>+ 추가</b> 버튼을 눌러<br>오퍼레이터를 선택하세요</div>
-        </div>`;
+          <div class="icon">👤<\/div>
+          <div style="line-height:1.8;"><b>+ 추가<\/b> 버튼을 눌러<br>오퍼레이터를 선택하세요<\/div>
+        <\/div>`;
     return;
   }
 
@@ -4661,10 +4661,10 @@ function renderOperatorList() {
           background:${isActive ? 'rgba(240,200,22,0.12)' : 'rgba(255,255,255,0.04)'};
           transition:all 0.15s;">
         ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
-        <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
+        <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}<\/span>
         <button onmousedown="deleteOperatorChip(event,${op.id})"
-          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;">×</button>
-      </div>`;
+          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;">×<\/button>
+      <\/div>`;
     }).join('');
   } else {
     // PC — 세로 목록
@@ -4681,16 +4681,16 @@ function renderOperatorList() {
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div style="display:flex;align-items:center;gap:6px;">
             ${op.rarity ? `<span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>` : ''}
-            <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}</span>
-          </div>
+            <span style="font-size:12px;font-weight:600;color:${isActive ? 'var(--accent)' : 'var(--text)'};">${op.name}<\/span>
+          <\/div>
         <button onmousedown="deleteOperatorChip(event,${op.id})"
-            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;">×</button>
-        </div>
+            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;">×<\/button>
+        <\/div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">
           E${op.currentElite}→E${op.targetElite} · Lv${op.currentLevel}→${op.targetLevel}
           ${matCount > 0 ? `· <span style="color:var(--accent2);">재료 ${matCount}종</span>` : ''}
-        </div>
-      </div>`;
+        <\/div>
+      <\/div>`;
     }).join('');
   }
 }
@@ -4733,13 +4733,13 @@ function renderOperatorConfig() {
   const op = getActiveOp();
   if (!op) {
     panel.innerHTML = `<div class="empty-state" style="padding:48px;">
-      <div class="icon">👤</div>
+      <div class="icon">👤<\/div>
       <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
         왼쪽에서 오퍼레이터를 선택하거나<br>
-        <b>+ 추가</b> 버튼으로 새로 추가하세요<br><br>
-        <span style="font-size:11px;">현재→목표를 설정하면<br>필요 재료가 자동 계산됩니다</span>
-      </div>
-    </div>`;
+        <b>+ 추가<\/b> 버튼으로 새로 추가하세요<br><br>
+        <span style="font-size:11px;">현재→목표를 설정하면<br>필요 재료가 자동 계산됩니다<\/span>
+      <\/div>
+    <\/div>`;
     return;
   }
 
@@ -4747,10 +4747,10 @@ function renderOperatorConfig() {
   const matHtml = Object.entries(mats).length > 0
     ? Object.entries(mats).map(([name, qty]) =>
         `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;">
-          <span style="color:var(--text);">${itemIcon(name, 16)}${name}</span>
-          <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}</span>
-        </div>`).join('')
-    : `<div style="color:var(--text-muted);font-size:11px;padding:8px 0;">목표를 설정하면 재료가 계산됩니다</div>`;
+          <span style="color:var(--text);">${itemIcon(name, 16)}${name}<\/span>
+          <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}<\/span>
+        <\/div>`).join('')
+    : `<div style="color:var(--text-muted);font-size:11px;padding:8px 0;">목표를 설정하면 재료가 계산됩니다<\/div>`;
 
   // ── 새 UI: 현재/목표 병렬 패널 ──────────────────────────
   const EQUIP_GRADE = [
@@ -4781,12 +4781,12 @@ function renderOperatorConfig() {
 
     // ── 레벨 ──
     const levelHtml = `<div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:10px;color:var(--text-muted);">Lv</span>
+      <span style="font-size:10px;color:var(--text-muted);">Lv<\/span>
       <input type="number" min="1" max="90" value="${lv}"
         class="ws-count-input" style="width:50px;font-size:12px;text-align:center;"
         onchange="updateOpField(${op.id},'${isCur?'currentLevel':'targetLevel'}',+this.value)">
-      <span style="font-size:10px;color:var(--text-muted);">/90</span>
-    </div>`;
+      <span style="font-size:10px;color:var(--text-muted);">/90<\/span>
+    <\/div>`;
 
     // ── 스킬 강화 ──
     const skillHtml = SKILL_TYPES.map((type, si) => {
@@ -4804,7 +4804,7 @@ function renderOperatorConfig() {
           background:${filled?(tgtBelow?'rgba(255,80,80,0.35)':color):locked?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.12)'};
           cursor:${locked?'default':'pointer'};opacity:${locked?0.3:1};transition:background 0.1s;"
           onclick="${clickFn}"
-          title="Rank ${rank}${locked?' (잠김)':''}${tgtBelow?' (현재보다 낮음)':''}"></div>`;
+          title="Rank ${rank}${locked?' (잠김)':''}${tgtBelow?' (현재보다 낮음)':''}"><\/div>`;
       }).join('');
       const hexes = Array.from({length:3}, (_,r) => {
         const rank = r+10;
@@ -4823,15 +4823,15 @@ function renderOperatorConfig() {
             stroke="${filled?(tgtBelow?'rgba(255,80,80,0.6)':color):locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'}"
             stroke-width="1.5"/>
           <text x="12" y="15" text-anchor="middle" font-size="7"
-            fill="${filled?color:'rgba(255,255,255,0.4)'}" font-weight="700">${rank}</text>
-        </svg>`;
+            fill="${filled?color:'rgba(255,255,255,0.4)'}" font-weight="700">${rank}<\/text>
+        <\/svg>`;
       return `<div style="margin-bottom:5px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:2px;">${type} <span style="color:${color};font-size:8px;">Rank ${curLv}/${skillMax}</span></div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:2px;">${type} <span style="color:${color};font-size:8px;">Rank ${curLv}/${skillMax}<\/span><\/div>
         <div style="display:flex;align-items:center;gap:3px;">
-          <div style="display:flex;gap:2px;flex:1;">${bars}</div>
-          <div style="display:flex;gap:1px;">${hexes}</div>
-        </div>
-      </div>`;
+          <div style="display:flex;gap:2px;flex:1;">${bars}<\/div>
+          <div style="display:flex;gap:1px;">${hexes}<\/div>
+        <\/div>
+      <\/div>`;
     }).join('');
 
     // ── 능력치 강화 (E1→R1, E2→R2, E3→R3, E4→R4, 순서 의존) ──
@@ -4848,10 +4848,10 @@ function renderOperatorConfig() {
             background:${active?color+'22':'transparent'};
             cursor:${avail?'pointer':'default'};
             display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-          <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':'R'+(i+1)}</span>
-        </div>
-        <span style="font-size:8px;color:var(--text-muted);">E${requireElite}</span>
-      </div>`;
+          <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':'R'+(i+1)}<\/span>
+        <\/div>
+        <span style="font-size:8px;color:var(--text-muted);">E${requireElite}<\/span>
+      <\/div>`;
     }).join('');
 
     // ── 정예화 + 장비 해금 (ELITE_CHAIN 기반) ──
@@ -4876,28 +4876,28 @@ function renderOperatorConfig() {
               background:${active?color+'22':'transparent'};
               cursor:${canClick||active?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:9px;font-weight:700;color:${active?color:locked?'rgba(255,255,255,0.15)':'var(--text-muted)'};">${tgtLocked?'🔒':'E'+c.elite}</span>
-          </div>
-          <span style="font-size:7px;color:${!active&&canClick?'var(--text-muted)':'transparent'};">Lv${c.lvReq}</span>
-        </div>`;
+            <span style="font-size:9px;font-weight:700;color:${active?color:locked?'rgba(255,255,255,0.15)':'var(--text-muted)'};">${tgtLocked?'🔒':'E'+c.elite}<\/span>
+          <\/div>
+          <span style="font-size:7px;color:${!active&&canClick?'var(--text-muted)':'transparent'};">Lv${c.lvReq}<\/span>
+        <\/div>`;
       } else {
         const eqColor = CHAIN_EQUIP_COLORS[Math.floor((chainIdx-1)/2)];
         const locked = !active && !canClick;
         return `<div style="display:flex;align-items:center;gap:2px;opacity:${locked?0.35:1};margin-bottom:13px;">
-          <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"></div>
+          <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"><\/div>
           <div onclick="${canClick||active?clickFn:'void(0)'}"
             style="width:20px;height:20px;border-radius:3px;
               border:1.5px solid ${active?(tgtLocked?'rgba(255,100,100,0.6)':eqColor):locked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'};
               background:${active?eqColor+'22':'transparent'};
               cursor:${canClick||active?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:9px;color:${active?(tgtLocked?'rgba(255,100,100,0.8)':eqColor):'rgba(255,255,255,0.3)'};">${tgtLocked?'🔒':'◆'}</span>
-          </div>
-          <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"></div>
-        </div>`;
+            <span style="font-size:9px;color:${active?(tgtLocked?'rgba(255,100,100,0.8)':eqColor):'rgba(255,255,255,0.3)'};">${tgtLocked?'🔒':'◆'}<\/span>
+          <\/div>
+          <div style="width:8px;height:2px;background:rgba(255,255,255,0.12);"><\/div>
+        <\/div>`;
       }
     });
-    const eliteLine = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:1px;">${eliteItemsArr.join('')}</div>`;
+    const eliteLine = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:1px;">${eliteItemsArr.join('')}<\/div>`;
 
     // ── 재능 ──
     const talentGroups = [
@@ -4917,15 +4917,15 @@ function renderOperatorConfig() {
               background:${active?color+'22':'transparent'};
               cursor:${avail?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':(i+1)}</span>
-          </div>
-          <span style="font-size:8px;color:var(--text-muted);">${lbl}</span>
-        </div>`;
+            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':(i+1)}<\/span>
+          <\/div>
+          <span style="font-size:8px;color:var(--text-muted);">${lbl}<\/span>
+        <\/div>`;
       }).join('<div style="width:6px;height:2px;background:rgba(255,255,255,0.1);margin-top:12px;"></div>');
       return `<div>
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">${label}</div>
-        <div style="display:flex;align-items:flex-start;gap:2px;">${nodeHtml}</div>
-      </div>`;
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">${label}<\/div>
+        <div style="display:flex;align-items:flex-start;gap:2px;">${nodeHtml}<\/div>
+      <\/div>`;
     }).join('');
 
     // ── 인프라 스킬 ──
@@ -4947,75 +4947,75 @@ function renderOperatorConfig() {
               background:${active?color+'22':'transparent'};
               cursor:${avail?'pointer':'default'};
               display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':(i+1)}</span>
-          </div>
-          <span style="font-size:8px;color:var(--text-muted);">${lbl}</span>
-        </div>`;
+            <span style="font-size:8px;color:${active?color:'var(--text-muted)'};">${curLocked?'🔒':(i+1)}<\/span>
+          <\/div>
+          <span style="font-size:8px;color:var(--text-muted);">${lbl}<\/span>
+        <\/div>`;
       }).join('<div style="width:6px;height:2px;background:rgba(255,255,255,0.1);margin-top:12px;"></div>');
       return `<div>
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">${label}</div>
-        <div style="display:flex;align-items:flex-start;gap:2px;">${nodeHtml}</div>
-      </div>`;
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">${label}<\/div>
+        <div style="display:flex;align-items:flex-start;gap:2px;">${nodeHtml}<\/div>
+      <\/div>`;
     }).join('');
 
     return `<div style="flex:1;min-width:0;background:var(--panel3);
       border:1px solid rgba(255,255,255,0.08);border-top:2px solid ${color};
       border-radius:6px;padding:10px 12px;">
-      <div style="font-size:11px;font-weight:700;color:${color};margin-bottom:10px;">${label}</div>
+      <div style="font-size:11px;font-weight:700;color:${color};margin-bottom:10px;">${label}<\/div>
 
       <div style="margin-bottom:8px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">레벨</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">레벨<\/div>
         ${levelHtml}
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"></div>
+      <\/div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"><\/div>
 
       <div style="margin-bottom:6px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">스킬 강화</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">스킬 강화<\/div>
         ${skillHtml}
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"></div>
+      <\/div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"><\/div>
 
       <div style="margin-bottom:6px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">능력치 강화</div>
-        <div style="display:flex;gap:6px;">${statNodes}</div>
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"></div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">능력치 강화<\/div>
+        <div style="display:flex;gap:6px;">${statNodes}<\/div>
+      <\/div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"><\/div>
 
       <div style="margin-bottom:6px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">재능</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">${talentHtml}</div>
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"></div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">재능<\/div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">${talentHtml}<\/div>
+      <\/div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"><\/div>
 
       <div style="margin-bottom:6px;">
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">인프라 스킬</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">${infraHtml}</div>
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"></div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">인프라 스킬<\/div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">${infraHtml}<\/div>
+      <\/div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 0;"><\/div>
 
       <div>
-        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">정예화</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">정예화<\/div>
         ${eliteLine}
         <div style="font-size:9px;color:var(--text-muted);margin-top:4px;">
-          <span style="font-size:9px;color:var(--text-muted);">E${elite} / 다음: Lv${[0,20,40,60,80][elite+1]||0} 필요</span>
-        </div>
-      </div>
-    </div>`;
+          <span style="font-size:9px;color:var(--text-muted);">E${elite} / 다음: Lv${[0,20,40,60,80][elite+1]||0} 필요<\/span>
+        <\/div>
+      <\/div>
+    <\/div>`;
   }
   panel.innerHTML = `<div class="panel" style="padding:0;overflow:hidden;">
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;align-items:center;gap:10px;">
       <input value="${op.name}" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-weight:700;outline:none;flex:1;"
         oninput="updateOpName(${op.id},this.value)">
-    </div>
+    <\/div>
     <div style="padding:10px;display:flex;gap:8px;align-items:flex-start;" class="op-dual-panel">
       ${nodePanel('cur')}
       ${nodePanel('tgt')}
-    </div>
+    <\/div>
     <div style="padding:12px 14px;border-top:1px solid var(--border);">
-      <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:8px;">📦 필요 재료</div>
+      <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:8px;">📦 필요 재료<\/div>
       ${matHtml}
-    </div>
-  </div>`;
+    <\/div>
+  <\/div>`;
 }
 
 function renderOperatorTotal() {
@@ -5035,9 +5035,9 @@ function renderOperatorTotal() {
     // 미리보기: 상위 3개만 뱃지로
     preview.innerHTML = sorted.slice(0, 3).map(([name, qty]) =>
       `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.06);color:var(--text);">
-        ${name} <b style="color:var(--accent);">${qty.toLocaleString()}</b>
-      </span>`
-    ).join('') + (sorted.length > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${sorted.length-3}종</span>` : '');
+        ${name} <b style="color:var(--accent);">${qty.toLocaleString()}<\/b>
+      <\/span>`
+    ).join('') + (sorted.length > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${sorted.length-3}종<\/span>` : '');
     // 전체
     full.innerHTML = `<div style="display:flex;flex-direction:column;gap:3px;">
       ${sorted.map(([name, qty]) =>
@@ -5045,7 +5045,7 @@ function renderOperatorTotal() {
           <span style="color:var(--text);">${itemIcon(name,14)}${name}</span>
           <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}</span>
         </div>`).join('')}
-    </div>`;
+    <\/div>`;
   } else {
     // PC: 기존 패널
     const totalPanel = document.getElementById('operator-total-panel');
@@ -5059,7 +5059,7 @@ function renderOperatorTotal() {
           <span style="color:var(--text);">${itemIcon(name, 14)}${name}</span>
           <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;font-weight:700;">${qty.toLocaleString()}</span>
         </div>`).join('')}
-    </div>`;
+    <\/div>`;
   }
 }
 
@@ -5377,9 +5377,9 @@ function renderCustomSelect(container, options, selectedValue, onChange, placeho
 
   container.innerHTML = `
     <button class="custom-select-btn${isOpen(container) ? ' open' : ''}" onclick="toggleCustomSelect(this)">
-      <span class="cs-label" style="${isPlaceholder ? 'color:var(--text-muted);font-style:italic;' : ''}">${labelText}</span>
-      <svg class="cs-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-    </button>`;
+      <span class="cs-label" style="${isPlaceholder ? 'color:var(--text-muted);font-style:italic;' : ''}">${labelText}<\/span>
+      <svg class="cs-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/><\/svg>
+    <\/button>`;
 
   // 데이터 저장
   container._csOptions    = options;
@@ -5506,16 +5506,16 @@ async function autoCalcFactory(oId) {
   // 확인 모달
   const itemList = targets.map(([name, rate]) =>
     `<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.0.2);">
-      <span style="color:var(--text);">${name}</span>
-      <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;">${rate}/분</span>
-    </div>`
+      <span style="color:var(--text);">${name}<\/span>
+      <span style="color:var(--accent);font-family:'Share Tech Mono',monospace;">${rate}/분<\/span>
+    <\/div>`
   ).join('');
 
   const ok = await showDialog({
     title: '⚙ 공장 설비 자동 계산',
     message: `아래 생산품에 맞는 설비 그룹을 자동으로 생성해요.<br>
-      <div style="margin:10px 0;">${itemList}</div>
-      <span style="font-size:10px;color:var(--warning);">※ 기존 공장 그룹은 그대로 유지됩니다. 같은 이름의 그룹이 있어도 새로 추가돼요.</span>`,
+      <div style="margin:10px 0;">${itemList}<\/div>
+      <span style="font-size:10px;color:var(--warning);">※ 기존 공장 그룹은 그대로 유지됩니다. 같은 이름의 그룹이 있어도 새로 추가돼요.<\/span>`,
     buttons: [
       { label: '취소', value: false },
       { label: '생성', value: true, primary: true },
@@ -5618,7 +5618,7 @@ function renderFarmingGuide() {
 
   const totalMats = calcTotalMats();
   if (Object.keys(totalMats).length === 0) {
-    el.innerHTML = `<div class="empty-state" style="padding:48px;"><div class="icon">🌾</div>오퍼레이터를 추가하고<br>목표를 설정하면<br>파밍 가이드가 표시됩니다</div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:48px;"><div class="icon">🌾<\/div>오퍼레이터를 추가하고<br>목표를 설정하면<br>파밍 가이드가 표시됩니다<\/div>`;
     return;
   }
 
@@ -5643,60 +5643,60 @@ function renderFarmingGuide() {
 
     const sanityLine = bestSanity !== null
       ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
-          <span style="font-size:10px;color:var(--warning);">⚡ ${bestSanity.toLocaleString()} 이성</span>
-          <span style="font-size:10px;color:var(--text-muted);">🕐 ${sanityToTime(bestSanity)}</span>
-          <span style="font-size:10px;color:var(--text-muted);">📅 ${(bestSanity/SANITY_PER_DAY).toFixed(1)}일치</span>
-        </div>`
-      : `<div style="font-size:10px;color:var(--success);margin-top:4px;">⚡ 이성 불필요 (탐색·제조)</div>`;
+          <span style="font-size:10px;color:var(--warning);">⚡ ${bestSanity.toLocaleString()} 이성<\/span>
+          <span style="font-size:10px;color:var(--text-muted);">🕐 ${sanityToTime(bestSanity)}<\/span>
+          <span style="font-size:10px;color:var(--text-muted);">📅 ${(bestSanity/SANITY_PER_DAY).toFixed(1)}일치<\/span>
+        <\/div>`
+      : `<div style="font-size:10px;color:var(--success);margin-top:4px;">⚡ 이성 불필요 (탐색·제조)<\/div>`;
 
     const sourcesHtml = fd?.sources.map(s =>
       `<div style="font-size:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;gap:8px;">
-        <span style="color:var(--text);">📍 ${s.name}</span>
-        <span style="color:var(--text-muted);flex-shrink:0;">${s.detail}</span>
+        <span style="color:var(--text);">📍 ${s.name}<\/span>
+        <span style="color:var(--text-muted);flex-shrink:0;">${s.detail}<\/span>
         ${s.sanityPerRun > 0 ? `<span style="color:var(--warning);flex-shrink:0;font-family:'Share Tech Mono',monospace;">${s.sanityPerRun}이성/${s.itemPerRun}개</span>` : ''}
-      </div>`
-    ).join('') || `<div style="font-size:10px;color:var(--text-muted);">파밍 데이터 미확인</div>`;
+      <\/div>`
+    ).join('') || `<div style="font-size:10px;color:var(--text-muted);">파밍 데이터 미확인<\/div>`;
 
     return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;background:var(--bg-mid);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:16px;">${icon}</span>
-          <span style="font-size:13px;font-weight:600;color:var(--text);">${name}</span>
-        </div>
-        <span style="font-size:14px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;">${qty.toLocaleString()}개</span>
-      </div>
+          <span style="font-size:16px;">${icon}<\/span>
+          <span style="font-size:13px;font-weight:600;color:var(--text);">${name}<\/span>
+        <\/div>
+        <span style="font-size:14px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;">${qty.toLocaleString()}개<\/span>
+      <\/div>
       ${sanityLine}
-      <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">${sourcesHtml}</div>
+      <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">${sourcesHtml}<\/div>
       ${fd?.notes ? `<div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-style:italic;">💡 ${fd.notes}</div>` : ''}
-    </div>`;
+    <\/div>`;
   }).join('');
 
   const totalDays = totalSanity / SANITY_PER_DAY;
   const summary = `<div style="border:1px solid rgba(240,200,22,0.35);border-radius:4px;padding:14px 16px;background:rgba(240,200,22,0.05);margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">⚡ 파밍 총 요약</div>
+    <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">⚡ 파밍 총 요약<\/div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
       <div>
-        <div style="font-size:10px;color:var(--text-muted);">총 필요 이성</div>
-        <div style="font-size:20px;font-weight:700;color:var(--warning);font-family:'Share Tech Mono',monospace;">${totalSanity.toLocaleString()}</div>
-        <div style="font-size:10px;color:var(--text-muted);">이성</div>
-      </div>
+        <div style="font-size:10px;color:var(--text-muted);">총 필요 이성<\/div>
+        <div style="font-size:20px;font-weight:700;color:var(--warning);font-family:'Share Tech Mono',monospace;">${totalSanity.toLocaleString()}<\/div>
+        <div style="font-size:10px;color:var(--text-muted);">이성<\/div>
+      <\/div>
       <div>
-        <div style="font-size:10px;color:var(--text-muted);">자연 회복 기준</div>
-        <div style="font-size:20px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;">${totalDays.toFixed(1)}</div>
-        <div style="font-size:10px;color:var(--text-muted);">일 (자연회복+일퀘)</div>
-      </div>
+        <div style="font-size:10px;color:var(--text-muted);">자연 회복 기준<\/div>
+        <div style="font-size:20px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;">${totalDays.toFixed(1)}<\/div>
+        <div style="font-size:10px;color:var(--text-muted);">일 (자연회복+일퀘)<\/div>
+      <\/div>
       <div>
-        <div style="font-size:10px;color:var(--text-muted);">이성 회복 속도</div>
-        <div style="font-size:18px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">7분 12초</div>
-        <div style="font-size:10px;color:var(--text-muted);">/ 1이성</div>
-      </div>
-    </div>
+        <div style="font-size:10px;color:var(--text-muted);">이성 회복 속도<\/div>
+        <div style="font-size:18px;font-weight:700;color:var(--success);font-family:'Share Tech Mono',monospace;">7분 12초<\/div>
+        <div style="font-size:10px;color:var(--text-muted);">/ 1이성<\/div>
+      <\/div>
+    <\/div>
     <div style="margin-top:10px;font-size:10px;color:var(--text-muted);border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">
       ※ 이성 수치는 가장 효율 좋은 파밍처 기준 추정값입니다 (하루 240이성 = 자연회복 200 + 일일퀘스트 이성회복제 40). 볼레테·희귀 재료는 이성 외 탐색 시간도 필요합니다.
-    </div>
-  </div>`;
+    <\/div>
+  <\/div>`;
 
-  el.innerHTML = summary + `<div style="display:flex;flex-direction:column;gap:8px;">${cards}</div>`;
+  el.innerHTML = summary + `<div style="display:flex;flex-direction:column;gap:8px;">${cards}<\/div>`;
 }
 
 // ========== 기질(Essence) 파밍 데이터 ==========
@@ -5795,7 +5795,7 @@ function renderEssenceCheck() {
   if (!el) return;
 
   if (!pri && !sec && !sk) {
-    el.innerHTML = `<div class="empty-state" style="padding:32px;"><div class="icon">💎</div>특성을 선택하면 매칭 무기가 표시됩니다</div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:32px;"><div class="icon">💎<\/div>특성을 선택하면 매칭 무기가 표시됩니다<\/div>`;
     return;
   }
 
@@ -5807,7 +5807,7 @@ function renderEssenceCheck() {
   });
 
   if (matched.length === 0) {
-    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">🔍</div>매칭되는 무기가 없어요<br><span style="font-size:11px;color:var(--text-label);">특성 조합을 바꿔보세요</span></div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">🔍<\/div>매칭되는 무기가 없어요<br><span style="font-size:11px;color:var(--text-label);">특성 조합을 바꿔보세요<\/span><\/div>`;
     return;
   }
 
@@ -5815,12 +5815,12 @@ function renderEssenceCheck() {
   el.innerHTML = `
     <div style="font-size:11px;color:var(--text-label);margin-bottom:8px;">
       ${matchCount}개 특성 선택 →
-      <b style="color:var(--accent);">${matched.length}개</b> 무기 매칭
-      ${matchCount===3 ? '<span style="color:var(--success);margin-left:4px;">✓ 완벽 매칭!</span>' : ''}
-    </div>
+      <b style="color:var(--accent);">${matched.length}개<\/b> 무기 매칭
+      ${matchCount===3 ? '<span style="color:var(--success);margin-left:4px;">✓ 완벽 매칭!<\/span>' : ''}
+    <\/div>
     <div style="display:flex;flex-direction:column;gap:6px;">
       ${matched.map(w => weaponCard(w, pri, sec, sk)).join('')}
-    </div>`;
+    <\/div>`;
 }
 
 // ========== ② 무기별 파밍처 + 한번에 파밍 통합 ==========
@@ -5832,7 +5832,7 @@ function renderWeaponFarming() {
   if (!w) return;
 
   if (!w.primary && !w.secondary && !w.skill) {
-    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">⚠</div>이 무기의 기질 데이터가 아직 미확인이에요<br><span style="font-size:11px;color:var(--text-label);">엑셀 DB에 입력 후 반영해주세요</span></div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">⚠<\/div>이 무기의 기질 데이터가 아직 미확인이에요<br><span style="font-size:11px;color:var(--text-label);">엑셀 DB에 입력 후 반영해주세요<\/span><\/div>`;
     return;
   }
 
@@ -5840,25 +5840,25 @@ function renderWeaponFarming() {
   const statsHtml = `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
       <div style="background:rgba(0,0,0,0.2);border-radius:4px;padding:10px 12px;border:1px solid rgba(79,195,247,0.3);">
-        <div style="font-size:9px;color:#4FC3F7;margin-bottom:4px;font-weight:700;">주속성</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.primary || '<span style="color:var(--text-muted);">미확인</span>'}</div>
-      </div>
+        <div style="font-size:9px;color:#4FC3F7;margin-bottom:4px;font-weight:700;">주속성<\/div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.primary || '<span style="color:var(--text-muted);">미확인<\/span>'}<\/div>
+      <\/div>
       <div style="background:rgba(0,0,0,0.2);border-radius:4px;padding:10px 12px;border:1px solid rgba(255,213,128,0.3);">
-        <div style="font-size:9px;color:#FFD580;margin-bottom:4px;font-weight:700;">보조속성</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.secondary || '<span style="color:var(--text-muted);">미확인</span>'}</div>
-      </div>
+        <div style="font-size:9px;color:#FFD580;margin-bottom:4px;font-weight:700;">보조속성<\/div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.secondary || '<span style="color:var(--text-muted);">미확인<\/span>'}<\/div>
+      <\/div>
       <div style="background:rgba(0,0,0,0.2);border-radius:4px;padding:10px 12px;border:1px solid rgba(128,255,128,0.3);">
-        <div style="font-size:9px;color:#80FF80;margin-bottom:4px;font-weight:700;">스킬</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.skill || '<span style="color:var(--text-muted);">미확인</span>'}</div>
-      </div>
-    </div>`;
+        <div style="font-size:9px;color:#80FF80;margin-bottom:4px;font-weight:700;">스킬<\/div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.skill || '<span style="color:var(--text-muted);">미확인<\/span>'}<\/div>
+      <\/div>
+    <\/div>`;
 
   // 2. 파밍처 리스트 (스킬 기준, 모든 파밍처 표시 + 추천 표시)
   const alluviums = w.skill ? getBestAlluviumsForWeapon(w) : ALLUVIUMS;
   const notFoundSkill = w.skill && alluviums.length === 0;
 
   const alluviumsHtml = (notFoundSkill
-    ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬을 드롭하는 파밍처가 없어요 — 데이터를 확인해주세요</div>`
+    ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬을 드롭하는 파밍처가 없어요 — 데이터를 확인해주세요<\/div>`
     : alluviums.map(a => {
         // 한번에 파밍 가능한 무기: 같은 파밍처에서 스킬이 드롭되는 다른 무기
         const bundleWeapons = WEAPON_DATA.filter(bw =>
@@ -5871,25 +5871,25 @@ function renderWeaponFarming() {
           ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.09);">
               <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:6px;">
                 📦 한번에 파밍 가능한 무기 (${bundleWeapons.length}개)
-              </div>
+              <\/div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 ${bundleWeapons.map(bw => weaponCard(bw, null, null, bw.skill)).join('')}
-              </div>
-            </div>`
-          : `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);">이 장소에서 함께 파밍 가능한 다른 무기 없음</div>`;
+              <\/div>
+            <\/div>`
+          : `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);">이 장소에서 함께 파밍 가능한 다른 무기 없음<\/div>`;
 
         const isRecommended = bundleWeapons.length > 0;
 
         return `<div style="border:1px solid ${isRecommended ? 'rgba(240,200,22,0.4)' : 'rgba(255,255,255,0.09)'};border-radius:4px;overflow:hidden;margin-bottom:8px;background:${isRecommended ? 'rgba(240,200,22,0.06)' : 'rgba(255,255,255,0.04)'};">
           <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <span style="font-size:13px;font-weight:700;color:var(--accent);">📍 ${a.name}</span>
-              <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">${a.region}</span>
-            </div>
+              <span style="font-size:13px;font-weight:700;color:var(--accent);">📍 ${a.name}<\/span>
+              <span style="font-size:10px;color:var(--text-muted);margin-left:8px;">${a.region}<\/span>
+            <\/div>
             ${isRecommended
               ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(240,200,22,0.14);color:var(--accent);border:1px solid rgba(240,200,22,0.35);">⭐ 추천</span>`
               : `<span style="font-size:10px;color:var(--text-muted);">단독 파밍</span>`}
-          </div>
+          <\/div>
           <div style="padding:10px 14px;">
             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;">
               ${a.skills.map(s => {
@@ -5900,33 +5900,33 @@ function renderWeaponFarming() {
                   border:1px solid ${isTarget ? 'rgba(128,255,128,0.4)' : 'rgba(255,255,255,0.1)'};
                   font-weight:${isTarget ? '700' : '400'};">${s}${isTarget ? ' ✓' : ''}</span>`;
               }).join('')}
-            </div>
+            <\/div>
             ${bundleHtml}
-          </div>
-        </div>`;
+          <\/div>
+        <\/div>`;
       }).join('')
   );
 
   el.innerHTML = `
     <!-- 무기 헤더 -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-      <span style="font-size:18px;font-weight:700;color:${rarityColor(w.rarity)};">★${w.rarity}</span>
+      <span style="font-size:18px;font-weight:700;color:${rarityColor(w.rarity)};">★${w.rarity}<\/span>
       <div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.operator}</div>
-        <div style="font-size:11px;color:var(--text-label);">${w.type}${w.name !== '(미확인)' ? ' · '+w.name : ''}</div>
-      </div>
-    </div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.operator}<\/div>
+        <div style="font-size:11px;color:var(--text-label);">${w.type}${w.name !== '(미확인)' ? ' · '+w.name : ''}<\/div>
+      <\/div>
+    <\/div>
 
     ${statsHtml}
 
     <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
       파밍처 목록
       ${w.skill ? `<span style="color:var(--text-muted);font-weight:400;margin-left:4px;">— 스킬 <b style="color:#80FF80;">${w.skill}</b> 기준</span>` : ''}
-    </div>
+    <\/div>
     ${alluviumsHtml}
     <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">
       ※ 주속성·보조속성은 모든 파밍처에서 랜덤 드롭돼요. 스킬 특성이 나오는 장소를 선택해야 해요.
-    </div>`;
+    <\/div>`;
 }
 
 // ========== 공통 헬퍼 ==========
@@ -5938,14 +5938,14 @@ function alluviumTag(a) {
   return `<div style="border:1px solid rgba(240,200,22,0.18);border-radius:4px;padding:8px 12px;background:rgba(240,200,22,0.05);">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div>
-        <span style="font-size:12px;font-weight:700;color:var(--accent);">${a.name}</span>
-        <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${a.region}</span>
-      </div>
-    </div>
+        <span style="font-size:12px;font-weight:700;color:var(--accent);">${a.name}<\/span>
+        <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${a.region}<\/span>
+      <\/div>
+    <\/div>
     <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
       ${a.skills.map(s => `<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(128,255,128,0.1);color:#80FF80;border:1px solid rgba(128,255,128,0.25);">${s}</span>`).join('')}
-    </div>
-  </div>`;
+    <\/div>
+  <\/div>`;
 }
 
 function weaponCard(w, hiPri, hiSec, hiSk) {
@@ -5959,18 +5959,18 @@ function weaponCard(w, hiPri, hiSec, hiSk) {
   return `<div style="border:1px solid rgba(30,58,95,${allMatch?'0.8':'0.4'});border-radius:4px;padding:8px 12px;
     background:${allMatch?'rgba(240,200,22,0.05)':'rgba(255,255,255,0.04)'};">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <span style="font-size:11px;font-weight:700;color:${rc};">★${w.rarity}</span>
-      <span style="font-size:12px;font-weight:600;color:var(--text);">${w.operator}</span>
-      <span style="font-size:10px;color:var(--text-muted);">${w.type}</span>
+      <span style="font-size:11px;font-weight:700;color:${rc};">★${w.rarity}<\/span>
+      <span style="font-size:12px;font-weight:600;color:var(--text);">${w.operator}<\/span>
+      <span style="font-size:10px;color:var(--text-muted);">${w.type}<\/span>
       ${w.name !== '(미확인)' ? `<span style="font-size:10px;color:var(--accent2);">${w.name}</span>` : ''}
       ${isUnknown ? `<span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(255,170,0,0.15);color:var(--warning);">데이터 미확인</span>` : ''}
-    </div>
+    <\/div>
     ${!isUnknown ? `<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;">
       <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(79,195,247,${priMatch?'0.2':'0.06'});color:#4FC3F7;border:1px solid rgba(79,195,247,${priMatch?'0.5':'0.2'});">${w.primary||'—'}</span>
       <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(255,213,128,${secMatch?'0.2':'0.06'});color:#FFD580;border:1px solid rgba(255,213,128,${secMatch?'0.5':'0.2'});">${w.secondary||'—'}</span>
       <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(128,255,128,${skMatch?'0.2':'0.06'});color:#80FF80;border:1px solid rgba(128,255,128,${skMatch?'0.5':'0.2'});">${w.skill||'—'}</span>
     </div>` : ''}
-  </div>`;
+  <\/div>`;
 }
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-theme');
@@ -6574,7 +6574,7 @@ function updateMobileStatusBtn() {
 
   const summary = document.getElementById('mobile-auth-summary');
   if (summary) {
-    summary.innerHTML = `관리권 잔여 <span style="color:${balColor};font-weight:700;font-family:'Share Tech Mono',monospace;">${balText}/분</span>`;
+    summary.innerHTML = `관리권 잔여 <span style="color:${balColor};font-weight:700;font-family:'Share Tech Mono',monospace;">${balText}/분<\/span>`;
   }
 
   // 재료 부족 수는 결과 계산에서 직접 집계
@@ -6685,18 +6685,18 @@ function renderTourStep() {
   const card = document.createElement('div');
   card.className = 'tour-card'; card.id = 'tour-card';
   card.innerHTML = `
-    <div class="tour-card-title">${step.title}</div>
-    <div class="tour-card-body">${step.body.replace(/\n/g,'<br>')}</div>
+    <div class="tour-card-title">${step.title}<\/div>
+    <div class="tour-card-body">${step.body.replace(/\n/g,'<br>')}<\/div>
     <div class="tour-card-footer">
-      <span class="tour-step-indicator">${tourStep+1} / ${TOUR_STEPS.length}</span>
+      <span class="tour-step-indicator">${tourStep+1} / ${TOUR_STEPS.length}<\/span>
       <div class="tour-btn-group">
-        <button class="tour-btn" onclick="endTour()">건너뛰기</button>
+        <button class="tour-btn" onclick="endTour()">건너뛰기<\/button>
         ${tourStep > 0 ? `<button class="tour-btn" onclick="prevTourStep()">◀</button>` : ''}
         <button class="tour-btn primary" onclick="nextTourStep()">
           ${tourStep === TOUR_STEPS.length-1 ? '완료 ✓' : '다음 ▶'}
-        </button>
-      </div>
-    </div>`;
+        <\/button>
+      <\/div>
+    <\/div>`;
   document.body.appendChild(card);
   positionTourCard(card, targetEl, step.position);
 }
