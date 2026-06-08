@@ -1724,9 +1724,9 @@ function FactoryLayout(){
     if(e.cancelable)e.preventDefault();
     const pt=e.touches?e.touches[0]:e;
     const isTouch=!!e.touches;
-    // 배치/벨트 터치면 오프셋 적용, 이동 감지는 항상 raw
+    // 배치/벨트 모드에서 항상 오프셋 적용 (PC/모바일 모두)
     const rawCell=c2cell(pt.clientX,pt.clientY,false);
-    const cell=isTouch&&(tool==='place'||tool==='belt')
+    const cell=(tool==='place'||tool==='belt')
       ?c2cell(pt.clientX,pt.clientY,true)
       :rawCell;
 
@@ -1848,8 +1848,8 @@ function FactoryLayout(){
       }
     }
 
-    // 호버셀: 롱드래그 중이 아닐 때 오프셋 적용
-    const useOff=isTouch&&!isLongRef.current&&(tool==='place'||tool==='belt');
+    // 호버셀: place/belt 모드에서 항상 오프셋 적용 (PC/모바일 모두)
+    const useOff=!isLongRef.current&&(tool==='place'||tool==='belt');
     const cell=c2cell(pt.clientX,pt.clientY,useOff);
     setHoverCell(cell);
 
