@@ -1703,17 +1703,15 @@ function FactoryLayout(){
     const scaleDiv=wrap.firstElementChild;if(!scaleDiv)return null;
     const sr=scaleDiv.getBoundingClientRect();
     const scaledCell=CELL*(sr.width/W);
-    // 커서 기준 중앙 정렬: 설비 중앙이 커서에 오도록
-    const half=Math.floor(EQUIP_SIZE/2);
     const gx=Math.floor((cx-sr.left)/scaledCell);
     const gy=Math.floor((cy-sr.top)/scaledCell);
-    // 중앙 정렬 (커서 = 설비 중앙)
-    const fx=applyOffset
-      ? Math.max(0,gx-half)               // 모바일: 위로 올림
-      : Math.max(0,gx-half);              // PC도 동일하게 중앙 정렬
+    const half=Math.floor(EQUIP_SIZE/2);
+    // 항상 커서/손가락 기준 설비 중앙 정렬
+    // applyOffset(모바일)이면 손가락 바로 위에 미리보기
+    const fx=Math.max(0, gx-half);
     const fy=applyOffset
-      ? Math.max(0,gy-OFFSET_CELLS)       // 모바일: 추가로 위로
-      : Math.max(0,gy-half);              // PC: 상하도 중앙
+      ? Math.max(0, gy-EQUIP_SIZE)   // 모바일: 손가락 바로 위
+      : Math.max(0, gy-half);        // PC: 상하 중앙
     return inBounds(fx,fy)?{x:fx,y:fy}:null;
   }
 
@@ -1768,26 +1766,7 @@ function FactoryLayout(){
 
     if(!cell)return;
     if(tool==='place'){
-      if(!pending){return;}
-      // 그리드 클릭 → 즉시 설치
-      const occ=getAllOcc();
-      let ok=inBounds(cell.x+EQUIP_SIZE-1,cell.y+EQUIP_SIZE-1);
-      for(let dx=0;dx<EQUIP_SIZE&&ok;dx++)for(let dy=0;dy<EQUIP_SIZE&&ok;dy++)
-        if(occ.has(cellKey(cell.x+dx,cell.y+dy)))ok=false;
-      if(ok){
-        const isCalc=pending.fromCalc;
-        const rem=isCalc?(remainingRef.current[pending.key||pending.recipeId]??Infinity):Infinity;
-        if(rem>0){
-          setEquips(p=>[...p,{id:nid.current++,x:cell.x,y:cell.y,
-            recipeId:pending.recipeId,name:pending.name,equip:pending.equip,
-            key:pending.key,count:1,fromCalc:isCalc}]);
-          if(isCalc){
-            const newRem=rem-1;
-            setRem(p=>({...p,[pending.key||pending.recipeId]:newRem}));
-            if(newRem<=0){setPending(null);pendingRef.current=null;}
-          }
-        }
-      }
+      // 배치는 handleUp에서 처리
       return;
     }
     if(tool==='belt'){
@@ -1881,6 +1860,33 @@ function FactoryLayout(){
   }
 
   function handleUp(e){
+    // place 모드: 손 떼는 순간 배치 확정
+    if(tool==='place'&&pendingRef.current&&!isLongRef.current&&!isDragging.current){
+      const pt=e.changedTouches?e.changedTouches[0]:e;
+      const isTouch=!!e.changedTouches;
+      const cell=c2cell(pt.clientX,pt.clientY,isTouch);
+      if(cell){
+        const pend=pendingRef.current;
+        const occ=getAllOcc();
+        let ok=inBounds(cell.x+EQUIP_SIZE-1,cell.y+EQUIP_SIZE-1);
+        for(let dx=0;dx<EQUIP_SIZE&&ok;dx++)for(let dy=0;dy<EQUIP_SIZE&&ok;dy++)
+          if(occ.has(cellKey(cell.x+dx,cell.y+dy)))ok=false;
+        if(ok){
+          const isCalc=pend.fromCalc;
+          const rem=isCalc?(remainingRef.current[pend.key||pend.recipeId]??Infinity):Infinity;
+          if(rem>0){
+            setEquips(p=>[...p,{id:nid.current++,x:cell.x,y:cell.y,
+              recipeId:pend.recipeId,name:pend.name,equip:pend.equip,
+              key:pend.key,count:1,fromCalc:isCalc}]);
+            if(isCalc){
+              const newRem=rem-1;
+              setRem(p=>({...p,[pend.key||pend.recipeId]:newRem}));
+              if(newRem<=0){setPending(null);pendingRef.current=null;}
+            }
+          }
+        }
+      }
+    }
     if(isLongRef.current&&overTrash&&dragRef.current){
       const id=dragRef.current.id;
       const deleted=equips.find(q=>q.id===id);
@@ -2052,9 +2058,7 @@ function FactoryLayout(){
           fill:'rgba(255,255,255,0.07)',stroke:'#fff',strokeWidth:2,rx:4})
       );
     }),
-    hoverCell&&ce('rect',{x:hoverCell.x*CELL,y:hoverCell.y*CELL,width:CELL,height:CELL,
-      fill:'rgba(255,255,255,0.07)',stroke:'rgba(255,255,255,0.25)',strokeWidth:1,rx:2,
-      style:{pointerEvents:'none'}}),
+    
     hoverCell&&tool==='place'&&pending&&(()=>{
       const w=EQUIP_SIZE*CELL,col=EQ_COLORS[pending.equip]||'#555';
       return ce('g',{style:{pointerEvents:'none'}},
