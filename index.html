@@ -1639,7 +1639,7 @@ function FactoryLayout(){
           if(selEq){
             const del=equips.find(q=>q.id===selEq);
             setEquips(p=>p.filter(q=>q.id!==selEq));setSelEq(null);
-            if(del&&del.fromCalc)setRem(p=>({...p,[del.recipeId]:(p[del.recipeId]||0)+1}));
+            if(del&&del.fromCalc)setRem(p=>({...p,[del.key||del.recipeId]:(p[del.key||del.recipeId]||0)+1}));
           }
           else if(selBelt){
             setBmap(prev=>{
@@ -1666,7 +1666,7 @@ function FactoryLayout(){
           if(selEq){
             const del=equips.find(q=>q.id===selEq);
             setEquips(p=>p.filter(q=>q.id!==selEq));setSelEq(null);
-            if(del&&del.fromCalc)setRem(p=>({...p,[del.recipeId]:(p[del.recipeId]||0)+1}));
+            if(del&&del.fromCalc)setRem(p=>({...p,[del.key||del.recipeId]:(p[del.key||del.recipeId]||0)+1}));
           }break;
       }
     };
@@ -1770,14 +1770,14 @@ function FactoryLayout(){
         if(occ.has(cellKey(cell.x+dx,cell.y+dy)))ok=false;
       if(ok){
         const isCalc=pending.fromCalc;
-        const rem=isCalc?(remainingRef.current[pending.recipeId]??Infinity):Infinity;
+        const rem=isCalc?(remainingRef.current[pending.key||pending.recipeId]??Infinity):Infinity;
         if(rem>0){
           setEquips(p=>[...p,{id:nid.current++,x:cell.x,y:cell.y,
             recipeId:pending.recipeId,name:pending.name,equip:pending.equip,
-            count:1,fromCalc:isCalc}]);
+            key:pending.key,count:1,fromCalc:isCalc}]);
           if(isCalc){
             const newRem=rem-1;
-            setRem(p=>({...p,[pending.recipeId]:newRem}));
+            setRem(p=>({...p,[pending.key||pending.recipeId]:newRem}));
             if(newRem<=0){setPending(null);pendingRef.current=null;}
           }
         }
@@ -1892,27 +1892,29 @@ function FactoryLayout(){
     setHoverCell(null);
   }
 
-  // 계산기 설비 목록 — remaining으로 잔여 추적
-  function getCalcItems(){
+  // 계산기 설비 목록 — 그룹별로 분리
+  function getCalcGroups(){
     const groups=(window.od&&window.od()&&window.od().groups)||[];
-    const items=[];
-    groups.forEach(g=>{
+    return groups.map(g=>{
+      const items=[];
       g.equips.forEach(e=>{
         const r=window.RECIPES&&window.RECIPES.find(r2=>r2.id===e.recipeId);
         if(!r)return;
         const total=Math.ceil(e.count*(g.mult||1));
-        // remaining에 없으면 total로 초기화
-        const rem=remaining.hasOwnProperty(e.recipeId)?remaining[e.recipeId]:total;
-        if(rem<=0)return; // 0개면 목록에서 제외
-        items.push({recipeId:e.recipeId,
+        const key=g.id+'_'+e.recipeId; // 그룹+레시피 고유 키
+        const rem=remaining.hasOwnProperty(key)?remaining[key]:total;
+        items.push({
+          key,
+          recipeId:e.recipeId,
           name:r.outputs[0]?r.outputs[0].name:r.label,
           equip:r.equip,
-          count:rem,   // 잔여 개수
+          count:rem,
           total,
-          groupName:g.name});
+          groupId:g.id,
+        });
       });
-    });
-    return items;
+      return {id:g.id, name:g.name, items};
+    }).filter(g=>g.items.length>0);
   }
 
   // 휠 줌
@@ -1932,7 +1934,7 @@ function FactoryLayout(){
   const selEqData=equips.find(e=>e.id===selEq);
   const W=GRID_W*CELL,H=GRID_H*CELL;
   const ce=React.createElement;
-  const calcItems=getCalcItems();
+  const calcGroups=getCalcGroups();
 
   // ── 설비 목록 패널 ──────────────────────────────────────────
   const equipPanel=ce('div',{style:{
@@ -1948,48 +1950,54 @@ function FactoryLayout(){
       isMobile&&ce('button',{onClick:()=>setListOpen(false),
         style:{background:'none',border:'none',color:'var(--text-muted)',fontSize:16,cursor:'pointer',lineHeight:1}},'×')
     ),
-    calcItems.length===0
+    calcGroups.length===0
     ?ce('div',{style:{padding:'16px 10px',fontSize:11,color:'var(--text-muted)',
         textAlign:'center',lineHeight:1.8}},'공장 계산기에서',ce('br'),'그룹을 먼저 만들어주세요')
     :ce('div',{style:{overflowY:'auto',flex:1}},
-      calcItems.map((item,i)=>{
-        const col=EQ_COLORS[item.equip]||'#555';
-        const isSel=pending&&pending.recipeId===item.recipeId&&pending.fromCalc;
-        return ce('div',{key:i,
-          onClick:e=>{
-            e.stopPropagation();
-            const p={recipeId:item.recipeId,name:item.name,equip:item.equip,fromCalc:true};
-            // remaining 초기화 (처음 클릭 시)
-            if(!(item.recipeId in remainingRef.current)){
-              const init={...remainingRef.current,[item.recipeId]:item.count};
-              remainingRef.current=init;
-              setRemaining(init);
-            }
-            setPending(p);pendingRef.current=p;setTool('place');
-            if(isMobile)setListOpen(false);
+      calcGroups.map((group)=>[
+        ce('div',{key:'hdr_'+group.id,style:{
+          padding:'5px 9px 3px',fontSize:9,fontWeight:700,color:'var(--accent)',
+          letterSpacing:'0.06em',background:'rgba(240,200,22,0.06)',
+          borderBottom:'1px solid rgba(255,255,255,0.06)',
+          borderTop:'1px solid rgba(255,255,255,0.06)',
+        }},group.name),
+        ...group.items.map((item)=>{
+          const col=EQ_COLORS[item.equip]||'#555';
+          const isSel=pending&&pending.key===item.key&&pending.fromCalc;
+          return ce('div',{key:item.key,
+            onClick:e=>{
+              e.stopPropagation();
+              const p={key:item.key,recipeId:item.recipeId,name:item.name,equip:item.equip,fromCalc:true,groupId:item.groupId};
+              if(!(item.key in remainingRef.current)){
+                const init={...remainingRef.current,[item.key]:item.count};
+                remainingRef.current=init;
+                setRemaining(init);
+              }
+              setPending(p);pendingRef.current=p;setTool('place');
+              if(isMobile)setListOpen(false);
+            },
+            style:{
+              padding:'6px 9px',borderBottom:'1px solid rgba(255,255,255,0.04)',
+              cursor:'pointer',display:'flex',alignItems:'center',gap:6,
+              background:isSel?'rgba(240,200,22,0.14)':'transparent',
+              borderLeft:isSel?'3px solid var(--accent)':'3px solid transparent',
+              WebkitUserSelect:'none',userSelect:'none',transition:'background 0.1s',
+            },
+            onMouseEnter:e=>{if(!isSel)e.currentTarget.style.background='rgba(240,200,22,0.06)';},
+            onMouseLeave:e=>{if(!isSel)e.currentTarget.style.background='transparent';},
           },
-          style:{
-            padding:'7px 9px',borderBottom:'1px solid rgba(255,255,255,0.06)',
-            cursor:'pointer',display:'flex',alignItems:'center',gap:6,
-            background:isSel?'rgba(240,200,22,0.14)':'transparent',
-            borderLeft:isSel?'3px solid var(--accent)':'3px solid transparent',
-            WebkitUserSelect:'none',userSelect:'none',
-            transition:'background 0.1s',
-          },
-          onMouseEnter:e=>{if(!isSel)e.currentTarget.style.background='rgba(240,200,22,0.08)';},
-          onMouseLeave:e=>{if(!isSel)e.currentTarget.style.background='transparent';},
-        },
-          ce('div',{style:{width:4,height:26,borderRadius:6,background:col,flexShrink:0}}),
-          ce('div',{style:{flex:1,minWidth:0}},
-            ce('div',{style:{fontSize:11,fontWeight:600,
-              color:isSel?'var(--accent)':'var(--text)',
-              whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},item.name),
-            ce('div',{style:{fontSize:9,color:'var(--text-muted)',marginTop:1}},
-              item.equip+' ×'+item.count)
-          ),
-          isSel&&ce('span',{style:{fontSize:9,color:'var(--accent)',flexShrink:0,fontWeight:700}},'선택됨')
-        );
-      })
+            ce('div',{style:{width:3,height:24,borderRadius:4,background:col,flexShrink:0}}),
+            ce('div',{style:{flex:1,minWidth:0}},
+              ce('div',{style:{fontSize:11,fontWeight:600,
+                color:isSel?'var(--accent)':'var(--text)',
+                whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},item.name),
+              ce('div',{style:{fontSize:9,color:'var(--text-muted)',marginTop:1}},
+                item.equip+' ×'+item.total+(item.count<item.total?' ('+item.count+'남음)':''))
+            ),
+            isSel&&ce('span',{style:{fontSize:9,color:'var(--accent)',flexShrink:0,fontWeight:700}},'▶')
+          );
+        })
+      ]).flat()
     )
   );
 
@@ -2093,7 +2101,7 @@ function FactoryLayout(){
         e.stopPropagation();
         const del=equips.find(q=>q.id===eq.id);
         setEquips(p=>p.filter(q=>q.id!==eq.id));setSelEq(null);
-        if(del&&del.fromCalc)setRem(p=>({...p,[del.recipeId]:(p[del.recipeId]||0)+1}));
+        if(del&&del.fromCalc)setRem(p=>({...p,[del.key||del.recipeId]:(p[del.key||del.recipeId]||0)+1}));
       }
       function rotEq(e){
         e.stopPropagation();
