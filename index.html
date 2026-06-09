@@ -1538,6 +1538,7 @@ function FactoryLayout(){
   const [tool,      setTool]     =useState('place');
   const [conn,      setConn]     =useState(null);
   const [hoverCell, setHoverCell]=useState(null);
+  const hoverCellRef=useRef(null);
   const [selEq,     setSelEq]    =useState(null);
   const [selBelt,   setSelBelt]  =useState(null);
   const [addOpen,   setAddOpen]  =useState(false);
@@ -1835,7 +1836,7 @@ function FactoryLayout(){
     // 호버셀: place/belt 모드에서 중앙 정렬 (모바일은 위로 올림 포함)
     const useOff=!isLongRef.current&&(tool==='place'||tool==='belt');
     const cell=c2cell(pt.clientX,pt.clientY,useOff);
-    setHoverCell(cell);
+    setHoverCell(cell); hoverCellRef.current=cell;
 
     // 벨트 드래그 연속 배치
     if(tool==='belt'&&isBeltDrag.current&&cell){
@@ -1860,11 +1861,9 @@ function FactoryLayout(){
   }
 
   function handleUp(e){
-    // place 모드: 손 떼는 순간 배치 확정
+    // place 모드: 손 떼는 순간 미리보기 위치(hoverCell)에 배치 확정
     if(tool==='place'&&pendingRef.current&&!isLongRef.current&&!isDragging.current){
-      const pt=e.changedTouches?e.changedTouches[0]:e;
-      const isTouch=!!e.changedTouches;
-      const cell=c2cell(pt.clientX,pt.clientY,isTouch);
+      const cell=hoverCellRef.current; // ref로 최신 미리보기 위치 사용
       if(cell){
         const pend=pendingRef.current;
         const occ=getAllOcc();
@@ -1901,7 +1900,7 @@ function FactoryLayout(){
     isDragging.current=false;isLongRef.current=false;
     dragRef.current=null;lastPinch.current=null;isBeltDrag.current=false;
     setIsLongDrag(false);setOverTrash(false);
-    setHoverCell(null);
+    setHoverCell(null); hoverCellRef.current=null;
   }
 
   // 계산기 설비 목록 — 그룹별로 분리
