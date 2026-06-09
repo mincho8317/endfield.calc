@@ -1711,8 +1711,8 @@ function FactoryLayout(){
     // applyOffset(모바일)이면 손가락 바로 위에 미리보기
     const fx=Math.max(0, gx-half);
     const fy=applyOffset
-      ? Math.max(0, gy-EQUIP_SIZE)   // 모바일: 손가락 바로 위
-      : Math.max(0, gy-half);        // PC: 상하 중앙
+      ? Math.max(0, gy-EQUIP_SIZE)       // 모바일: 손가락 바로 위
+      : Math.max(0, gy-(EQUIP_SIZE-1));  // PC: 커서가 맨 아래칸
     return inBounds(fx,fy)?{x:fx,y:fy}:null;
   }
 
