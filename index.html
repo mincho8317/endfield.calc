@@ -1716,7 +1716,7 @@ function FactoryLayout(){
     const fx=Math.max(0, gx-half);
     const fy=applyOffset
       ? Math.max(0, gy-EQUIP_SIZE)      // 모바일: 손가락 바로 위
-      : Math.max(0, gy-(EQUIP_SIZE-1)); // PC: 커서 = 맨 아래칸
+      : Math.max(0, gy-(EQUIP_SIZE-2)); // PC: 커서 = 맨 아래칸
     return inBounds(fx,fy)?{x:fx,y:fy}:null;
   }
   function placeBelt(x,y){
