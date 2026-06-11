@@ -460,9 +460,15 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   border: 1px solid rgba(240,200,22,0.3);
   border-radius: 6px;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 220px; /* 기본값, JS에서 덮어씀 */
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   scrollbar-width: thin;
+  scrollbar-color: rgba(240,200,22,0.3) transparent;
 }
+.custom-select-dropdown::-webkit-scrollbar { width: 4px; }
+.custom-select-dropdown::-webkit-scrollbar-thumb { background: rgba(240,200,22,0.3); border-radius: 2px; }
+.custom-select-dropdown::-webkit-scrollbar-thumb:hover { background: rgba(240,200,22,0.6); }
 .cs-option {
   padding: 8px 11px; font-size: 12px; cursor: pointer;
   color: var(--text-sub);
@@ -2504,6 +2510,7 @@ if ('visualViewport' in window) {
 <script src="data/outposts.js"></script>
 <script src="data/base_data.js"></script>
 <script src="data/operators.js"></script>
+<script src="data/weapons.js"></script>
 <script src="data/farming.js"></script>
 <script src="data/essence.js"></script>
 

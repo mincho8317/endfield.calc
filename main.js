@@ -2583,6 +2583,38 @@ function renderOperatorConfig() {
       </div>
     </div>`;
   }
+  // ── 무기 특성 섹션 ──
+  const weaponName = op.weapon || '';
+  const weaponData = (window.WEAPONS || []).find(w => w.name === weaponName);
+  const weaponHtml = weaponName ? (() => {
+    if (!weaponData) return `
+      <div style="color:var(--text-muted);font-size:11px;padding:8px 0;">
+        ${weaponName} — 특성 데이터 없음
+      </div>`;
+    const renderTrait = (t, color, label) => {
+      if (!t) return '';
+      return `<div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:8px 10px;border:1px solid ${color}33;margin-bottom:6px;">
+        <div style="font-size:9px;color:${color};font-weight:700;margin-bottom:3px;">${label}</div>
+        <div style="font-size:11px;color:var(--text);font-weight:600;">${t.label || ''}</div>
+        ${t.initVal ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${t.initVal}</div>` : ''}
+      </div>`;
+    };
+    const t3 = weaponData.trait3;
+    const t3Html = t3 ? `<div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:8px 10px;border:1px solid #ffd74033;margin-bottom:6px;">
+      <div style="font-size:9px;color:#ffd740;font-weight:700;margin-bottom:3px;">고유 능력 · ${t3.keyword || ''}</div>
+      <div style="font-size:11px;color:var(--text);font-weight:600;">${t3.fullLabel || ''}</div>
+      ${t3.initVal ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.4;">${t3.initVal.slice(0,80)}${t3.initVal.length>80?'…':''}</div>` : ''}
+    </div>` : '';
+    return `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text);">⚔ ${weaponName}</span>
+        <span style="font-size:10px;color:var(--text-muted);">${weaponData.type || ''}</span>
+      </div>
+      ${renderTrait(weaponData.trait1, '#4fc3f7', '1번 특성 · 능력치')}
+      ${renderTrait(weaponData.trait2, '#b39ddb', '2번 특성 · 스탯')}
+      ${t3Html}`;
+  })() : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">무기 정보 없음</div>`;
+
   panel.innerHTML = `<div class="panel" style="padding:0;overflow:hidden;">
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;align-items:center;gap:10px;">
       <input value="${op.name}" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-weight:700;outline:none;flex:1;"
@@ -2591,6 +2623,10 @@ function renderOperatorConfig() {
     <div style="padding:10px;display:flex;gap:8px;align-items:flex-start;" class="op-dual-panel">
       ${nodePanel('cur')}
       ${nodePanel('tgt')}
+    </div>
+    <div style="padding:12px 14px;border-top:1px solid var(--border);">
+      <div style="font-size:10px;font-weight:700;color:#4fc3f7;letter-spacing:0.08em;margin-bottom:8px;">⚔ 무기 특성</div>
+      ${weaponHtml}
     </div>
     <div style="padding:12px 14px;border-top:1px solid var(--border);">
       <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:8px;">📦 필요 재료</div>
@@ -3019,6 +3055,8 @@ function toggleCustomSelect(btn) {
   dropdown.style.left = rect.left + 'px';
   dropdown.style.width = rect.width + 'px';
   dropdown.style.zIndex = '9999';
+  dropdown.style.overflowY = 'auto';
+  dropdown.style.overflowX = 'hidden';
 
   if (spaceBelow >= dropH || spaceBelow >= spaceAbove) {
     // 아래로 펼치기
