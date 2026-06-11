@@ -44,15 +44,47 @@ function fmt(n) {
   return r % 1 === 0 ? r.toString() : r.toFixed(2).replace(/\.?0+$/, '');
 }
 
-// 아이템 아이콘 URL 맵 - localStorage에서 불러오거나 위키 URL 기본값 사용
-const BASE_WIKI = 'https://static0.fextralifeimages.com/file/arknightsendfield/';
+// 아이템 아이콘 URL 맵 - 공식 위키(wiki.skport.com) 기반
 const ITEM_ICONS_DEFAULT = {
-  '오리지늄 광석': BASE_WIKI + '8/81/Originium-ore.png',
-  '페리움 광석':   BASE_WIKI + '6/65/Ferrium-ore.png',
-  '적동 광석':     BASE_WIKI + 'e/e8/Cuprium-ore.png',
-  '청정수':        BASE_WIKI + 'f/f2/Clean-water.png',
-  '카본':          BASE_WIKI + 'd/d9/Carbon.png',
-  '오염수':        BASE_WIKI + 'c/cd/Sewage.png',
+  // 기초 재료
+  '카본':           'icons/카본_조각.png',
+  '카본 조각':      'icons/카본_조각.png',
+  '고운오리지늄':   'icons/고운_오리지늄_가루.png',
+  '오리지늄 광석':  'icons/오리지늄_광물.png',
+  '페리움 광석':    'icons/페리움_광석.png',
+  '적동 광석':      'icons/적동_광석.png',
+  '적동':           'icons/적동_조각.png',
+  '적동용액':       'icons/적동_용액.png',
+  '혁동':           'icons/혁동_조각.png',
+  '혁동용액':       'icons/혁동_용액.png',
+  '혁동부품':       'icons/혁동_부품.png',
+  '식양':           'icons/식양.png',
+  '액화식양':       'icons/액화_식양.png',
+  '중식양':         'icons/중식양.png',
+  '중식양병':       'icons/중식양.png',
+  '중식양부품':     'icons/중식양.png',
+  '양정':           'icons/양정.png',
+  '양정폐액':       'icons/양정_폐액.png',
+  '불양정폐액':     'icons/불활성_양정_폐액.png',
+  '산성침적물':     'icons/산성_침적물.png',
+  '오염수':         'icons/오염수.png',
+  '청정수':         'icons/청정수.png',
+  '중용량 배터리':  'icons/중용량_무릉_배터리.png',
+  '고금청':         'icons/고급_금초_청량음료.png',
+  '옥동발산기':     'icons/실험용_옥동_발산기.png',
+  '식양호리병':     'icons/식양호리병.png',
+  '중식양병':       'icons/중식양병.png',
+  '중식양부품':     'icons/중식양부품.png',
+  '식양옥호리병':   'icons/식양_옥_호리병.png',
+  // 관리권
+  '협곡 관리권':    'icons/협곡_관리권.png',
+  '무릉 관리권':    'icons/무릉_관리권.png',
+  // 배터리
+  '저용량 협곡 배터리': 'icons/저용량_협곡_배터리.png',
+  '중용량 협곡 배터리': 'icons/중용량_협곡_배터리.png',
+  '대용량 협곡 배터리': 'icons/대용량_협곡_배터리.png',
+  '저용량 무릉 배터리': 'icons/저용량_무릉_배터리.png',
+  '중용량 무릉 배터리': 'icons/중용량_무릉_배터리.png',
 };
 
 // 사용자가 직접 업로드한 아이콘 (base64) - localStorage에 저장됨
@@ -69,16 +101,23 @@ function saveCustomIcons() {
   try { localStorage.setItem('endfield_icons_v1', JSON.stringify(ITEM_ICONS_CUSTOM)); } catch(e) {}
 }
 
-// 아이콘 조회
+// 아이콘 조회 (공백 차이 자동 처리)
 function getItemIconUrl(name) {
-  return ITEM_ICONS_DEFAULT[name] || null;
+  if (ITEM_ICONS_DEFAULT[name]) return ITEM_ICONS_DEFAULT[name];
+  // 공백 제거 후 재시도
+  const nosp = name.replace(/\s/g, '');
+  for (const k of Object.keys(ITEM_ICONS_DEFAULT)) {
+    if (k.replace(/\s/g, '') === nosp) return ITEM_ICONS_DEFAULT[k];
+  }
+  // icons/ 폴더에서 파일명 추측 (공백→_)
+  return 'icons/' + name.replace(/\s+/g,'_') + '.png';
 }
 
 function itemIcon(name, size = 32) {
   const url = getItemIconUrl(name);
   if (!url) return '';
   return `<img src="${url}" alt="${name}" width="${size}" height="${size}"
-    style="border-radius:4px;object-fit:contain;vertical-align:middle;margin-right:6px;flex-shrink:0;"
+    style="border-radius:4px;object-fit:contain;vertical-align:middle;margin-right:6px;flex-shrink:0;background:rgba(255,255,255,0.05);"
     onerror="this.style.display='none'">`;
 }
 function getRate(recipe, count) {
