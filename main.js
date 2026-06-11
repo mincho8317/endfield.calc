@@ -1774,7 +1774,7 @@ function renderOverviewTab() {
 // ========== TAB SWITCH ==========
 // 탭 체류시간 측정
 let _tabStartTime = Date.now();
-let _currentTab = 'authority';
+var _currentTab = 'authority';
 
 function trackTabLeave(tab) {
   const duration = Math.round((Date.now() - _tabStartTime) / 1000);
