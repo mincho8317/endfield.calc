@@ -258,42 +258,41 @@ function renderGroupHTML(g) {
 
     const makeItemCard = (item, color, sign) => {
       const rate = totalCnt > 0 ? fmt((60 / recipe.speed) * item.qty * totalCnt) : null;
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;">
-        <div style="position:relative;width:40px;height:40px;border-radius:6px;
-          background:rgba(255,255,255,0.06);border:1px solid ${color}33;overflow:hidden;">
-          ${itemIcon(item.name, 40)}
-          <span style="position:absolute;bottom:1px;right:2px;font-size:8px;
-            font-weight:700;color:${color};text-shadow:0 0 3px #000;">${sign}${item.qty}</span>
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:56px;">
+        <div style="position:relative;width:48px;height:48px;border-radius:8px;
+          background:rgba(255,255,255,0.06);border:2px solid ${color};overflow:hidden;flex-shrink:0;">
+          ${itemIcon(item.name, 48)}
+          <span style="position:absolute;bottom:2px;right:3px;font-size:9px;
+            font-weight:800;color:${color};text-shadow:0 0 4px #000;">${sign}${item.qty}</span>
         </div>
-        <span style="font-size:9px;color:var(--text-muted);text-align:center;
-          line-height:1.2;max-width:52px;word-break:keep-all;">${item.name}</span>
-        ${rate ? `<span style="font-size:8px;color:var(--text-muted);opacity:0.7;">${rate}/분</span>` : ''}
+        <span style="font-size:10px;color:rgba(255,255,255,0.85);text-align:center;
+          line-height:1.3;max-width:58px;word-break:keep-all;font-weight:500;">${item.name}</span>
+        ${rate ? `<span style="font-size:9px;color:rgba(255,255,255,0.5);">${rate}/분</span>` : ''}
       </div>`;
     };
 
-    const outCards = recipe.outputs.map(i => makeItemCard(i, 'var(--success)', '+')).join('');
-    const inCards  = recipe.inputs.map(i => makeItemCard(i, 'var(--danger)', '−')).join('');
+    const outCards = recipe.outputs.map(i => makeItemCard(i, '#4caf50', '+')).join('');
+    const inCards  = recipe.inputs.map(i => makeItemCard(i, '#f44336', '−')).join('');
 
-    const outSection = outCards
-      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${outCards}</div>`
-      : '';
-    const inSection = inCards
-      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${inCards}</div>`
-      : `<div style="color:var(--text-muted);font-size:9px;padding:2px 0;">원자재</div>`;
-    const divider = inCards
-      ? `<div style="border-top:1px dashed rgba(80,100,140,0.3);margin:2px 0;"></div>`
-      : '';
+    const outSection = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${outCards || '<span style="font-size:10px;color:rgba(255,255,255,0.3);">-</span>'}</div>`;
+    const inSection  = inCards
+      ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${inCards}</div>`
+      : `<div style="font-size:10px;color:rgba(255,255,255,0.3);">원자재</div>`;
+
+    const divider = `<div style="width:1px;background:rgba(255,255,255,0.1);align-self:stretch;margin:0 6px;flex-shrink:0;"></div>`;
 
     return `<div class="ws-equip-row">
       <div style="min-width:0;flex:1;cursor:pointer;" onclick="openEquipModal(${g.id}, ${e.recipeId})" title="클릭해서 레시피 변경">
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
-          ${getFacilityIcon(recipe.equip, 20)}
-          <span style="font-size:10px;font-weight:600;color:var(--text-muted);">${recipe.equip}</span>
-          <span style="font-size:9px;color:var(--text-muted);opacity:0.6;">· ${recipe.label}</span>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          ${getFacilityIcon(recipe.equip, 24)}
+          <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.9);">${recipe.equip}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.4);">· ${recipe.label}</span>
         </div>
-        <div id="wsout-${g.id}-${e.recipeId}">${outSection}</div>
-        ${divider}
-        <div id="wsin-${g.id}-${e.recipeId}">${inSection}</div>
+        <div style="display:flex;align-items:flex-start;">
+          <div id="wsout-${g.id}-${e.recipeId}">${outSection}</div>
+          ${divider}
+          <div id="wsin-${g.id}-${e.recipeId}">${inSection}</div>
+        </div>
       </div>
       <input type="number" class="ws-count-input" min="0"
         value="${cnt||''}" placeholder="0"
@@ -398,25 +397,25 @@ function updateWsRateSpan(g, e) {
 
   const makeItemCard = (item, color, sign) => {
     const rate = cnt > 0 ? fmt((60 / recipe.speed) * item.qty * cnt) : null;
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;">
-      <div style="position:relative;width:40px;height:40px;border-radius:6px;
-        background:rgba(255,255,255,0.06);border:1px solid ${color}33;overflow:hidden;">
-        ${itemIcon(item.name, 40)}
-        <span style="position:absolute;bottom:1px;right:2px;font-size:8px;
-          font-weight:700;color:${color};text-shadow:0 0 3px #000;">${sign}${item.qty}</span>
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:56px;">
+      <div style="position:relative;width:48px;height:48px;border-radius:8px;
+        background:rgba(255,255,255,0.06);border:2px solid ${color};overflow:hidden;flex-shrink:0;">
+        ${itemIcon(item.name, 48)}
+        <span style="position:absolute;bottom:2px;right:3px;font-size:9px;
+          font-weight:800;color:${color};text-shadow:0 0 4px #000;">${sign}${item.qty}</span>
       </div>
-      <span style="font-size:9px;color:var(--text-muted);text-align:center;
-        line-height:1.2;max-width:52px;word-break:keep-all;">${item.name}</span>
-      ${rate ? `<span style="font-size:8px;color:var(--text-muted);opacity:0.7;">${rate}/분</span>` : ''}
+      <span style="font-size:10px;color:rgba(255,255,255,0.85);text-align:center;
+        line-height:1.3;max-width:58px;word-break:keep-all;font-weight:500;">${item.name}</span>
+      ${rate ? `<span style="font-size:9px;color:rgba(255,255,255,0.5);">${rate}/분</span>` : ''}
     </div>`;
   };
 
   const outEl = document.getElementById(`wsout-${g.id}-${e.recipeId}`);
   const inEl  = document.getElementById(`wsin-${g.id}-${e.recipeId}`);
-  if (outEl) outEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${recipe.outputs.map(i=>makeItemCard(i,'var(--success)','+')).join('')}</div>`;
+  if (outEl) outEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${recipe.outputs.map(i=>makeItemCard(i,'#4caf50','+')).join('')}</div>`;
   if (inEl)  inEl.innerHTML  = recipe.inputs.length > 0
-    ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${recipe.inputs.map(i=>makeItemCard(i,'var(--danger)','−')).join('')}</div>`
-    : `<div style="color:var(--text-muted);font-size:9px;padding:2px 0;">원자재</div>`;
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${recipe.inputs.map(i=>makeItemCard(i,'#f44336','−')).join('')}</div>`
+    : `<div style="font-size:10px;color:rgba(255,255,255,0.3);">원자재</div>`;
 }
 
 function removeEquip(gid, recipeId) {
