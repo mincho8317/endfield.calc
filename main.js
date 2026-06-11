@@ -2054,6 +2054,8 @@ function renderOperatorSelectGrid() {
       const rc = RARITY_COLOR[op.rarity];
       const ec = ELEMENT_COLOR[op.element];
       const isAdded = addedNames.has(op.name);
+      const thumbName = op.name === '관리자' ? '관리자(여)' : op.name;
+      const thumbUrl = `op_icons/${thumbName.replace(/\s+/g,'_')}.png`;
       return `<div onclick="${isAdded ? '' : `selectOperatorFromRoster('${op.name}')`}"
         style="border:1px solid ${isAdded ? 'rgba(240,200,22,0.4)' : 'rgba(255,255,255,0.12)'};border-radius:4px;padding:10px 8px;
           background:${isAdded ? 'rgba(240,200,22,0.08)' : 'rgba(255,255,255,0.04)'};
@@ -2067,6 +2069,11 @@ function renderOperatorSelectGrid() {
           ${isAdded
             ? `<span style="font-size:9px;color:var(--accent);">추가됨</span>`
             : `<span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"></span>`}
+        </div>
+        <div style="width:56px;height:56px;margin:0 auto 6px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.06);">
+          <img src="${thumbUrl}" alt="${op.name}" width="56" height="56"
+            style="width:100%;height:100%;object-fit:cover;"
+            onerror="this.parentElement.innerHTML='<span style=\\'font-size:24px;line-height:56px;display:block;\\'>👤</span>'">
         </div>
         <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;">${op.name}</div>
         <div style="font-size:10px;color:var(--text-muted);">${CLASS_KR[op.class] || op.class}</div>
@@ -2238,14 +2245,17 @@ function renderOperatorList() {
       const isActive = activeOperatorName === o.name;
       const state = opStates[o.name];
       const hasData = state && (state.currentElite > 0 || state.targetElite > 0 || state.currentLevel > 1);
+      const thumbName2 = o.name === '관리자' ? '관리자(여)' : o.name;
+      const thumbUrl2 = `op_icons/${thumbName2.replace(/\s+/g,'_')}.png`;
       html += `<div onclick="selectOperatorByName('${o.name}')"
         style="cursor:pointer;border-radius:6px;overflow:hidden;
           border:2px solid ${isActive ? 'var(--accent)' : hasData ? rc+'88' : 'rgba(255,255,255,0.1)'};
           background:${isActive ? 'rgba(240,200,22,0.1)' : 'rgba(255,255,255,0.03)'};
           transition:all 0.15s;text-align:center;">
-        <div style="width:100%;aspect-ratio:1;background:rgba(255,255,255,0.05);
-          display:flex;align-items:center;justify-content:center;font-size:20px;">
-          👤
+        <div style="width:100%;aspect-ratio:1;background:rgba(255,255,255,0.05);overflow:hidden;">
+          <img src="${thumbUrl2}" alt="${o.name}"
+            style="width:100%;height:100%;object-fit:cover;"
+            onerror="this.parentElement.innerHTML='<span style=\\'font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;\\'>👤</span>'">
         </div>
         <div style="padding:3px 2px;font-size:10px;font-weight:600;
           color:var(--text);
