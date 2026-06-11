@@ -256,25 +256,32 @@ function renderGroupHTML(g) {
     const cnt = e.count || 0;
     const totalCnt = cnt * (g.mult || 1);
 
-    const makeLines = (items, sign, color) => items.map(item => {
+    const makeItemCard = (item, color, sign) => {
       const rate = totalCnt > 0 ? fmt((60 / recipe.speed) * item.qty * totalCnt) : null;
-      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:1px 0;font-size:10px;">
-        <span style="display:flex;align-items:center;min-width:0;gap:2px;">
-          <span style="color:${color};font-weight:700;flex-shrink:0;font-size:9px;">${sign}</span>
-          ${itemIcon(item.name, 14)}
-          <span style="color:var(--text-sub);">${item.name}</span>
-        </span>
-        ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:9px;flex-shrink:0;">${rate}/분</span>` : ''}
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;">
+        <div style="position:relative;width:40px;height:40px;border-radius:6px;
+          background:rgba(255,255,255,0.06);border:1px solid ${color}33;overflow:hidden;">
+          ${itemIcon(item.name, 40)}
+          <span style="position:absolute;bottom:1px;right:2px;font-size:8px;
+            font-weight:700;color:${color};text-shadow:0 0 3px #000;">${sign}${item.qty}</span>
+        </div>
+        <span style="font-size:9px;color:var(--text-muted);text-align:center;
+          line-height:1.2;max-width:52px;word-break:keep-all;">${item.name}</span>
+        ${rate ? `<span style="font-size:8px;color:var(--text-muted);opacity:0.7;">${rate}/분</span>` : ''}
       </div>`;
-    }).join('');
+    };
 
-    const outLines = makeLines(recipe.outputs, '+', 'var(--success)');
-    const inLines  = recipe.inputs.length > 0
-      ? makeLines(recipe.inputs,  '−', 'var(--danger)')
-      : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+    const outCards = recipe.outputs.map(i => makeItemCard(i, 'var(--success)', '+')).join('');
+    const inCards  = recipe.inputs.map(i => makeItemCard(i, 'var(--danger)', '−')).join('');
 
-    const divider = recipe.inputs.length > 0 && recipe.outputs.length > 0
-      ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:4px 0;"></div>`
+    const outSection = outCards
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${outCards}</div>`
+      : '';
+    const inSection = inCards
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${inCards}</div>`
+      : `<div style="color:var(--text-muted);font-size:9px;padding:2px 0;">원자재</div>`;
+    const divider = inCards
+      ? `<div style="border-top:1px dashed rgba(80,100,140,0.3);margin:2px 0;"></div>`
       : '';
 
     return `<div class="ws-equip-row">
@@ -284,9 +291,9 @@ function renderGroupHTML(g) {
           <span style="font-size:10px;font-weight:600;color:var(--text-muted);">${recipe.equip}</span>
           <span style="font-size:9px;color:var(--text-muted);opacity:0.6;">· ${recipe.label}</span>
         </div>
-        <div id="wsout-${g.id}-${e.recipeId}">${outLines}</div>
+        <div id="wsout-${g.id}-${e.recipeId}">${outSection}</div>
         ${divider}
-        <div id="wsin-${g.id}-${e.recipeId}">${inLines}</div>
+        <div id="wsin-${g.id}-${e.recipeId}">${inSection}</div>
       </div>
       <input type="number" class="ws-count-input" min="0"
         value="${cnt||''}" placeholder="0"
@@ -305,7 +312,7 @@ function renderGroupHTML(g) {
   return `<div class="ws-group" id="wsgroup-${g.id}">
     <div class="ws-group-inner">
     <div class="ws-group-header" style="flex-direction:column;gap:4px;padding:8px 10px;">
-      <!-- 1줄: 접기 + 그룹명 + 수량 -->
+      <!-- 1줄: 접기 + 그룹명 + 수량 + 버튼 모두 한줄 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%;">
         <button onclick="toggleGroupCollapse(${g.id})"
           style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;line-height:1;">
@@ -313,19 +320,15 @@ function renderGroupHTML(g) {
         </button>
         <input class="ws-group-name" value="${g.name}"
           oninput="updateGroupName(${g.id},this.value)" placeholder="그룹 이름"
-          style="flex:1;min-width:0;max-width:none;font-size:12px;">
+          style="min-width:0;font-size:12px;">
         <div class="ws-group-mult" style="flex-shrink:0;">
           <span style="font-size:11px;color:var(--text-muted);">×</span>
           <input type="number" class="ws-mult-input" min="1" value="${g.mult||1}"
             oninput="updateGroupMult(${g.id},this.value)" style="width:36px;">
         </div>
-      </div>
-      <!-- 2줄: 설비 추가 + 저장 + 삭제 -->
-      <div style="display:flex;align-items:center;gap:6px;padding-left:18px;">
-        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 10px;font-size:11px;">+ 설비</button>
-        <div style="flex:1;"></div>
-        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
-        <button class="ws-del-btn" style="font-size:15px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
+        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 8px;font-size:11px;flex-shrink:0;">+ 설비</button>
+        <button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="saveGroupAsPreset(${g.id})">저장</button>
+        <button class="ws-del-btn" style="font-size:15px;flex-shrink:0;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
       </div>
     </div>
     ${bodyHTML}
@@ -393,24 +396,27 @@ function updateWsRateSpan(g, e) {
   if (!recipe) return;
   const cnt = (e.count || 0) * (g.mult || 1);
 
-  const makeLines = (items, sign, color) => items.map(item => {
+  const makeItemCard = (item, color, sign) => {
     const rate = cnt > 0 ? fmt((60 / recipe.speed) * item.qty * cnt) : null;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:1px 0;">
-      <span style="display:flex;align-items:center;min-width:0;">
-        <span style="color:${color};font-weight:700;margin-right:4px;flex-shrink:0;">${sign}</span>
-        ${itemIcon(item.name, 32)}
-        <span style="color:var(--text);">${item.name}</span>
-      </span>
-      ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${rate}/분</span>` : ''}
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;">
+      <div style="position:relative;width:40px;height:40px;border-radius:6px;
+        background:rgba(255,255,255,0.06);border:1px solid ${color}33;overflow:hidden;">
+        ${itemIcon(item.name, 40)}
+        <span style="position:absolute;bottom:1px;right:2px;font-size:8px;
+          font-weight:700;color:${color};text-shadow:0 0 3px #000;">${sign}${item.qty}</span>
+      </div>
+      <span style="font-size:9px;color:var(--text-muted);text-align:center;
+        line-height:1.2;max-width:52px;word-break:keep-all;">${item.name}</span>
+      ${rate ? `<span style="font-size:8px;color:var(--text-muted);opacity:0.7;">${rate}/분</span>` : ''}
     </div>`;
-  }).join('');
+  };
 
   const outEl = document.getElementById(`wsout-${g.id}-${e.recipeId}`);
   const inEl  = document.getElementById(`wsin-${g.id}-${e.recipeId}`);
-  if (outEl) outEl.innerHTML = makeLines(recipe.outputs, '+', 'var(--success)');
+  if (outEl) outEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${recipe.outputs.map(i=>makeItemCard(i,'var(--success)','+')).join('')}</div>`;
   if (inEl)  inEl.innerHTML  = recipe.inputs.length > 0
-    ? makeLines(recipe.inputs, '−', 'var(--danger)')
-    : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+    ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;">${recipe.inputs.map(i=>makeItemCard(i,'var(--danger)','−')).join('')}</div>`
+    : `<div style="color:var(--text-muted);font-size:9px;padding:2px 0;">원자재</div>`;
 }
 
 function removeEquip(gid, recipeId) {

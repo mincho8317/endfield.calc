@@ -707,9 +707,15 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
    SCROLLBARS
 ════════════════════════════════ */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #f0c816; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(240,200,22,0.2);
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(240,200,22,0.6); }
+::-webkit-scrollbar-corner { background: transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(240,200,22,0.2) rgba(0,0,0,0.2); }
 
 /* ════════════════════════════════
    MODALS
@@ -771,11 +777,12 @@ select option { background: var(--bg-popup); color: var(--text); }
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
-  flex: 1; min-width: 0;
-  max-width: 160px;
+  min-width: 0;
+  width: 120px;
+  max-width: 120px;
 }
 @media (max-width: 480px) {
-  .ws-group-name { max-width: 100px; font-size: 11px; }
+  .ws-group-name { width: 80px; max-width: 80px; font-size: 11px; }
   .ws-equip-row .ws-count-input { width: 38px !important; max-width: 38px !important; font-size: 11px; }
 }
 .ws-group-name:focus { border-color: var(--accent); }
