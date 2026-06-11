@@ -44,6 +44,17 @@ function fmt(n) {
   return r % 1 === 0 ? r.toString() : r.toFixed(2).replace(/\.?0+$/, '');
 }
 
+// 설비 아이콘 URL 맵
+const FACILITY_ICONS = {"배꽃 조경":"facility_icons/배꽃_조경.png","드래곤 버블 돌기둥":"facility_icons/드래곤_버블_돌기둥.png","풍선 교수":"facility_icons/풍선_교수.png","중추 박격포":"facility_icons/중추_박격포.png","'피클링' MK-I":"facility_icons/'피클링'_MK-I.png","고에너지 빔 타워":"facility_icons/고에너지_빔_타워.png","내산성 양수기 II":"facility_icons/내산성_양수기_II.png","다중 암관 출구":"facility_icons/다중_암관_출구.png","다중 암관 입구":"facility_icons/다중_암관_입구.png","정제기":"facility_icons/정제기.png","확장 반응기":"facility_icons/확장_반응기.png","파이프":"facility_icons/파이프.png","AF1 '아머 멜터'":"facility_icons/AF1_'아머_멜터'.png","급류 타워":"facility_icons/급류_타워.png","오염수 처리기":"facility_icons/오염수_처리기.png","수력 채굴기":"facility_icons/수력_채굴기.png","암관 출구":"facility_icons/암관_출구.png","암관 입구":"facility_icons/암관_입구.png","컨베이어 벨트":"facility_icons/컨베이어_벨트.png","총기 타워":"facility_icons/총기_타워.png","의료 타워":"facility_icons/의료_타워.png","유탄 타워":"facility_icons/유탄_타워.png","액체 질소 타워":"facility_icons/액체_질소_타워.png","확장 총기 타워":"facility_icons/확장_총기_타워.png","전 방향 음파 타워":"facility_icons/전_방향_음파_타워.png","빔 타워":"facility_icons/빔_타워.png","전류 타워":"facility_icons/전류_타워.png","감시 타워":"facility_icons/감시_타워.png","고폭 유탄 타워":"facility_icons/고폭_유탄_타워.png","액체 배출 장치":"facility_icons/액체_배출_장치.png","포이즌 머드 MK-Ⅰ":"facility_icons/포이즌_머드_MK-Ⅰ.png","스프링클러":"facility_icons/스프링클러.png","장거리 집라인 후크":"facility_icons/장거리_집라인_후크.png","집라인 후크":"facility_icons/집라인_후크.png","전언 신호기":"facility_icons/전언_신호기.png","간편 보관소":"facility_icons/간편_보관소.png","열에너지 뱅크":"facility_icons/열에너지_뱅크.png","식양 중계기":"facility_icons/식양_중계기.png","중계기":"facility_icons/중계기.png","식양 전력 공급기":"facility_icons/식양_전력_공급기.png","전력 공급기":"facility_icons/전력_공급기.png","분해기":"facility_icons/분해기.png","천화로":"facility_icons/천화로.png","반응기":"facility_icons/반응기.png","연마기":"facility_icons/연마기.png","포장기":"facility_icons/포장기.png","충진기":"facility_icons/충진기.png","장비 부품 합성기":"facility_icons/장비_부품_합성기.png","씨앗 추출기":"facility_icons/씨앗_추출기.png","재배기":"facility_icons/재배기.png","금석벼 논배미":"facility_icons/금석벼_논배미.png","성형기":"facility_icons/성형기.png","홍옥 인삼 논배미":"facility_icons/홍옥_인삼_논배미.png","쓴맛 나는 고추 논배미":"facility_icons/쓴맛_나는_고추_논배미.png","부품 가공기":"facility_icons/부품_가공기.png","회보리 논배미":"facility_icons/회보리_논배미.png","분쇄기":"facility_icons/분쇄기.png","야침 논배미":"facility_icons/야침_논배미.png","금초 논배미":"facility_icons/금초_논배미.png","아케톤 논배미":"facility_icons/아케톤_논배미.png","샌드리프 논배미":"facility_icons/샌드리프_논배미.png","시트론 논배미":"facility_icons/시트론_논배미.png","정련로":"facility_icons/정련로.png","메밀꽃 논배미":"facility_icons/메밀꽃_논배미.png","창고 입출력 라인 핵심 장치":"facility_icons/창고_입출력_라인_핵심_장치.png","창고 입출력 라인 기초 장치":"facility_icons/창고_입출력_라인_기초_장치.png","액체 저장 탱크":"facility_icons/액체_저장_탱크.png","창고 출력 포트":"facility_icons/창고_출력_포트.png","창고 입력 포트":"facility_icons/창고_입력_포트.png","프로토콜 저장함":"facility_icons/프로토콜_저장함.png","파이프 합류기":"facility_icons/파이프_합류기.png","파이프 물류 브리지":"facility_icons/파이프_물류_브리지.png","파이프 분류기":"facility_icons/파이프_분류기.png","파이프 컨트롤 포트":"facility_icons/파이프_컨트롤_포트.png","합류기":"facility_icons/합류기.png","물류 브리지":"facility_icons/물류_브리지.png","분류기":"facility_icons/분류기.png","아이템 컨트롤 포트":"facility_icons/아이템_컨트롤_포트.png","양수기":"facility_icons/양수기.png","전동 채굴기 II":"facility_icons/전동_채굴기_II.png","전동 채굴기":"facility_icons/전동_채굴기.png","휴대용 오리지늄 채굴기":"facility_icons/휴대용_오리지늄_채굴기.png"};
+
+function getFacilityIcon(equipName, size=28) {
+  const url = FACILITY_ICONS[equipName];
+  if (!url) return `<span style="font-size:${size*0.7}px;line-height:${size}px;">🏭</span>`;
+  return `<img src="${url}" alt="${equipName}" width="${size}" height="${size}"
+    style="object-fit:contain;border-radius:4px;vertical-align:middle;flex-shrink:0;"
+    onerror="this.parentElement.innerHTML='<span style=\\'font-size:${Math.round(size*0.7)}px;\\'>🏭</span>'">`;
+}
+
 // 아이템 아이콘 URL 맵 - 공식 위키(wiki.skport.com) 기반
 const ITEM_ICONS_DEFAULT = {
   // 기초 재료
@@ -268,6 +279,11 @@ function renderGroupHTML(g) {
 
     return `<div class="ws-equip-row">
       <div style="min-width:0;flex:1;cursor:pointer;" onclick="openEquipModal(${g.id}, ${e.recipeId})" title="클릭해서 레시피 변경">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
+          ${getFacilityIcon(recipe.equip, 20)}
+          <span style="font-size:10px;font-weight:600;color:var(--text-muted);">${recipe.equip}</span>
+          <span style="font-size:9px;color:var(--text-muted);opacity:0.6;">· ${recipe.label}</span>
+        </div>
         <div id="wsout-${g.id}-${e.recipeId}">${outLines}</div>
         ${divider}
         <div id="wsin-${g.id}-${e.recipeId}">${inLines}</div>
@@ -485,12 +501,13 @@ function renderEquipModalTabs(g) {
     const hasRecipe = RECIPES.some(r => r.equip === e.name);
     const isActive = e.name === modalSelectedEquipName;
     return `<button onclick="selectEquipName('${e.name}')"
-      style="padding:3px 10px;font-size:11px;cursor:pointer;
+      style="padding:4px 8px;font-size:11px;cursor:pointer;
         border-radius:4px;border:1px solid ${isActive ? 'var(--teal)' : hasRecipe ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'};
         background:${isActive ? 'rgba(42,184,200,0.15)' : 'transparent'};
         color:${isActive ? 'var(--teal)' : hasRecipe ? 'var(--text-sub)' : 'var(--text-muted)'};
         opacity:${hasRecipe ? '1' : '0.5'};
-        transition:all 0.15s;">${e.name}${hasRecipe ? '' : ' (준비중)'}</button>`;
+        display:flex;align-items:center;gap:4px;
+        transition:all 0.15s;">${getFacilityIcon(e.name, 18)}${e.name}${hasRecipe ? '' : ' (준비중)'}</button>`;
   }).join('');
 
   tabsEl.innerHTML = `
