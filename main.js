@@ -3461,6 +3461,27 @@ function renderWeaponFarming() {
     return;
   }
 
+  // 0. WEAPONS(공식 위키) trait1/2/3
+  const wikiData = (window.WEAPONS || []).find(wd => wd.name === w.name);
+  const wikiTraitHtml = wikiData ? `
+    <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:10px 12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.08);">
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;margin-bottom:8px;letter-spacing:0.08em;">무기 특성</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        ${wikiData.trait1 ? `<div style="font-size:11px;color:rgba(255,255,255,0.8);">
+          <span style="color:#4fc3f7;font-weight:700;margin-right:4px;">① ${wikiData.trait1.label}</span>
+          <span style="color:rgba(255,255,255,0.45);font-size:10px;">${wikiData.trait1.initVal||''}</span>
+        </div>` : ''}
+        ${wikiData.trait2 ? `<div style="font-size:11px;color:rgba(255,255,255,0.8);">
+          <span style="color:#b39ddb;font-weight:700;margin-right:4px;">② ${wikiData.trait2.label}</span>
+          <span style="color:rgba(255,255,255,0.45);font-size:10px;">${wikiData.trait2.initVal||''}</span>
+        </div>` : ''}
+        ${wikiData.trait3 ? `<div style="font-size:11px;color:rgba(255,255,255,0.8);">
+          <span style="color:#ffd740;font-weight:700;margin-right:4px;">③ ${wikiData.trait3.keyword||''}</span>
+          <span style="color:rgba(255,255,255,0.45);font-size:10px;">${(wikiData.trait3.initVal||'').slice(0,80)}${(wikiData.trait3.initVal||'').length>80?'…':''}</span>
+        </div>` : ''}
+      </div>
+    </div>` : '';
+
   // 1. 무기 기질 3가지 표시
   const statsHtml = `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
@@ -3542,6 +3563,8 @@ function renderWeaponFarming() {
       </div>
     </div>
 
+    ${wikiTraitHtml}
+
     ${statsHtml}
 
     <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
@@ -3581,6 +3604,24 @@ function weaponCard(w, hiPri, hiSec, hiSk) {
   const allMatch = (!hiPri || priMatch) && (!hiSec || secMatch) && (!hiSk || skMatch);
   const isUnknown = !w.primary && !w.secondary && !w.skill;
 
+  // WEAPONS(공식 위키) 데이터에서 trait1/2/3 조회
+  const wikiData = (window.WEAPONS || []).find(wd => wd.name === w.name);
+  const traitHtml = wikiData ? `
+    <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+      ${wikiData.trait1 ? `<div style="font-size:10px;color:rgba(255,255,255,0.6);">
+        <span style="color:#4fc3f7;font-weight:600;">①</span> ${wikiData.trait1.label}
+        <span style="color:rgba(255,255,255,0.35);"> · ${wikiData.trait1.initVal||''}</span>
+      </div>` : ''}
+      ${wikiData.trait2 ? `<div style="font-size:10px;color:rgba(255,255,255,0.6);">
+        <span style="color:#b39ddb;font-weight:600;">②</span> ${wikiData.trait2.label}
+        <span style="color:rgba(255,255,255,0.35);"> · ${wikiData.trait2.initVal||''}</span>
+      </div>` : ''}
+      ${wikiData.trait3 ? `<div style="font-size:10px;color:rgba(255,255,255,0.6);">
+        <span style="color:#ffd740;font-weight:600;">③</span> ${wikiData.trait3.keyword||wikiData.trait3.fullLabel||''}
+        <span style="color:rgba(255,255,255,0.35);"> · ${(wikiData.trait3.initVal||'').slice(0,50)}${(wikiData.trait3.initVal||'').length>50?'…':''}</span>
+      </div>` : ''}
+    </div>` : '';
+
   return `<div style="border:1px solid rgba(30,58,95,${allMatch?'0.8':'0.4'});border-radius:4px;padding:8px 12px;
     background:${allMatch?'rgba(240,200,22,0.05)':'rgba(255,255,255,0.04)'};">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -3595,6 +3636,7 @@ function weaponCard(w, hiPri, hiSec, hiSk) {
       <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(255,213,128,${secMatch?'0.2':'0.06'});color:#FFD580;border:1px solid rgba(255,213,128,${secMatch?'0.5':'0.2'});">${w.secondary||'—'}</span>
       <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(128,255,128,${skMatch?'0.2':'0.06'});color:#80FF80;border:1px solid rgba(128,255,128,${skMatch?'0.5':'0.2'});">${w.skill||'—'}</span>
     </div>` : ''}
+    ${traitHtml}
   </div>`;
 }
 function toggleTheme() {
