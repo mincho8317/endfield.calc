@@ -44,15 +44,58 @@ function fmt(n) {
   return r % 1 === 0 ? r.toString() : r.toFixed(2).replace(/\.?0+$/, '');
 }
 
-// 아이템 아이콘 URL 맵 - localStorage에서 불러오거나 위키 URL 기본값 사용
-const BASE_WIKI = 'https://static0.fextralifeimages.com/file/arknightsendfield/';
+// 설비 아이콘 URL 맵
+const FACILITY_ICONS = {"배꽃 조경":"facility_icons/배꽃_조경.png","드래곤 버블 돌기둥":"facility_icons/드래곤_버블_돌기둥.png","풍선 교수":"facility_icons/풍선_교수.png","중추 박격포":"facility_icons/중추_박격포.png","'피클링' MK-I":"facility_icons/'피클링'_MK-I.png","고에너지 빔 타워":"facility_icons/고에너지_빔_타워.png","내산성 양수기 II":"facility_icons/내산성_양수기_II.png","다중 암관 출구":"facility_icons/다중_암관_출구.png","다중 암관 입구":"facility_icons/다중_암관_입구.png","정제기":"facility_icons/정제기.png","확장 반응기":"facility_icons/확장_반응기.png","파이프":"facility_icons/파이프.png","AF1 '아머 멜터'":"facility_icons/AF1_'아머_멜터'.png","급류 타워":"facility_icons/급류_타워.png","오염수 처리기":"facility_icons/오염수_처리기.png","수력 채굴기":"facility_icons/수력_채굴기.png","암관 출구":"facility_icons/암관_출구.png","암관 입구":"facility_icons/암관_입구.png","컨베이어 벨트":"facility_icons/컨베이어_벨트.png","총기 타워":"facility_icons/총기_타워.png","의료 타워":"facility_icons/의료_타워.png","유탄 타워":"facility_icons/유탄_타워.png","액체 질소 타워":"facility_icons/액체_질소_타워.png","확장 총기 타워":"facility_icons/확장_총기_타워.png","전 방향 음파 타워":"facility_icons/전_방향_음파_타워.png","빔 타워":"facility_icons/빔_타워.png","전류 타워":"facility_icons/전류_타워.png","감시 타워":"facility_icons/감시_타워.png","고폭 유탄 타워":"facility_icons/고폭_유탄_타워.png","액체 배출 장치":"facility_icons/액체_배출_장치.png","포이즌 머드 MK-Ⅰ":"facility_icons/포이즌_머드_MK-Ⅰ.png","스프링클러":"facility_icons/스프링클러.png","장거리 집라인 후크":"facility_icons/장거리_집라인_후크.png","집라인 후크":"facility_icons/집라인_후크.png","전언 신호기":"facility_icons/전언_신호기.png","간편 보관소":"facility_icons/간편_보관소.png","열에너지 뱅크":"facility_icons/열에너지_뱅크.png","식양 중계기":"facility_icons/식양_중계기.png","중계기":"facility_icons/중계기.png","식양 전력 공급기":"facility_icons/식양_전력_공급기.png","전력 공급기":"facility_icons/전력_공급기.png","분해기":"facility_icons/분해기.png","천화로":"facility_icons/천화로.png","반응기":"facility_icons/반응기.png","연마기":"facility_icons/연마기.png","포장기":"facility_icons/포장기.png","충진기":"facility_icons/충진기.png","장비 부품 합성기":"facility_icons/장비_부품_합성기.png","씨앗 추출기":"facility_icons/씨앗_추출기.png","재배기":"facility_icons/재배기.png","금석벼 논배미":"facility_icons/금석벼_논배미.png","성형기":"facility_icons/성형기.png","홍옥 인삼 논배미":"facility_icons/홍옥_인삼_논배미.png","쓴맛 나는 고추 논배미":"facility_icons/쓴맛_나는_고추_논배미.png","부품 가공기":"facility_icons/부품_가공기.png","회보리 논배미":"facility_icons/회보리_논배미.png","분쇄기":"facility_icons/분쇄기.png","야침 논배미":"facility_icons/야침_논배미.png","금초 논배미":"facility_icons/금초_논배미.png","아케톤 논배미":"facility_icons/아케톤_논배미.png","샌드리프 논배미":"facility_icons/샌드리프_논배미.png","시트론 논배미":"facility_icons/시트론_논배미.png","정련로":"facility_icons/정련로.png","메밀꽃 논배미":"facility_icons/메밀꽃_논배미.png","창고 입출력 라인 핵심 장치":"facility_icons/창고_입출력_라인_핵심_장치.png","창고 입출력 라인 기초 장치":"facility_icons/창고_입출력_라인_기초_장치.png","액체 저장 탱크":"facility_icons/액체_저장_탱크.png","창고 출력 포트":"facility_icons/창고_출력_포트.png","창고 입력 포트":"facility_icons/창고_입력_포트.png","프로토콜 저장함":"facility_icons/프로토콜_저장함.png","파이프 합류기":"facility_icons/파이프_합류기.png","파이프 물류 브리지":"facility_icons/파이프_물류_브리지.png","파이프 분류기":"facility_icons/파이프_분류기.png","파이프 컨트롤 포트":"facility_icons/파이프_컨트롤_포트.png","합류기":"facility_icons/합류기.png","물류 브리지":"facility_icons/물류_브리지.png","분류기":"facility_icons/분류기.png","아이템 컨트롤 포트":"facility_icons/아이템_컨트롤_포트.png","양수기":"facility_icons/양수기.png","전동 채굴기 II":"facility_icons/전동_채굴기_II.png","전동 채굴기":"facility_icons/전동_채굴기.png","휴대용 오리지늄 채굴기":"facility_icons/휴대용_오리지늄_채굴기.png"};
+
+function getFacilityIcon(equipName, size=28) {
+  const url = FACILITY_ICONS[equipName];
+  if (!url) return `<span style="font-size:${size*0.7}px;line-height:${size}px;">🏭</span>`;
+  return `<img src="${url}" alt="${equipName}" width="${size}" height="${size}"
+    style="object-fit:contain;border-radius:4px;vertical-align:middle;flex-shrink:0;"
+    onerror="this.parentElement.innerHTML='<span style=\\'font-size:${Math.round(size*0.7)}px;\\'>🏭</span>'">`;
+}
+
+// 아이템 아이콘 URL 맵 - 공식 위키(wiki.skport.com) 기반
 const ITEM_ICONS_DEFAULT = {
-  '오리지늄 광석': BASE_WIKI + '8/81/Originium-ore.png',
-  '페리움 광석':   BASE_WIKI + '6/65/Ferrium-ore.png',
-  '적동 광석':     BASE_WIKI + 'e/e8/Cuprium-ore.png',
-  '청정수':        BASE_WIKI + 'f/f2/Clean-water.png',
-  '카본':          BASE_WIKI + 'd/d9/Carbon.png',
-  '오염수':        BASE_WIKI + 'c/cd/Sewage.png',
+  // 기초 재료
+  '카본':           'icons/카본_조각.png',
+  '카본 조각':      'icons/카본_조각.png',
+  '고운오리지늄':   'icons/고운_오리지늄_가루.png',
+  '오리지늄 광석':  'icons/오리지늄_광물.png',
+  '페리움 광석':    'icons/페리움_광석.png',
+  '적동 광석':      'icons/적동_광석.png',
+  '적동':           'icons/적동_조각.png',
+  '적동용액':       'icons/적동_용액.png',
+  '혁동':           'icons/혁동_조각.png',
+  '혁동용액':       'icons/혁동_용액.png',
+  '혁동부품':       'icons/혁동_부품.png',
+  '식양':           'icons/식양.png',
+  '액화식양':       'icons/액화_식양.png',
+  '중식양':         'icons/중식양.png',
+  '중식양병':       'icons/중식양.png',
+  '중식양부품':     'icons/중식양.png',
+  '양정':           'icons/양정.png',
+  '양정폐액':       'icons/양정_폐액.png',
+  '불양정폐액':     'icons/불활성_양정_폐액.png',
+  '산성침적물':     'icons/산성_침적물.png',
+  '오염수':         'icons/오염수.png',
+  '청정수':         'icons/청정수.png',
+  '중용량 배터리':  'icons/중용량_무릉_배터리.png',
+  '고금청':         'icons/고급_금초_청량음료.png',
+  '옥동발산기':     'icons/실험용_옥동_발산기.png',
+  '식양호리병':     'icons/식양호리병.png',
+  '중식양병':       'icons/중식양병.png',
+  '중식양부품':     'icons/중식양부품.png',
+  '식양옥호리병':   'icons/식양_옥_호리병.png',
+  // 관리권
+  '협곡 관리권':    'icons/협곡_관리권.png',
+  '무릉 관리권':    'icons/무릉_관리권.png',
+  // 배터리
+  '저용량 협곡 배터리': 'icons/저용량_협곡_배터리.png',
+  '중용량 협곡 배터리': 'icons/중용량_협곡_배터리.png',
+  '대용량 협곡 배터리': 'icons/대용량_협곡_배터리.png',
+  '저용량 무릉 배터리': 'icons/저용량_무릉_배터리.png',
+  '중용량 무릉 배터리': 'icons/중용량_무릉_배터리.png',
 };
 
 // 사용자가 직접 업로드한 아이콘 (base64) - localStorage에 저장됨
@@ -69,16 +112,23 @@ function saveCustomIcons() {
   try { localStorage.setItem('endfield_icons_v1', JSON.stringify(ITEM_ICONS_CUSTOM)); } catch(e) {}
 }
 
-// 아이콘 조회
+// 아이콘 조회 (공백 차이 자동 처리)
 function getItemIconUrl(name) {
-  return ITEM_ICONS_DEFAULT[name] || null;
+  if (ITEM_ICONS_DEFAULT[name]) return ITEM_ICONS_DEFAULT[name];
+  // 공백 제거 후 재시도
+  const nosp = name.replace(/\s/g, '');
+  for (const k of Object.keys(ITEM_ICONS_DEFAULT)) {
+    if (k.replace(/\s/g, '') === nosp) return ITEM_ICONS_DEFAULT[k];
+  }
+  // icons/ 폴더에서 파일명 추측 (공백→_)
+  return 'icons/' + name.replace(/\s+/g,'_') + '.png';
 }
 
 function itemIcon(name, size = 32) {
   const url = getItemIconUrl(name);
   if (!url) return '';
   return `<img src="${url}" alt="${name}" width="${size}" height="${size}"
-    style="border-radius:4px;object-fit:contain;vertical-align:middle;margin-right:6px;flex-shrink:0;"
+    style="border-radius:4px;object-fit:contain;vertical-align:middle;margin-right:6px;flex-shrink:0;background:rgba(255,255,255,0.05);"
     onerror="this.style.display='none'">`;
 }
 function getRate(recipe, count) {
@@ -206,32 +256,43 @@ function renderGroupHTML(g) {
     const cnt = e.count || 0;
     const totalCnt = cnt * (g.mult || 1);
 
-    const makeLines = (items, sign, color) => items.map(item => {
+    const makeItemCard = (item, color, sign) => {
       const rate = totalCnt > 0 ? fmt((60 / recipe.speed) * item.qty * totalCnt) : null;
-      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:1px 0;font-size:10px;">
-        <span style="display:flex;align-items:center;min-width:0;gap:2px;">
-          <span style="color:${color};font-weight:700;flex-shrink:0;font-size:9px;">${sign}</span>
-          ${itemIcon(item.name, 14)}
-          <span style="color:var(--text-sub);">${item.name}</span>
-        </span>
-        ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:9px;flex-shrink:0;">${rate}/분</span>` : ''}
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:56px;">
+        <div style="position:relative;width:48px;height:48px;border-radius:8px;
+          background:rgba(255,255,255,0.06);border:2px solid ${color};overflow:hidden;flex-shrink:0;">
+          ${itemIcon(item.name, 48)}
+          <span style="position:absolute;bottom:2px;right:3px;font-size:9px;
+            font-weight:800;color:${color};text-shadow:0 0 4px #000;">${sign}${item.qty}</span>
+        </div>
+        <span style="font-size:10px;color:rgba(255,255,255,0.85);text-align:center;
+          line-height:1.3;max-width:58px;word-break:keep-all;font-weight:500;">${item.name}</span>
+        ${rate ? `<span style="font-size:9px;color:rgba(255,255,255,0.5);">${rate}/분</span>` : ''}
       </div>`;
-    }).join('');
+    };
 
-    const outLines = makeLines(recipe.outputs, '+', 'var(--success)');
-    const inLines  = recipe.inputs.length > 0
-      ? makeLines(recipe.inputs,  '−', 'var(--danger)')
-      : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+    const outCards = recipe.outputs.map(i => makeItemCard(i, '#4caf50', '+')).join('');
+    const inCards  = recipe.inputs.map(i => makeItemCard(i, '#f44336', '−')).join('');
 
-    const divider = recipe.inputs.length > 0 && recipe.outputs.length > 0
-      ? `<div style="border-top:1px dashed rgba(80,100,140,0.4);margin:4px 0;"></div>`
-      : '';
+    const outSection = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${outCards || '<span style="font-size:10px;color:rgba(255,255,255,0.3);">-</span>'}</div>`;
+    const inSection  = inCards
+      ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${inCards}</div>`
+      : `<div style="font-size:10px;color:rgba(255,255,255,0.3);">원자재</div>`;
+
+    const divider = `<div style="width:1px;background:rgba(255,255,255,0.1);align-self:stretch;margin:0 6px;flex-shrink:0;"></div>`;
 
     return `<div class="ws-equip-row">
       <div style="min-width:0;flex:1;cursor:pointer;" onclick="openEquipModal(${g.id}, ${e.recipeId})" title="클릭해서 레시피 변경">
-        <div id="wsout-${g.id}-${e.recipeId}">${outLines}</div>
-        ${divider}
-        <div id="wsin-${g.id}-${e.recipeId}">${inLines}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          ${getFacilityIcon(recipe.equip, 24)}
+          <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.9);">${recipe.equip}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.4);">· ${recipe.label}</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;">
+          <div id="wsout-${g.id}-${e.recipeId}">${outSection}</div>
+          ${divider}
+          <div id="wsin-${g.id}-${e.recipeId}">${inSection}</div>
+        </div>
       </div>
       <input type="number" class="ws-count-input" min="0"
         value="${cnt||''}" placeholder="0"
@@ -250,7 +311,7 @@ function renderGroupHTML(g) {
   return `<div class="ws-group" id="wsgroup-${g.id}">
     <div class="ws-group-inner">
     <div class="ws-group-header" style="flex-direction:column;gap:4px;padding:8px 10px;">
-      <!-- 1줄: 접기 + 그룹명 + 수량 -->
+      <!-- 1줄: 접기 + 그룹명 + 수량 + 버튼 모두 한줄 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%;">
         <button onclick="toggleGroupCollapse(${g.id})"
           style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;line-height:1;">
@@ -258,19 +319,15 @@ function renderGroupHTML(g) {
         </button>
         <input class="ws-group-name" value="${g.name}"
           oninput="updateGroupName(${g.id},this.value)" placeholder="그룹 이름"
-          style="flex:1;min-width:0;max-width:none;font-size:12px;">
+          style="min-width:0;font-size:12px;">
         <div class="ws-group-mult" style="flex-shrink:0;">
           <span style="font-size:11px;color:var(--text-muted);">×</span>
           <input type="number" class="ws-mult-input" min="1" value="${g.mult||1}"
             oninput="updateGroupMult(${g.id},this.value)" style="width:36px;">
         </div>
-      </div>
-      <!-- 2줄: 설비 추가 + 저장 + 삭제 -->
-      <div style="display:flex;align-items:center;gap:6px;padding-left:18px;">
-        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 10px;font-size:11px;">+ 설비</button>
-        <div style="flex:1;"></div>
-        <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="saveGroupAsPreset(${g.id})">저장</button>
-        <button class="ws-del-btn" style="font-size:15px;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
+        <button class="ws-add-equip-btn" onclick="openEquipModal(${g.id}, null)" style="padding:3px 8px;font-size:11px;flex-shrink:0;">+ 설비</button>
+        <button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="saveGroupAsPreset(${g.id})">저장</button>
+        <button class="ws-del-btn" style="font-size:15px;flex-shrink:0;" onclick="removeGroup(${g.id})" title="그룹 삭제">🗑</button>
       </div>
     </div>
     ${bodyHTML}
@@ -338,24 +395,27 @@ function updateWsRateSpan(g, e) {
   if (!recipe) return;
   const cnt = (e.count || 0) * (g.mult || 1);
 
-  const makeLines = (items, sign, color) => items.map(item => {
+  const makeItemCard = (item, color, sign) => {
     const rate = cnt > 0 ? fmt((60 / recipe.speed) * item.qty * cnt) : null;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:1px 0;">
-      <span style="display:flex;align-items:center;min-width:0;">
-        <span style="color:${color};font-weight:700;margin-right:4px;flex-shrink:0;">${sign}</span>
-        ${itemIcon(item.name, 32)}
-        <span style="color:var(--text);">${item.name}</span>
-      </span>
-      ${rate ? `<span style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0;">${rate}/분</span>` : ''}
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:56px;">
+      <div style="position:relative;width:48px;height:48px;border-radius:8px;
+        background:rgba(255,255,255,0.06);border:2px solid ${color};overflow:hidden;flex-shrink:0;">
+        ${itemIcon(item.name, 48)}
+        <span style="position:absolute;bottom:2px;right:3px;font-size:9px;
+          font-weight:800;color:${color};text-shadow:0 0 4px #000;">${sign}${item.qty}</span>
+      </div>
+      <span style="font-size:10px;color:rgba(255,255,255,0.85);text-align:center;
+        line-height:1.3;max-width:58px;word-break:keep-all;font-weight:500;">${item.name}</span>
+      ${rate ? `<span style="font-size:9px;color:rgba(255,255,255,0.5);">${rate}/분</span>` : ''}
     </div>`;
-  }).join('');
+  };
 
   const outEl = document.getElementById(`wsout-${g.id}-${e.recipeId}`);
   const inEl  = document.getElementById(`wsin-${g.id}-${e.recipeId}`);
-  if (outEl) outEl.innerHTML = makeLines(recipe.outputs, '+', 'var(--success)');
+  if (outEl) outEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${recipe.outputs.map(i=>makeItemCard(i,'#4caf50','+')).join('')}</div>`;
   if (inEl)  inEl.innerHTML  = recipe.inputs.length > 0
-    ? makeLines(recipe.inputs, '−', 'var(--danger)')
-    : `<div style="color:var(--text-muted);font-size:10px;padding:1px 0;">원자재</div>`;
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;">${recipe.inputs.map(i=>makeItemCard(i,'#f44336','−')).join('')}</div>`
+    : `<div style="font-size:10px;color:rgba(255,255,255,0.3);">원자재</div>`;
 }
 
 function removeEquip(gid, recipeId) {
@@ -446,12 +506,13 @@ function renderEquipModalTabs(g) {
     const hasRecipe = RECIPES.some(r => r.equip === e.name);
     const isActive = e.name === modalSelectedEquipName;
     return `<button onclick="selectEquipName('${e.name}')"
-      style="padding:3px 10px;font-size:11px;cursor:pointer;
+      style="padding:4px 8px;font-size:11px;cursor:pointer;
         border-radius:4px;border:1px solid ${isActive ? 'var(--teal)' : hasRecipe ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'};
         background:${isActive ? 'rgba(42,184,200,0.15)' : 'transparent'};
         color:${isActive ? 'var(--teal)' : hasRecipe ? 'var(--text-sub)' : 'var(--text-muted)'};
         opacity:${hasRecipe ? '1' : '0.5'};
-        transition:all 0.15s;">${e.name}${hasRecipe ? '' : ' (준비중)'}</button>`;
+        display:flex;align-items:center;gap:4px;
+        transition:all 0.15s;">${getFacilityIcon(e.name, 18)}${e.name}${hasRecipe ? '' : ' (준비중)'}</button>`;
   }).join('');
 
   tabsEl.innerHTML = `
@@ -1712,8 +1773,8 @@ function renderOverviewTab() {
 
 // ========== TAB SWITCH ==========
 // 탭 체류시간 측정
-let _tabStartTime = Date.now();
-let _currentTab = 'authority';
+var _tabStartTime = Date.now();
+var _currentTab = 'authority';
 
 function trackTabLeave(tab) {
   const duration = Math.round((Date.now() - _tabStartTime) / 1000);
@@ -2015,6 +2076,8 @@ function renderOperatorSelectGrid() {
       const rc = RARITY_COLOR[op.rarity];
       const ec = ELEMENT_COLOR[op.element];
       const isAdded = addedNames.has(op.name);
+      const thumbName = op.name === '관리자' ? '관리자(여)' : op.name;
+      const thumbUrl = `op_icons/${thumbName.replace(/\s+/g,'_')}.png`;
       return `<div onclick="${isAdded ? '' : `selectOperatorFromRoster('${op.name}')`}"
         style="border:1px solid ${isAdded ? 'rgba(240,200,22,0.4)' : 'rgba(255,255,255,0.12)'};border-radius:4px;padding:10px 8px;
           background:${isAdded ? 'rgba(240,200,22,0.08)' : 'rgba(255,255,255,0.04)'};
@@ -2028,6 +2091,11 @@ function renderOperatorSelectGrid() {
           ${isAdded
             ? `<span style="font-size:9px;color:var(--accent);">추가됨</span>`
             : `<span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"></span>`}
+        </div>
+        <div style="width:56px;height:56px;margin:0 auto 6px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.06);">
+          <img src="${thumbUrl}" alt="${op.name}" width="56" height="56"
+            style="width:100%;height:100%;object-fit:cover;"
+            onerror="this.parentElement.innerHTML='<span style=\\'font-size:24px;line-height:56px;display:block;\\'>👤</span>'">
         </div>
         <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;">${op.name}</div>
         <div style="font-size:10px;color:var(--text-muted);">${CLASS_KR[op.class] || op.class}</div>
@@ -2199,14 +2267,17 @@ function renderOperatorList() {
       const isActive = activeOperatorName === o.name;
       const state = opStates[o.name];
       const hasData = state && (state.currentElite > 0 || state.targetElite > 0 || state.currentLevel > 1);
+      const thumbName2 = o.name === '관리자' ? '관리자(여)' : o.name;
+      const thumbUrl2 = `op_icons/${thumbName2.replace(/\s+/g,'_')}.png`;
       html += `<div onclick="selectOperatorByName('${o.name}')"
         style="cursor:pointer;border-radius:6px;overflow:hidden;
           border:2px solid ${isActive ? 'var(--accent)' : hasData ? rc+'88' : 'rgba(255,255,255,0.1)'};
           background:${isActive ? 'rgba(240,200,22,0.1)' : 'rgba(255,255,255,0.03)'};
           transition:all 0.15s;text-align:center;">
-        <div style="width:100%;aspect-ratio:1;background:rgba(255,255,255,0.05);
-          display:flex;align-items:center;justify-content:center;font-size:20px;">
-          👤
+        <div style="width:100%;aspect-ratio:1;background:rgba(255,255,255,0.05);overflow:hidden;">
+          <img src="${thumbUrl2}" alt="${o.name}"
+            style="width:100%;height:100%;object-fit:cover;"
+            onerror="this.parentElement.innerHTML='<span style=\\'font-size:20px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;\\'>👤</span>'">
         </div>
         <div style="padding:3px 2px;font-size:10px;font-weight:600;
           color:var(--text);
@@ -2512,6 +2583,38 @@ function renderOperatorConfig() {
       </div>
     </div>`;
   }
+  // ── 무기 특성 섹션 ──
+  const weaponName = op.weapon || '';
+  const weaponData = (window.WEAPONS || []).find(w => w.name === weaponName);
+  const weaponHtml = weaponName ? (() => {
+    if (!weaponData) return `
+      <div style="color:var(--text-muted);font-size:11px;padding:8px 0;">
+        ${weaponName} — 특성 데이터 없음
+      </div>`;
+    const renderTrait = (t, color, label) => {
+      if (!t) return '';
+      return `<div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:8px 10px;border:1px solid ${color}33;margin-bottom:6px;">
+        <div style="font-size:9px;color:${color};font-weight:700;margin-bottom:3px;">${label}</div>
+        <div style="font-size:11px;color:var(--text);font-weight:600;">${t.label || ''}</div>
+        ${t.initVal ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${t.initVal}</div>` : ''}
+      </div>`;
+    };
+    const t3 = weaponData.trait3;
+    const t3Html = t3 ? `<div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:8px 10px;border:1px solid #ffd74033;margin-bottom:6px;">
+      <div style="font-size:9px;color:#ffd740;font-weight:700;margin-bottom:3px;">고유 능력 · ${t3.keyword || ''}</div>
+      <div style="font-size:11px;color:var(--text);font-weight:600;">${t3.fullLabel || ''}</div>
+      ${t3.initVal ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.4;">${t3.initVal.slice(0,80)}${t3.initVal.length>80?'…':''}</div>` : ''}
+    </div>` : '';
+    return `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text);">⚔ ${weaponName}</span>
+        <span style="font-size:10px;color:var(--text-muted);">${weaponData.type || ''}</span>
+      </div>
+      ${renderTrait(weaponData.trait1, '#4fc3f7', '1번 특성 · 능력치')}
+      ${renderTrait(weaponData.trait2, '#b39ddb', '2번 특성 · 스탯')}
+      ${t3Html}`;
+  })() : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">무기 정보 없음</div>`;
+
   panel.innerHTML = `<div class="panel" style="padding:0;overflow:hidden;">
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.06);display:flex;align-items:center;gap:10px;">
       <input value="${op.name}" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-weight:700;outline:none;flex:1;"
@@ -2520,6 +2623,10 @@ function renderOperatorConfig() {
     <div style="padding:10px;display:flex;gap:8px;align-items:flex-start;" class="op-dual-panel">
       ${nodePanel('cur')}
       ${nodePanel('tgt')}
+    </div>
+    <div style="padding:12px 14px;border-top:1px solid var(--border);">
+      <div style="font-size:10px;font-weight:700;color:#4fc3f7;letter-spacing:0.08em;margin-bottom:8px;">⚔ 무기 특성</div>
+      ${weaponHtml}
     </div>
     <div style="padding:12px 14px;border-top:1px solid var(--border);">
       <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:8px;">📦 필요 재료</div>
@@ -2948,6 +3055,8 @@ function toggleCustomSelect(btn) {
   dropdown.style.left = rect.left + 'px';
   dropdown.style.width = rect.width + 'px';
   dropdown.style.zIndex = '9999';
+  dropdown.style.overflowY = 'auto';
+  dropdown.style.overflowX = 'hidden';
 
   if (spaceBelow >= dropH || spaceBelow >= spaceAbove) {
     // 아래로 펼치기
