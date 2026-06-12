@@ -3393,16 +3393,17 @@ function switchEssenceTab(tab) {
 
 // ========== 기질 파밍 탭 초기화 ==========
 function initEssenceTab() {
-  // WEAPONS 데이터에서 실제 trait 값 추출
   const weapons = window.WEAPONS || [];
+
+  const stripSize = s => s ? s.replace(/\xa0/g,' ').trim().replace(/\s*·\s*(대|중|소)$/, '') : '';
 
   const trait1Set = new Set();
   const trait2Set = new Set();
   const trait3Set = new Set();
   weapons.forEach(w => {
-    if (w.trait1?.label) trait1Set.add(w.trait1.label.replace(/\xa0/g,' ').trim());
-    if (w.trait2?.label) trait2Set.add(w.trait2.label.replace(/\xa0/g,' ').trim());
-    if (w.trait3?.keyword) trait3Set.add(w.trait3.keyword.replace(/\xa0/g,' ').trim());
+    if (w.trait1?.label) trait1Set.add(stripSize(w.trait1.label));
+    if (w.trait2?.label) trait2Set.add(stripSize(w.trait2.label));
+    if (w.trait3?.keyword) trait3Set.add(stripSize(w.trait3.keyword));
   });
 
   const t1 = [...trait1Set].sort();
@@ -3440,12 +3441,13 @@ function renderEssenceCheck() {
     return;
   }
 
-  // WEAPONS(공식 위키) 기반 매칭
+  // WEAPONS(공식 위키) 기반 매칭 (대/중/소 무시)
+  const stripSize = s => s ? s.replace(/\xa0/g,' ').trim().replace(/\s*·\s*(대|중|소)$/, '') : '';
   const weapons = window.WEAPONS || [];
   const matched = weapons.filter(w => {
-    const t1 = w.trait1?.label?.replace(/\xa0/g,' ').trim() || '';
-    const t2 = w.trait2?.label?.replace(/\xa0/g,' ').trim() || '';
-    const t3 = w.trait3?.keyword?.replace(/\xa0/g,' ').trim() || '';
+    const t1 = stripSize(w.trait1?.label || '');
+    const t2 = stripSize(w.trait2?.label || '');
+    const t3 = stripSize(w.trait3?.keyword || '');
     const pMatch = !pri || t1 === pri || t2 === pri;
     const sMatch = !sec || t1 === sec || t2 === sec;
     const kMatch = !sk  || t3 === sk;
@@ -3618,9 +3620,10 @@ function alluviumTag(a) {
 }
 
 function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
-  const t1 = w.trait1?.label?.replace(/\xa0/g,' ').trim() || '';
-  const t2 = w.trait2?.label?.replace(/\xa0/g,' ').trim() || '';
-  const t3kw = w.trait3?.keyword?.replace(/\xa0/g,' ').trim() || '';
+  const stripSize = s => s ? s.replace(/\xa0/g,' ').trim().replace(/\s*·\s*(대|중|소)$/, '') : '';
+  const t1 = stripSize(w.trait1?.label || '');
+  const t2 = stripSize(w.trait2?.label || '');
+  const t3kw = stripSize(w.trait3?.keyword || '');
   const t1Match = hiT1 && (t1 === hiT1 || t2 === hiT1);
   const t2Match = hiT2 && (t1 === hiT2 || t2 === hiT2);
   const t3Match = hiT3 && t3kw === hiT3;
@@ -3652,6 +3655,12 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
           background:rgba(179,157,219,${t2Match?'0.15':'0.05'});border:1px solid rgba(179,157,219,${t2Match?'0.4':'0.15'});">
           ② ${w.trait2.label}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2.initVal||''}</span>
+      </div>` : ''}
+      ${w.trait2b ? `<div style="font-size:10px;">
+        <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
+          background:rgba(179,157,219,0.05);border:1px solid rgba(179,157,219,0.15);">
+          ② ${w.trait2b.label}</span>
+        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2b.initVal||''}</span>
       </div>` : ''}
       ${w.trait3 ? `<div style="font-size:10px;">
         <span style="color:#ffd740;font-weight:700;padding:1px 5px;border-radius:3px;
