@@ -3393,15 +3393,31 @@ function switchEssenceTab(tab) {
 
 // ========== 기질 파밍 탭 초기화 ==========
 function initEssenceTab() {
+  // WEAPONS 데이터에서 실제 trait 값 추출
+  const weapons = window.WEAPONS || [];
+
+  const trait1Set = new Set();
+  const trait2Set = new Set();
+  const trait3Set = new Set();
+  weapons.forEach(w => {
+    if (w.trait1?.label) trait1Set.add(w.trait1.label.replace(/\xa0/g,' ').trim());
+    if (w.trait2?.label) trait2Set.add(w.trait2.label.replace(/\xa0/g,' ').trim());
+    if (w.trait3?.keyword) trait3Set.add(w.trait3.keyword.replace(/\xa0/g,' ').trim());
+  });
+
+  const t1 = [...trait1Set].sort();
+  const t2 = [...trait2Set].sort();
+  const t3 = [...trait3Set].sort();
+
   createCustomSelect('cs-ec-primary',
-    ESSENCE_PRIMARY.map(p => ({ value: p, label: p })),
-    '', () => renderEssenceCheck(), '— 주속성 선택 —');
+    t1.map(p => ({ value: p, label: p })),
+    '', () => renderEssenceCheck(), '— 특성① 선택 (능력치) —');
   createCustomSelect('cs-ec-secondary',
-    ESSENCE_SECONDARY.map(s => ({ value: s, label: s })),
-    '', () => renderEssenceCheck(), '— 보조속성 선택 —');
+    t2.map(s => ({ value: s, label: s })),
+    '', () => renderEssenceCheck(), '— 특성② 선택 (스탯) —');
   createCustomSelect('cs-ec-skill',
-    ESSENCE_SKILLS.map(s => ({ value: s, label: s })),
-    '', () => renderEssenceCheck(), '— 스킬 선택 —');
+    t3.map(s => ({ value: s, label: s })),
+    '', () => renderEssenceCheck(), '— 특성③ 선택 (고유) —');
   createCustomSelect('cs-ew-select',
     WEAPON_DATA.map((w, i) => ({
       value: String(i),
@@ -3424,10 +3440,15 @@ function renderEssenceCheck() {
     return;
   }
 
-  const matched = WEAPON_DATA.filter(w => {
-    const pMatch = !pri || w.primary === pri;
-    const sMatch = !sec || w.secondary === sec;
-    const kMatch = !sk  || w.skill === sk;
+  // WEAPONS(공식 위키) 기반 매칭
+  const weapons = window.WEAPONS || [];
+  const matched = weapons.filter(w => {
+    const t1 = w.trait1?.label?.replace(/\xa0/g,' ').trim() || '';
+    const t2 = w.trait2?.label?.replace(/\xa0/g,' ').trim() || '';
+    const t3 = w.trait3?.keyword?.replace(/\xa0/g,' ').trim() || '';
+    const pMatch = !pri || t1 === pri || t2 === pri;
+    const sMatch = !sec || t1 === sec || t2 === sec;
+    const kMatch = !sk  || t3 === sk;
     return pMatch && sMatch && kMatch;
   });
 
@@ -3444,7 +3465,7 @@ function renderEssenceCheck() {
       ${matchCount===3 ? '<span style="color:var(--success);margin-left:4px;">✓ 완벽 매칭!</span>' : ''}
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;">
-      ${matched.map(w => weaponCard(w, pri, sec, sk)).join('')}
+      ${matched.map(w => wikiWeaponCard(w, pri, sec, sk)).join('')}
     </div>`;
 }
 
@@ -3592,6 +3613,52 @@ function alluviumTag(a) {
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
       ${a.skills.map(s => `<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(128,255,128,0.1);color:#80FF80;border:1px solid rgba(128,255,128,0.25);">${s}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
+  const t1 = w.trait1?.label?.replace(/\xa0/g,' ').trim() || '';
+  const t2 = w.trait2?.label?.replace(/\xa0/g,' ').trim() || '';
+  const t3kw = w.trait3?.keyword?.replace(/\xa0/g,' ').trim() || '';
+  const t1Match = hiT1 && (t1 === hiT1 || t2 === hiT1);
+  const t2Match = hiT2 && (t1 === hiT2 || t2 === hiT2);
+  const t3Match = hiT3 && t3kw === hiT3;
+  const allMatch = (!hiT1||t1Match) && (!hiT2||t2Match) && (!hiT3||t3Match);
+
+  // WEAPON_DATA에서 오퍼레이터, 등급 정보 찾기
+  const wd = WEAPON_DATA.find(d => d.name === w.name);
+  const rarity = wd?.rarity || '';
+  const operator = wd?.operator || '';
+  const rc = rarity ? rarityColor(rarity) : 'var(--text-muted)';
+
+  return `<div style="border:1px solid ${allMatch?'rgba(240,200,22,0.5)':'rgba(255,255,255,0.08)'};border-radius:6px;padding:10px 12px;
+    background:${allMatch?'rgba(240,200,22,0.05)':'rgba(255,255,255,0.03)'};">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      ${rarity ? `<span style="font-size:11px;font-weight:700;color:${rc};">★${rarity}</span>` : ''}
+      <span style="font-size:13px;font-weight:700;color:var(--text);">${w.name}</span>
+      <span style="font-size:10px;color:var(--text-muted);">${w.type||''}</span>
+      ${operator ? `<span style="font-size:10px;color:var(--accent2);">${operator}</span>` : ''}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      ${w.trait1 ? `<div style="font-size:10px;">
+        <span style="color:#4fc3f7;font-weight:700;padding:1px 5px;border-radius:3px;
+          background:rgba(79,195,247,${t1Match?'0.15':'0.05'});border:1px solid rgba(79,195,247,${t1Match?'0.4':'0.15'});">
+          ① ${w.trait1.label}</span>
+        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait1.initVal||''}</span>
+      </div>` : ''}
+      ${w.trait2 ? `<div style="font-size:10px;">
+        <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
+          background:rgba(179,157,219,${t2Match?'0.15':'0.05'});border:1px solid rgba(179,157,219,${t2Match?'0.4':'0.15'});">
+          ② ${w.trait2.label}</span>
+        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2.initVal||''}</span>
+      </div>` : ''}
+      ${w.trait3 ? `<div style="font-size:10px;">
+        <span style="color:#ffd740;font-weight:700;padding:1px 5px;border-radius:3px;
+          background:rgba(255,215,64,${t3Match?'0.15':'0.05'});border:1px solid rgba(255,215,64,${t3Match?'0.4':'0.15'});">
+          ③ ${w.trait3.keyword||''}</span>
+        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${(w.trait3.initVal||'').slice(0,60)}${(w.trait3.initVal||'').length>60?'…':''}</span>
+      </div>` : ''}
     </div>
   </div>`;
 }
