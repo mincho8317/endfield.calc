@@ -3105,8 +3105,11 @@ function closeOnOutside(e) {
   else document.addEventListener('click', closeOnOutside, { once: true });
 }
 
-// 스크롤 시 드롭다운 닫기
-window.addEventListener('scroll', closeAllCustomSelects, true);
+// 스크롤 시 드롭다운 닫기 (드롭다운 내부 스크롤은 제외)
+window.addEventListener('scroll', function(e) {
+  if (e.target.closest && e.target.closest('.custom-select-dropdown')) return;
+  closeAllCustomSelects();
+}, true);
 
 function closeAllCustomSelects() {
   document.querySelectorAll('.custom-select-dropdown').forEach(d => d.remove());
