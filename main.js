@@ -3055,19 +3055,23 @@ function toggleCustomSelect(btn) {
   dropdown.style.left = rect.left + 'px';
   dropdown.style.width = rect.width + 'px';
   dropdown.style.zIndex = '9999';
-  dropdown.style.overflowY = 'auto';
-  dropdown.style.overflowX = 'hidden';
 
   if (spaceBelow >= dropH || spaceBelow >= spaceAbove) {
     // 아래로 펼치기
+    const maxH = Math.min(220, spaceBelow - 8);
     dropdown.style.top = (rect.bottom + 2) + 'px';
-    dropdown.style.maxHeight = Math.min(220, spaceBelow - 8) + 'px';
+    dropdown.style.maxHeight = maxH + 'px';
+    dropdown.style.height = Math.min(dropH, maxH) + 'px';
   } else {
     // 위로 펼치기
+    const maxH = Math.min(220, spaceAbove - 8);
     dropdown.style.bottom = (window.innerHeight - rect.top + 2) + 'px';
     dropdown.style.top = 'auto';
-    dropdown.style.maxHeight = Math.min(220, spaceAbove - 8) + 'px';
+    dropdown.style.maxHeight = maxH + 'px';
+    dropdown.style.height = Math.min(dropH, maxH) + 'px';
   }
+  dropdown.style.overflowY = 'scroll';
+  dropdown.style.overflowX = 'hidden';
 
   // 선택된 항목으로 스크롤
   setTimeout(() => {

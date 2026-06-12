@@ -455,13 +455,12 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .custom-select-btn .cs-arrow { flex-shrink: 0; transition: transform 0.18s; color: var(--text-muted); }
 .custom-select-btn.open .cs-arrow { transform: rotate(180deg); }
 .custom-select-dropdown {
-  /* position/top/left/width는 JS에서 fixed로 직접 설정 */
+  /* position/top/left/width/height/maxHeight는 JS에서 fixed로 직접 설정 */
   background: var(--bg-popup);
   border: 1px solid rgba(240,200,22,0.3);
   border-radius: 6px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 220px; /* 기본값, JS에서 덮어씀 */
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   scrollbar-width: thin;
   scrollbar-color: rgba(240,200,22,0.3) transparent;
