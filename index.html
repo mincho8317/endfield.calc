@@ -1034,13 +1034,12 @@ select option { background: var(--bg-popup); color: var(--text); }
 
   </div>
   <div class="tab-bar">
-    <div class="tab" onclick="switchTab('overview')">Overview</div>
-    <div class="tab active" onclick="switchTab('authority')">관리권</div>
-    <div class="tab" onclick="switchTab('factory')">공장</div>
-    <div class="tab" onclick="switchTab('operator')">오퍼레이터</div>
-    <div class="tab" onclick="switchTab('essence')">기질 파밍</div>
+    <div class="tab" onclick="switchTab('overview')">전체 현황</div>
+    <div class="tab active" onclick="switchTab('outpost')">거점 운영</div>
     <div class="tab" onclick="switchTab('layout')">공장 배치</div>
-    <div class="tab" onclick="switchTab('changelog')">업데이트</div>
+    <div class="tab" onclick="switchTab('operator')">오퍼레이터 육성</div>
+    <div class="tab" onclick="switchTab('essence')">무기 및 기질</div>
+    <div class="tab" onclick="switchTab('changelog')">업데이트 내역</div>
   </div>
 </header>
 
@@ -1054,8 +1053,86 @@ select option { background: var(--bg-popup); color: var(--text); }
       </div>
     </div>
 
-    <!-- ===== 공장 탭 ===== -->
-    <div id="tab-factory" class="page-view">
+    <!-- ===== 거점 운영 탭 ===== -->
+    <div id="tab-outpost" class="page-view active">
+
+      <!-- 거점 선택 뱃지 + 서브탭 한 줄 -->
+      <div style="position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <!-- 협곡/무릉 뱃지 -->
+        <div style="display:flex;gap:6px;flex-shrink:0;" id="outpost-badge-wrap"></div>
+        <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+        <!-- 서브탭 -->
+        <div style="display:flex;gap:2px;" id="outpost-inner-tabs">
+          <div class="inner-tab active" id="otab-auth-produce" onclick="switchOutpostTab('auth-produce')">① 관리권 생산량</div>
+          <div class="inner-tab" id="otab-resource" onclick="switchOutpostTab('resource')">② 천연자원 생산량</div>
+          <div class="inner-tab" id="otab-auth-consume" onclick="switchOutpostTab('auth-consume')">③ 관리권 소모 계산</div>
+          <div class="inner-tab" id="otab-factory" onclick="switchOutpostTab('factory')">④ 공장 생산 계획</div>
+        </div>
+      </div>
+
+      <!-- 관리권 요약 바 -->
+      <div id="auth-summary-fixed" style="background:var(--bg-mid);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:11px;color:var(--text-label);letter-spacing:0.08em;">총 생산</span>
+          <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;line-height:1;" id="auth-summary-produce">—</span>
+          <span style="font-size:12px;color:var(--text-muted);">/분</span>
+        </div>
+        <div style="width:1px;height:24px;background:var(--border);"></div>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:11px;color:var(--text-label);letter-spacing:0.08em;">소모</span>
+          <span style="font-size:22px;font-weight:700;color:var(--danger);font-family:'Share Tech Mono',monospace;line-height:1;" id="auth-summary-consume">0</span>
+          <span style="font-size:12px;color:var(--text-muted);">/분</span>
+        </div>
+        <div style="width:1px;height:24px;background:var(--border);"></div>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:11px;color:var(--text-label);letter-spacing:0.08em;">잔여</span>
+          <span style="font-size:22px;font-weight:700;font-family:'Share Tech Mono',monospace;line-height:1;" id="auth-summary-balance">—</span>
+          <span style="font-size:10px;color:var(--text-muted);">/분</span>
+        </div>
+      </div>
+
+      <!-- ① 관리권 생산량 -->
+      <div id="opanel-auth-produce">
+        <div class="panel" style="margin-top:0;border-top:none;border-radius:0 0 8px 8px;">
+          <div id="auth-outpost-panel"></div>
+        </div>
+      </div>
+
+      <!-- ② 천연자원 생산량 -->
+      <div id="opanel-resource" style="display:none;">
+        <div id="outpost-resource-panel"></div>
+      </div>
+
+      <!-- ③ 관리권 소모 계산 -->
+      <div id="opanel-auth-consume" style="display:none;">
+        <div id="outpost-consume-panel"></div>
+      </div>
+
+      <!-- ④ 공장 생산 계획 -->
+      <div id="opanel-factory" style="display:none;">
+        <!-- 기존 factory 탭 내용 이동 -->
+        <div id="mobile-status-btn-wrap" style="display:none;margin:12px 0;">
+          <button onclick="openStatusDrawer()"
+            style="width:100%;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;
+              color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+              display:flex;align-items:center;justify-content:space-between;">
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span style="color:var(--accent2);font-weight:700;">◈</span>
+              <span id="mobile-auth-summary" style="color:var(--text-muted);">관리권 현황</span>
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+        <div id="factory-calc-root"></div>
+      </div>
+
+    </div>
+
+    <!-- 기존 authority/factory는 숨김 처리 (JS 호환성 유지) -->
+    <div id="tab-authority" class="page-view" style="display:none!important;"></div>
+    <div id="tab-factory" class="page-view" style="display:none!important;"></div>
 
       <!-- 거점 선택 탭 (계산기 상단) -->
       <div style="display:flex;gap:6px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px;" id="factory-outpost-tabs"></div>
@@ -1332,7 +1409,7 @@ select option { background: var(--bg-popup); color: var(--text); }
       </div>
     </div>
 
-    <!-- ===== 기질 파밍 탭 ===== -->
+    <!-- ===== 무기 및 기질 탭 ===== -->
     <div id="tab-essence" class="page-view">
       <div style="max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
 
@@ -1347,7 +1424,7 @@ select option { background: var(--bg-popup); color: var(--text); }
         <!-- 내부 탭 -->
         <div style="display:flex;border-bottom:1px solid var(--border);" id="essence-inner-tabs">
           <div class="inner-tab active" id="etab-check"  onclick="switchEssenceTab('check')">🔍 기질 체커</div>
-          <div class="inner-tab"       id="etab-weapon" onclick="switchEssenceTab('weapon')">⚔ 무기별 파밍처</div>
+          <div class="inner-tab"       id="etab-weapon" onclick="switchEssenceTab('weapon')">⚔ 기질 파밍처</div>
         </div>
 
         <!-- ① 기질 체커 -->

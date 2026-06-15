@@ -1784,23 +1784,29 @@ function trackTabLeave(tab) {
 }
 
 function switchTab(tab) {
-  // 이전 탭 체류시간 전송
   trackTabLeave(_currentTab);
   _currentTab = tab;
   _tabStartTime = Date.now();
   gtag('event', 'tab_view', { tab_name: tab });
   document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  // event.target 대신 탭 버튼을 직접 찾아서 active 추가
+
+  // outpost 탭: 기존 authority/factory 탭도 outpost로 리다이렉트
+  const actualTab = (tab === 'authority' || tab === 'factory') ? 'outpost' : tab;
+  const el = document.getElementById('tab-' + actualTab);
+  if (el) el.classList.add('active');
+
   document.querySelectorAll('.tab').forEach(t => {
-    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${tab}'`)) {
-      t.classList.add('active');
-    }
+    if (t.getAttribute('onclick')?.includes(`'${actualTab}'`)) t.classList.add('active');
   });
-  if (tab === 'overview') renderOverviewTab();
-  if (tab === 'changelog') renderChangelog();
-  if (tab === 'layout') {
+
+  if (actualTab === 'overview') renderOverviewTab();
+  if (actualTab === 'changelog') renderChangelog();
+  if (actualTab === 'outpost') {
+    renderOutpostBadges();
+    switchOutpostTab(_currentOutpostTab || 'auth-produce');
+  }
+  if (actualTab === 'layout') {
     setTimeout(function() {
       var root = document.getElementById('factory-layout-root');
       if (root && !root._mounted && typeof FactoryLayout !== 'undefined') {
@@ -1809,6 +1815,69 @@ function switchTab(tab) {
       }
     }, 50);
   }
+}
+
+// ========== 거점 운영 서브탭 ==========
+var _currentOutpostTab = 'auth-produce';
+
+function renderOutpostBadges() {
+  const el = document.getElementById('outpost-badge-wrap');
+  if (!el) return;
+  el.innerHTML = OUTPOSTS.map(o => {
+    const isActive = o.id === activeOutpostId;
+    return `<button onclick="switchOutpostOutpost('${o.id}')"
+      style="padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer;
+        border-radius:9999px;border:2px solid ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.15)'};
+        background:${isActive ? 'rgba(240,200,22,0.15)' : 'transparent'};
+        color:${isActive ? 'var(--accent)' : 'var(--text-muted)'};
+        font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;">
+      ${o.name}
+    </button>`;
+  }).join('');
+}
+
+function switchOutpostOutpost(oId) {
+  activeOutpostId = oId;
+  // 공장 생산도 같은 거점 사용
+  renderOutpostBadges();
+  renderResourceInputs();
+  renderWorkspace();
+  renderResults();
+  updateFactoryAuthBar();
+  renderAuthOutpostPanel();
+}
+
+function switchOutpostTab(tab) {
+  _currentOutpostTab = tab;
+  const panels = ['auth-produce', 'resource', 'auth-consume', 'factory'];
+  panels.forEach(p => {
+    const el = document.getElementById('opanel-' + p);
+    if (el) el.style.display = p === tab ? '' : 'none';
+    const btn = document.getElementById('otab-' + p);
+    if (btn) btn.classList.toggle('active', p === tab);
+  });
+
+  // 각 탭 초기화
+  if (tab === 'auth-produce') renderAuthOutpostPanel();
+  if (tab === 'resource') renderResourceInputs();
+  if (tab === 'auth-consume') renderAuthConsumePanel();
+  if (tab === 'factory') {
+    renderWorkspace();
+    renderResults();
+  }
+}
+
+function renderAuthOutpostPanel() {
+  // 기존 관리권 패널 렌더링 (auth-outpost-panel → opanel-auth-produce 안으로)
+  const panel = document.getElementById('auth-outpost-panel');
+  if (panel) renderAuthProducts();
+}
+
+function renderAuthConsumePanel() {
+  const el = document.getElementById('outpost-consume-panel');
+  if (!el) return;
+  // 기존 auth inner tab 'product' 내용 렌더링
+  renderAuthProducts();
 }
 
 // ========== 공장 거점 선택 탭 ==========
@@ -4549,6 +4618,7 @@ loadTheme();
 loadData();
 loadFromURL(); // URL 공유 파라미터가 있으면 덮어씀
 loadCustomIcons();
+renderOutpostBadges();
 renderFactoryOutpostTabs();
 renderResourceInputs();
 renderWorkspace();
@@ -4561,5 +4631,7 @@ renderOperatorList();
 renderOperatorConfig();
 renderOperatorTotal();
 initEssenceTab();
+// 거점 운영 탭 초기화
+switchOutpostTab('auth-produce');
 // 첫 방문 시 투어 시작 (약간 딜레이로 UI 완전 렌더 후)
 setTimeout(() => startTour(), 600);
