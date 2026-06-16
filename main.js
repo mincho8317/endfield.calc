@@ -3560,34 +3560,53 @@ function renderEssenceCheck() {
     return;
   }
 
-  // WEAPONS(공식 위키) 기반 매칭 (대/중/소 무시)
   const stripSize = s => s ? s.replace(/\xa0/g,' ').trim().replace(/\s*·\s*(대|중|소)$/, '') : '';
   const weapons = window.WEAPONS || [];
-  const matched = weapons.filter(w => {
+  const selectedCount = [pri,sec,sk].filter(Boolean).length;
+
+  // 각 무기의 매칭 점수 계산
+  const scored = weapons.map(w => {
     const t1 = stripSize(w.trait1?.label || '');
     const t2 = stripSize(w.trait2?.label || '');
     const t3 = stripSize(w.trait3?.keyword || '');
-    const pMatch = !pri || t1 === pri || t2 === pri;
-    const sMatch = !sec || t1 === sec || t2 === sec;
-    const kMatch = !sk  || t3 === sk;
-    return pMatch && sMatch && kMatch;
-  });
+    const pMatch = pri && (t1 === pri || t2 === pri);
+    const sMatch = sec && (t1 === sec || t2 === sec);
+    const kMatch = sk  && t3 === sk;
+    const score = (pMatch?1:0) + (sMatch?1:0) + (kMatch?1:0);
+    return { w, score, pMatch, sMatch, kMatch };
+  }).filter(x => x.score >= 2); // 2개 이상 매칭만
 
-  if (matched.length === 0) {
-    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">🔍</div>매칭되는 무기가 없어요<br><span style="font-size:11px;color:var(--text-label);">특성 조합을 바꿔보세요</span></div>`;
+  if (scored.length === 0) {
+    el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">🔍</div>2개 이상 매칭되는 무기가 없어요<br><span style="font-size:11px;color:var(--text-label);">특성 조합을 바꿔보세요</span></div>`;
     return;
   }
 
-  const matchCount = [pri,sec,sk].filter(Boolean).length;
+  // 점수 내림차순 정렬
+  scored.sort((a, b) => b.score - a.score);
+
+  const perfect = scored.filter(x => x.score === selectedCount);
+  const partial = scored.filter(x => x.score < selectedCount);
+
   el.innerHTML = `
-    <div style="font-size:11px;color:var(--text-label);margin-bottom:8px;">
-      ${matchCount}개 특성 선택 →
-      <b style="color:var(--accent);">${matched.length}개</b> 무기 매칭
-      ${matchCount===3 ? '<span style="color:var(--success);margin-left:4px;">✓ 완벽 매칭!</span>' : ''}
+    <div style="font-size:11px;color:var(--text-label);margin-bottom:10px;">
+      ${selectedCount}개 특성 선택 →
+      <b style="color:var(--accent);">${perfect.length}개</b> 완전 매칭,
+      <b style="color:var(--text-sub);">${partial.length}개</b> 부분 매칭
+    </div>
+    ${perfect.length > 0 ? `
+    <div style="font-size:10px;font-weight:700;color:var(--success);letter-spacing:0.06em;margin-bottom:6px;">
+      ✓ 완전 매칭 (${perfect.length}개)
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+      ${perfect.map(x => wikiWeaponCard(x.w, pri, sec, sk)).join('')}
+    </div>` : ''}
+    ${partial.length > 0 ? `
+    <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:0.06em;margin-bottom:6px;">
+      ○ 부분 매칭 — 2개 일치 (${partial.length}개)
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;">
-      ${matched.map(w => wikiWeaponCard(w, pri, sec, sk)).join('')}
-    </div>`;
+      ${partial.map(x => wikiWeaponCard(x.w, pri, sec, sk)).join('')}
+    </div>` : ''}`;
 }
 
 // ========== ② 무기별 파밍처 + 한번에 파밍 통합 ==========
