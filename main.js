@@ -1488,6 +1488,17 @@ function renderOutpostProducts(oId) {
            : renderProductsTable(el, oId, factoryRates, authTotal, tr);
 }
 
+function renderOutpostProductsTo(oId, targetId) {
+  const factoryRates = getAuthProductRatesFromFactory(oId);
+  const authTotal    = calcOutpostAuthTotal(oId);
+  const tr           = outpostData[oId]?.targetRates || {};
+  const el           = document.getElementById(targetId);
+  if (!el) return;
+  const isMobile = window.innerWidth < 768;
+  isMobile ? renderProductsCards(el, oId, factoryRates, authTotal, tr)
+           : renderProductsTable(el, oId, factoryRates, authTotal, tr);
+}
+
 function getAchieveHtml(factoryRate, targetRate, authTotal, val) {
   if (targetRate <= 0) return `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
   const needed      = val * targetRate;
@@ -1857,28 +1868,79 @@ function switchOutpostTab(tab) {
     if (btn) btn.classList.toggle('active', p === tab);
   });
 
+  // 관리권 요약 바: ①③에서만 표시
+  const summaryBar = document.getElementById('auth-summary-fixed');
+  if (summaryBar) summaryBar.style.display = (tab === 'auth-produce' || tab === 'auth-consume') ? '' : 'none';
+
   if (tab === 'auth-produce') {
+    // ① 관리권 생산량: 기존 관리권 탭 "관리권 생산 계산"
     renderAuthOutpostTabs();
     switchAuthView('outpost', activeAuthOutpostId);
   }
   if (tab === 'resource') {
-    renderFactoryOutpostTabs();
+    // ② 천연자원 생산량: 기존 공장 탭 천연 자원 내용
     renderResourceInputs();
   }
   if (tab === 'auth-consume') {
-    renderFactoryOutpostTabs();
-    renderResourceInputs();
-    renderWorkspace();
-    renderResults();
-    renderAuthProducts();
+    // ③ 관리권 소모 계산
+    renderAuthConsumeOutpostTabs();
+    renderAuthConsumePanelContent(activeAuthOutpostId);
   }
   if (tab === 'factory') {
+    // ④ 공장 생산 계획: 기존 공업생산품 + 결과
     renderFactoryOutpostTabs();
-    renderResourceInputs();
     renderWorkspace();
     renderResults();
     updateFactoryAuthBar();
   }
+}
+
+// ========== ③ 관리권 소모 계산 전용 ==========
+function renderAuthConsumeOutpostTabs() {
+  const el = document.getElementById('auth-outpost-tabs-consume');
+  if (!el) return;
+  el.innerHTML = OUTPOSTS.map(o => {
+    const isActive = o.id === activeAuthOutpostId;
+    return `<div class="inner-tab ${isActive ? 'active' : ''}"
+      onclick="switchAuthConsumeView('${o.id}')">
+      ${o.name}
+    </div>`;
+  }).join('');
+}
+
+function switchAuthConsumeView(oId) {
+  activeAuthOutpostId = oId;
+  activeOutpostId = oId;
+  renderOutpostBadges();
+  renderAuthConsumeOutpostTabs();
+  renderAuthConsumePanelContent(oId);
+}
+
+function renderAuthConsumePanelContent(oId) {
+  const panel = document.getElementById('auth-outpost-panel-consume');
+  if (!panel) return;
+  const outpost = OUTPOSTS.find(o => o.id === oId);
+  const authTotal = calcOutpostAuthTotal(oId);
+  const fmt = n => Number.isFinite(n) ? n.toFixed(2) : '—';
+
+  panel.innerHTML = `
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.04);">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${outpost?.name || oId}</div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <span style="font-size:22px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;">${authTotal > 0 ? fmt(authTotal) : '—'}</span>
+        <span style="font-size:12px;color:var(--text-muted);">/분</span>
+      </div>
+    </div>
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-size:10px;color:var(--text-muted);">목표 분당 생산량을 입력하면 관리권 소모량과 달성 가능 여부를 계산합니다</span>
+      <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;flex-shrink:0;" onclick="autoCalcFactory('${oId}')">
+        ⚙ 공장 설비 자동 계산
+      </button>
+    </div>
+    <div id="auth-product-body-consume-${oId}" style="padding:8px;display:flex;flex-direction:column;gap:6px;"></div>
+  `;
+  renderOutpostProductsTo(oId, `auth-product-body-consume-${oId}`);
+  updateOutpostAuthSummary(oId);
 }
 
 // ========== 공장 거점 선택 탭 ==========
