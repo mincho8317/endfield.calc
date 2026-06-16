@@ -13,7 +13,7 @@ OUTPOSTS.forEach(o => {
   outpostData[o.id] = {
     resourceRates: Object.fromEntries(RESOURCE_ITEMS.map(r => [r.key, 0])),
     groups: [],
-    targetRates: Object.fromEntries(Object.keys(AUTH_VALUE).map(k => [k, 0])),
+    targetRates: {},
     nextGroupId: 1,
   };
 });
@@ -238,27 +238,16 @@ function renderWorkspace() {
     <div class="icon">🏭</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비 그룹이 없어요</div>
     <div style="font-size:11px;color:var(--text-label);line-height:1.8;text-align:left;display:inline-block;">
-      1️⃣ 오른쪽 설비 목록에서 설비를 선택하고<br>
-      2️⃣ <b>+ 그룹 추가</b> 버튼으로 그룹을 만들어<br>
+      1️⃣ 위의 <b>+ 그룹 추가</b> 버튼으로 그룹을 만들고<br>
+      2️⃣ 그룹 안의 <b>+ 설비</b>로 설비를 선택한 뒤<br>
       3️⃣ 설비 <b>수량을 입력</b>하면 생산량이 계산돼요
     </div>
-    <button class="btn btn-primary" onclick="addGroup()" style="margin-top:16px;font-size:13px;padding:8px 20px;">
-      + 그룹 추가
-    </button>
   </div>`;
     updateActiveCount();
     return;
   }
 
-  // 그룹이 있을 때: 상단에 그룹 추가 버튼
-  const addBtn = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-    <button class="btn btn-primary" onclick="addGroup()" style="font-size:12px;display:flex;align-items:center;gap:5px;">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      그룹 추가
-    </button>
-  </div>`;
-
-  ws.innerHTML = addBtn + gs.map(g => renderGroupHTML(g)).join('');
+  ws.innerHTML = gs.map(g => renderGroupHTML(g)).join('');
   updateActiveCount();
 }
 
@@ -480,13 +469,14 @@ function openEquipModal(gid, existingRecipeId = null) {
     existingRecipeId !== null ? '레시피 변경' : '설비 추가';
 
   // 기존 선택 설비의 카테고리/설비명으로 초기화
+  const ALLOWED_CATS = ['합성과 제작', '기초 생산'];
   if (existingRecipeId !== null) {
     const r = RECIPES.find(r => r.id === existingRecipeId);
-    modalSelectedCategory = r?.category || null;
+    const cat = r?.category || null;
+    modalSelectedCategory = ALLOWED_CATS.includes(cat) ? cat : ALLOWED_CATS[0];
     modalSelectedEquipName = r?.equip || null;
   } else {
-    const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
-    modalSelectedCategory = categories[0];
+    modalSelectedCategory = ALLOWED_CATS[0];
     modalSelectedEquipName = null;
   }
 
@@ -500,7 +490,15 @@ function renderEquipModal(g) {
 
 function renderEquipModalTabs(g) {
   const tabsEl = document.getElementById('modal-equip-tabs');
-  const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
+  const ALLOWED_CATEGORIES = ['합성과 제작', '기초 생산'];
+  const categories = [...new Set(EQUIPMENT_LIST
+    .filter(e => ALLOWED_CATEGORIES.includes(e.category))
+    .map(e => e.category))];
+
+  // 기본 카테고리가 허용 목록에 없으면 첫 번째로 재설정
+  if (!ALLOWED_CATEGORIES.includes(modalSelectedCategory)) {
+    modalSelectedCategory = categories[0] || null;
+  }
 
   // 대카테고리 뱃지
   const catHtml = categories.map(cat => {
@@ -914,8 +912,7 @@ function openEquipModalForPreset() {
   presetEditChangeIdx = null;
   pendingGroupId = '__preset__';
   pendingChangeRecipeId = null;
-  const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
-  modalSelectedCategory = categories[0];
+  modalSelectedCategory = '합성과 제작';
   modalSelectedEquipName = null;
   document.getElementById('modal-equip-title').textContent = '설비 추가 (프리셋)';
   renderEquipModalTabs({ equips: editingPresetEquips });
@@ -931,11 +928,11 @@ function openEquipModalForPresetChange(idx) {
   pendingChangeRecipeId = cur ? cur.recipeId : null;
   if (cur) {
     const r = RECIPES.find(r => r.id === cur.recipeId);
-    modalSelectedCategory = r?.category || null;
+    const cat = r?.category || null;
+    modalSelectedCategory = ['합성과 제작','기초 생산'].includes(cat) ? cat : '합성과 제작';
     modalSelectedEquipName = r?.equip || null;
   } else {
-    const categories = [...new Set(EQUIPMENT_LIST.map(e => e.category))];
-    modalSelectedCategory = categories[0];
+    modalSelectedCategory = '합성과 제작';
     modalSelectedEquipName = null;
   }
   document.getElementById('modal-equip-title').textContent = '레시피 변경 (프리셋)';
@@ -1031,7 +1028,7 @@ function renderIconList() {
     r.outputs.forEach(o => allItems.add(o.name));
   });
   RESOURCE_ITEMS.forEach(r => allItems.add(r.key));
-  Object.keys(AUTH_VALUE).forEach(k => allItems.add(k));
+  Object.keys(currentAuthValue()).forEach(k => allItems.add(k));
 
   const el = document.getElementById('icon-list');
   el.innerHTML = [...allItems].sort().map(name => {
@@ -1097,7 +1094,7 @@ function renderResults() {
 
     if (currentResultFilter !== 'all' && cls !== currentResultFilter) return;
 
-    const authVal = AUTH_VALUE[k];
+    const authVal = currentAuthValue()[k];
 
     html += `<div class="compact-item">
       <div style="display:flex;align-items:center;gap:6px;min-width:0;">
@@ -1210,7 +1207,7 @@ function calcOutpostAuthTotal(oId) {
 function getAuthProductRatesFromFactory(oId) {
   const totals = calcTotals(oId || activeOutpostId);
   const rates = {};
-  Object.keys(AUTH_VALUE).forEach(k => {
+  Object.keys(currentAuthValue()).forEach(k => {
     rates[k] = totals[k] ? Math.max(0, totals[k].balance) : 0;
   });
   return rates;
@@ -1218,6 +1215,23 @@ function getAuthProductRatesFromFactory(oId) {
 
 // 현재 활성 관리권 탭 거점
 let activeAuthOutpostId = OUTPOSTS[0].id;
+
+// 현재 거점의 AUTH_VALUE 반환 (거점별 구조 대응)
+function getAuthValue(oId) {
+  const id = oId || activeAuthOutpostId || activeOutpostId;
+  if (AUTH_VALUE && typeof AUTH_VALUE === 'object') {
+    // 거점별 구조인 경우
+    if (AUTH_VALUE[id]) return AUTH_VALUE[id];
+    // 하위 호환: flat 구조인 경우
+    if (!AUTH_VALUE.valley4 && !AUTH_VALUE.wuling) return AUTH_VALUE;
+  }
+  return {};
+}
+
+// 현재 활성 거점 AUTH_VALUE
+function currentAuthValue() {
+  return getAuthValue(activeAuthOutpostId || activeOutpostId);
+}
 let activeAuthTab = 'base'; // 'base' | 'product' | 'overview'
 
 // ========== 관리권 탭 렌더링 ==========
@@ -1448,7 +1462,7 @@ function updateOutpostAuthSummary(oId) {
   const factoryRates = getAuthProductRatesFromFactory(oId);
   const tr = outpostData[oId]?.targetRates || {};
   let totalConsume = 0;
-  Object.entries(AUTH_VALUE).forEach(([name, val]) => {
+  Object.entries(currentAuthValue()).forEach(([name, val]) => {
     totalConsume += val * (tr[name] || 0);
   });
   const balance = authTotal - totalConsume;
@@ -1521,7 +1535,7 @@ function renderProductsTable(el, oId, factoryRates, authTotal, tr) {
         <th>달성 여부</th>
       </tr></thead>
       <tbody>${
-        Object.entries(AUTH_VALUE).map(([name, val]) => {
+        Object.entries(currentAuthValue()).map(([name, val]) => {
           const factoryRate = factoryRates[name] || 0;
           const targetRate  = tr[name] || 0;
           const needed      = val * targetRate;
@@ -1544,7 +1558,7 @@ function renderProductsTable(el, oId, factoryRates, authTotal, tr) {
 function renderProductsCards(el, oId, factoryRates, authTotal, tr) {
   el.style.padding = '8px';
   el.style.gap = '6px';
-  el.innerHTML = Object.entries(AUTH_VALUE).map(([name, val]) => {
+  el.innerHTML = Object.entries(currentAuthValue()).map(([name, val]) => {
     const factoryRate = factoryRates[name] || 0;
     const targetRate  = tr[name] || 0;
     const needed      = val * targetRate;
@@ -1625,7 +1639,7 @@ function updateFactoryAuthBar() {
   const authTotal = calcOutpostAuthTotal(oId);
   const factoryRates = getAuthProductRatesFromFactory(oId);
   let factoryConsume = 0;
-  Object.entries(AUTH_VALUE).forEach(([name, val]) => {
+  Object.entries(currentAuthValue()).forEach(([name, val]) => {
     factoryConsume += val * (factoryRates[name] || 0);
   });
   const balance = authTotal - factoryConsume;
@@ -1659,7 +1673,7 @@ function renderOverviewTab() {
     const factoryRates = getAuthProductRatesFromFactory(o.id);
     const tr = outpostData[o.id]?.targetRates || {};
     let outpostConsume = 0;
-    Object.entries(AUTH_VALUE).forEach(([name, val]) => {
+    Object.entries(currentAuthValue()).forEach(([name, val]) => {
       outpostConsume += val * (tr[name] || 0);
     });
     totalAuthProduce += authTotal;
@@ -1667,8 +1681,8 @@ function renderOverviewTab() {
     const authBalance = authTotal - outpostConsume;
 
     const totals = calcTotals(o.id);
-    const authItems    = Object.entries(totals).filter(([k,v]) =>  AUTH_VALUE[k] && v.balance > 0.001).map(([k,v]) => ({ name:k, rate:v.balance, authCost:AUTH_VALUE[k] }));
-    const factoryItems = Object.entries(totals).filter(([k,v]) => !AUTH_VALUE[k] && v.produce > 0.001 && v.balance > 0.001).map(([k,v]) => ({ name:k, balance:v.balance }));
+    const authItems    = Object.entries(totals).filter(([k,v]) =>  currentAuthValue()[k] && v.balance > 0.001).map(([k,v]) => ({ name:k, rate:v.balance, authCost:currentAuthValue()[k] }));
+    const factoryItems = Object.entries(totals).filter(([k,v]) => !currentAuthValue()[k] && v.produce > 0.001 && v.balance > 0.001).map(([k,v]) => ({ name:k, balance:v.balance }));
     const deficitItems = Object.entries(totals).filter(([k,v]) => v.balance < -0.001).map(([k,v]) => ({ name:k, balance:v.balance }));
 
     const makeItems = (items, valueKey, color, emptyLabel) => items.length > 0
@@ -4412,7 +4426,7 @@ function updateMobileStatusBtn() {
   const authTotal    = calcOutpostAuthTotal(oId);
   const factoryRates = getAuthProductRatesFromFactory(oId);
   let   factoryConsume = 0;
-  Object.entries(AUTH_VALUE).forEach(([name, val]) => {
+  Object.entries(currentAuthValue()).forEach(([name, val]) => {
     factoryConsume += val * (factoryRates[name] || 0);
   });
   const balance  = authTotal - factoryConsume;
