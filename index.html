@@ -1031,6 +1031,13 @@ select option { background: var(--bg-popup); color: var(--text); }
         </div>
       </div>
     </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button id="theme-btn" onclick="toggleTheme()"
+        style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 8px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text-muted);font-size:11px;">
+        <svg id="theme-icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
 
   </div>
   <div class="tab-bar">
@@ -1094,24 +1101,47 @@ select option { background: var(--bg-popup); color: var(--text); }
       <!-- ① 관리권 생산량 -->
       <div id="opanel-auth-produce">
         <div class="panel" style="margin-top:0;border-top:none;border-radius:0 0 8px 8px;">
+          <!-- 거점 선택 탭 -->
+          <div style="padding:8px 12px 0;" id="auth-outpost-tabs"></div>
+          <!-- 관리권 패널 -->
           <div id="auth-outpost-panel"></div>
         </div>
       </div>
 
       <!-- ② 천연자원 생산량 -->
       <div id="opanel-resource" style="display:none;">
-        <div id="outpost-resource-panel"></div>
+        <div class="panel" style="margin-top:0;border-top:none;">
+          <div style="padding:4px 8px 0;font-size:10px;color:var(--text-muted);font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;">※ 공장 생산 계획 탭의 천연 자원 입력과 동일합니다</div>
+          <div id="resource-inputs-sub" style="padding:8px;"></div>
+        </div>
       </div>
 
       <!-- ③ 관리권 소모 계산 -->
       <div id="opanel-auth-consume" style="display:none;">
-        <div id="outpost-consume-panel"></div>
+        <div class="panel" style="margin-top:0;border-top:none;">
+          <div style="display:flex;border-bottom:1px solid var(--border);">
+            <div class="inner-tab active" id="atab-base" onclick="switchAuthTab('base')">◈ 거점 관리권 생산량</div>
+            <div class="inner-tab" id="atab-product" onclick="switchAuthTab('product')">📦 생산품별 관리권 소모</div>
+          </div>
+          <div id="auth-inner-base">
+            <div id="base-config-wrap">
+              <div id="base-config"></div>
+            </div>
+          </div>
+          <div id="auth-inner-product" style="display:none;">
+            <div id="auth-products-panel"></div>
+          </div>
+          <div id="outpost-consume-panel"></div>
+        </div>
       </div>
 
       <!-- ④ 공장 생산 계획 -->
       <div id="opanel-factory" style="display:none;">
-        <!-- 기존 factory 탭 내용 이동 -->
-        <div id="mobile-status-btn-wrap" style="display:none;margin:12px 0;">
+        <!-- 거점 선택 탭 -->
+        <div style="display:flex;gap:6px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px;" id="factory-outpost-tabs"></div>
+
+        <!-- 모바일 전용: 현황 보기 버튼 -->
+        <div id="mobile-status-btn-wrap" style="display:none;margin-bottom:12px;">
           <button onclick="openStatusDrawer()"
             style="width:100%;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;
               color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;
@@ -1120,12 +1150,135 @@ select option { background: var(--bg-popup); color: var(--text); }
               <span style="color:var(--accent2);font-weight:700;">◈</span>
               <span id="mobile-auth-summary" style="color:var(--text-muted);">관리권 현황</span>
             </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <span style="display:flex;align-items:center;gap:10px;">
+              <span id="mobile-deficit-badge" style="display:none;font-size:11px;color:var(--danger);font-weight:700;"></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
           </button>
         </div>
-        <div id="factory-calc-root"></div>
+
+        <!-- 모바일 드로어 -->
+        <div id="status-drawer-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);" onclick="if(event.target===this)closeStatusDrawer()">
+          <div id="status-drawer" style="position:absolute;bottom:0;left:0;right:0;
+            background:var(--surface);border-radius:16px 16px 0 0;border-top:1px solid var(--border);
+            max-height:80vh;display:flex;flex-direction:column;overflow:hidden;
+            transform:translateY(100%);transition:transform 0.3s ease;">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+              <span style="font-size:13px;font-weight:700;color:var(--accent);">📊 생산 현황</span>
+              <button onclick="closeStatusDrawer()" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;">×</button>
+            </div>
+            <div style="overflow-y:auto;flex:1;padding:0;" id="drawer-results-grid"></div>
+          </div>
+        </div>
+
+        <!-- 공장 계산기 메인 레이아웃 -->
+        <div class="calc-layout">
+          <!-- 왼쪽: 설비 설정 -->
+          <div class="factory-sticky-wrap">
+            <div class="panel">
+              <div style="display:flex;border-bottom:1px solid var(--border);">
+                <div class="inner-tab active" id="itab-resource" onclick="switchInnerTab('resource')">⛏ 천연 자원</div>
+                <div class="inner-tab" id="itab-equip" onclick="switchInnerTab('equip')">⚙ 공업생산품</div>
+              </div>
+              <!-- 천연 자원 탭 -->
+              <div id="inner-resource">
+                <div id="resource-config-wrap">
+                  <div style="padding:4px 8px 0;font-size:10px;color:var(--text-muted);font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;">분당 총 생산량 직접 입력</div>
+                  <div id="resource-inputs"></div>
+                </div>
+                <button class="toggle-btn" id="resource-toggle-btn" onclick="toggleResourceConfig()">▲ 접기</button>
+              </div>
+              <!-- 공업생산품 탭 -->
+              <div id="inner-equip" style="display:none;">
+                <div class="panel-header" style="justify-content:space-between;border-top:none;">
+                  <span class="badge badge-cyan" id="active-count">0개 가동</span>
+                  <span style="font-size:10px;color:var(--text-muted);" id="add-equip-count"></span>
+                  <button class="btn" onclick="resetAll()">초기화</button>
+                </div>
+                <div class="filter-bar">
+                  <span class="filter-label">설비:</span>
+                  <button class="filter-btn active" onclick="filterEquip(this,'all')">전체</button>
+                  <button class="filter-btn" onclick="filterEquip(this,'천화로')">천화로</button>
+                  <button class="filter-btn" onclick="filterEquip(this,'반응기')">반응기</button>
+                  <button class="filter-btn" onclick="filterEquip(this,'포장기')">포장기</button>
+                  <button class="filter-btn" onclick="filterEquip(this,'기타')">기타</button>
+                </div>
+                <div class="settings-list" id="recipe-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 오른쪽: 현황 고정 -->
+          <div class="factory-right-fixed">
+            <!-- 관리권 생산 소모 현황 -->
+            <div class="auth-status-bar" id="factory-auth-bar">
+              <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid var(--border);width:100%;">
+                관리권 생산 소모 현황
+                <span id="fab-outpost-label" style="font-weight:400;color:var(--text-muted);margin-left:4px;"></span>
+              </div>
+              <div class="auth-status-item" style="width:100%;justify-content:space-between;">
+                <span class="auth-status-label">◈ 무릉 생산</span>
+                <div style="display:flex;align-items:center;gap:3px;">
+                  <span class="auth-status-val accent" id="fab-outpost-produce">0</span>
+                  <span class="auth-status-unit">/분</span>
+                </div>
+              </div>
+              <div class="auth-status-item" style="width:100%;justify-content:space-between;">
+                <span class="auth-status-label">소모</span>
+                <div style="display:flex;align-items:center;gap:3px;">
+                  <span class="auth-status-val negative" id="fab-outpost-consume">0</span>
+                  <span class="auth-status-unit">/분</span>
+                </div>
+              </div>
+              <div class="auth-status-item" style="width:100%;justify-content:space-between;">
+                <span class="auth-status-label">잔여</span>
+                <div style="display:flex;align-items:center;gap:3px;">
+                  <span class="auth-status-val" id="fab-outpost-balance">0</span>
+                  <span class="auth-status-unit">/분</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 재료 생산 소모 현황 -->
+            <div class="panel" style="border-radius:0 0 8px 8px;border-top:none;display:flex;flex-direction:column;flex:1;overflow:hidden;">
+              <div style="flex-shrink:0;border-bottom:1px solid var(--border);background:rgba(0,200,255,0.03);">
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 12px 6px;">
+                  <div class="panel-dot" style="background:var(--accent3);box-shadow:0 0 6px var(--accent3);"></div>
+                  <h2 style="font-size:12px;font-weight:600;letter-spacing:0.05em;color:var(--accent);">재료 생산 소모 현황</h2>
+                </div>
+                <div id="result-filter-bar" style="display:flex;gap:4px;padding:0 10px 8px;">
+                  <button class="filter-btn active" id="show-all-btn" onclick="filterResult(this,'all')" style="flex:1;padding:3px 0;font-size:10px;">전체</button>
+                  <button class="filter-btn" onclick="filterResult(this,'deficit')" style="flex:1;padding:3px 0;">🔴</button>
+                  <button class="filter-btn" onclick="filterResult(this,'surplus')" style="flex:1;padding:3px 0;">🟢</button>
+                  <button class="filter-btn" onclick="filterResult(this,'balanced')" style="flex:1;padding:3px 0;">🔵</button>
+                </div>
+              </div>
+              <div id="results-grid" class="compact-results">
+                <div class="empty-state" style="padding:24px;">
+                  <div class="icon">🏭</div>
+                  설비 수량을 입력하면<br>현황이 표시됩니다
+                </div>
+              </div>
+              <div class="summary-bar" id="summary-bar" style="display:none;flex-shrink:0;">
+                <div class="summary-item">
+                  <span class="summary-label">부족</span>
+                  <span class="summary-value negative" id="deficit-count">0</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">잉여</span>
+                  <span class="summary-value positive" id="surplus-count">0</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">균형</span>
+                  <span class="summary-value accent" id="balanced-count">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 중앙: 생산 그룹 -->
+          <div id="workspace"></div>
+        </div>
       </div>
 
     </div>
