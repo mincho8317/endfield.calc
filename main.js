@@ -3601,14 +3601,18 @@ function renderWeaponFarming() {
   if (!wikiWeapon) return;
 
   // WEAPON_DATA에서 기질/오퍼레이터/등급 정보 조회
-  const w = WEAPON_DATA.find(d => d.name === wikiWeapon.name) || {
+  const wdMatch = WEAPON_DATA.find(d => d.name === wikiWeapon.name);
+
+  // trait1/2/3 → primary/secondary/skill 매핑
+  const stripSize = s => s ? s.replace(/\xa0/g,' ').trim().replace(/\s*·\s*(대|중|소)$/, '') : '';
+  const w = {
     name: wikiWeapon.name,
-    rarity: null,
-    type: wikiWeapon.type,
-    operator: null,
-    primary: null,
-    secondary: null,
-    skill: null,
+    rarity: wdMatch?.rarity || null,
+    type: wikiWeapon.type || wdMatch?.type || '',
+    operator: wdMatch?.operator || null,
+    primary:   wikiWeapon.trait1 ? stripSize(wikiWeapon.trait1.label) : (wdMatch?.primary || null),
+    secondary: wikiWeapon.trait2 ? stripSize(wikiWeapon.trait2.label) : (wdMatch?.secondary || null),
+    skill:     wikiWeapon.trait3 ? (wikiWeapon.trait3.keyword || stripSize(wikiWeapon.trait3.label)) : (wdMatch?.skill || null),
   };
 
   if (!w.primary && !w.secondary && !w.skill) {
@@ -3662,11 +3666,11 @@ function renderWeaponFarming() {
     ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬을 드롭하는 파밍처가 없어요 — 데이터를 확인해주세요</div>`
     : alluviums.map(a => {
         // 한번에 파밍 가능한 무기: 같은 파밍처에서 스킬이 드롭되는 다른 무기
-        const bundleWeapons = WEAPON_DATA.filter(bw =>
-          bw !== w &&
-          bw.skill &&
-          a.skills.includes(bw.skill)
-        );
+        const bundleWeapons = (window.WEAPONS || []).filter(bw => {
+          if (bw.name === wikiWeapon.name) return false;
+          const bwSkill = bw.trait3 ? (bw.trait3.keyword || stripSize(bw.trait3.label)) : null;
+          return bwSkill && a.skills.includes(bwSkill);
+        });
 
         const bundleHtml = bundleWeapons.length > 0
           ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.09);">
@@ -3674,7 +3678,7 @@ function renderWeaponFarming() {
                 📦 한번에 파밍 가능한 무기 (${bundleWeapons.length}개)
               </div>
               <div style="display:flex;flex-direction:column;gap:4px;">
-                ${bundleWeapons.map(bw => weaponCard(bw, null, null, bw.skill)).join('')}
+                ${bundleWeapons.map(bw => wikiWeaponCard(bw, null, null, bw.trait3?.keyword)).join('')}
               </div>
             </div>`
           : `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);">이 장소에서 함께 파밍 가능한 다른 무기 없음</div>`;
