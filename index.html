@@ -1064,14 +1064,16 @@ select option { background: var(--bg-popup); color: var(--text); }
     <div id="tab-outpost" class="page-view active">
 
       <!-- 상단: 협곡/무릉 뱃지 + 서브탭 (sticky) -->
-      <div style="position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;gap:6px;flex-shrink:0;" id="outpost-badge-wrap"></div>
-        <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
-        <div style="display:flex;gap:2px;flex-wrap:wrap;" id="outpost-inner-tabs">
-          <div class="inner-tab active" id="otab-auth-produce" onclick="switchOutpostTab('auth-produce')">① 관리권 생산량</div>
-          <div class="inner-tab" id="otab-resource" onclick="switchOutpostTab('resource')">② 천연자원 생산량</div>
-          <div class="inner-tab" id="otab-auth-consume" onclick="switchOutpostTab('auth-consume')">③ 관리권 소모 계산</div>
-          <div class="inner-tab" id="otab-factory" onclick="switchOutpostTab('factory')">④ 공장 생산 계획</div>
+      <div style="position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:0;flex-wrap:wrap;">
+        <!-- 협곡/무릉 뱃지 -->
+        <div style="display:flex;gap:6px;flex-shrink:0;padding:8px 0;" id="outpost-badge-wrap"></div>
+        <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 12px;"></div>
+        <!-- 서브탭 - 기존 inner-tab 스타일 그대로 -->
+        <div style="display:flex;gap:0;flex:1;" id="outpost-inner-tabs">
+          <div class="inner-tab active" id="otab-auth-produce" onclick="switchOutpostTab('auth-produce')" style="flex:none;padding:10px 16px;">① 관리권 생산량</div>
+          <div class="inner-tab" id="otab-resource" onclick="switchOutpostTab('resource')" style="flex:none;padding:10px 16px;">② 천연자원 생산량</div>
+          <div class="inner-tab" id="otab-auth-consume" onclick="switchOutpostTab('auth-consume')" style="flex:none;padding:10px 16px;">③ 관리권 소모 계산</div>
+          <div class="inner-tab" id="otab-factory" onclick="switchOutpostTab('factory')" style="flex:none;padding:10px 16px;">④ 공장 생산 계획</div>
         </div>
       </div>
 
@@ -1178,14 +1180,6 @@ select option { background: var(--bg-popup); color: var(--text); }
                 <span class="badge badge-cyan" id="active-count">0개 가동</span>
                 <span style="font-size:10px;color:var(--text-muted);" id="add-equip-count"></span>
                 <button class="btn" onclick="resetAll()">초기화</button>
-              </div>
-              <div class="filter-bar">
-                <span class="filter-label">설비:</span>
-                <button class="filter-btn active" onclick="filterEquip(this,'all')">전체</button>
-                <button class="filter-btn" onclick="filterEquip(this,'천화로')">천화로</button>
-                <button class="filter-btn" onclick="filterEquip(this,'반응기')">반응기</button>
-                <button class="filter-btn" onclick="filterEquip(this,'포장기')">포장기</button>
-                <button class="filter-btn" onclick="filterEquip(this,'기타')">기타</button>
               </div>
               <div class="settings-list" id="recipe-list"></div>
             </div>

@@ -233,7 +233,24 @@ function renderWorkspace() {
   if (!ws) return;
   const gs = od().groups;
 
-  // 상단 그룹 추가 버튼 항상 표시
+  if (gs.length === 0) {
+    ws.innerHTML = `<div class="empty-state" style="padding:32px;">
+    <div class="icon">🏭</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비 그룹이 없어요</div>
+    <div style="font-size:11px;color:var(--text-label);line-height:1.8;text-align:left;display:inline-block;">
+      1️⃣ 오른쪽 설비 목록에서 설비를 선택하고<br>
+      2️⃣ <b>+ 그룹 추가</b> 버튼으로 그룹을 만들어<br>
+      3️⃣ 설비 <b>수량을 입력</b>하면 생산량이 계산돼요
+    </div>
+    <button class="btn btn-primary" onclick="addGroup()" style="margin-top:16px;font-size:13px;padding:8px 20px;">
+      + 그룹 추가
+    </button>
+  </div>`;
+    updateActiveCount();
+    return;
+  }
+
+  // 그룹이 있을 때: 상단에 그룹 추가 버튼
   const addBtn = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
     <button class="btn btn-primary" onclick="addGroup()" style="font-size:12px;display:flex;align-items:center;gap:5px;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -241,19 +258,6 @@ function renderWorkspace() {
     </button>
   </div>`;
 
-  if (gs.length === 0) {
-    ws.innerHTML = addBtn + `<div class="empty-state" style="padding:32px;">
-    <div class="icon">🏭</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비가 없어요</div>
-    <div style="font-size:11px;color:var(--text-label);line-height:1.8;text-align:left;display:inline-block;">
-      1️⃣ <b>+ 그룹 추가</b> 버튼으로 그룹을 만들고<br>
-      2️⃣ 그룹 안의 <b>+ 설비 추가</b>로 설비를 선택한 뒤<br>
-      3️⃣ 설비 <b>수량을 입력</b>하면 생산량이 계산돼요
-    </div>
-  </div>`;
-    updateActiveCount();
-    return;
-  }
   ws.innerHTML = addBtn + gs.map(g => renderGroupHTML(g)).join('');
   updateActiveCount();
 }
@@ -1246,7 +1250,6 @@ function renderAuthOutpostPanel(oId) {
   const fmt = n => Number.isFinite(n) ? n.toFixed(2) : '—';
 
   panel.innerHTML = `
-    <!-- 거점명 + 총 분당 관리권 -->
     <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(240,200,22,0.04);">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${outpost?.name || oId}</div>
       <div style="display:flex;align-items:baseline;gap:8px;">
@@ -1254,26 +1257,9 @@ function renderAuthOutpostPanel(oId) {
         <span style="font-size:12px;color:var(--text-muted);">/분</span>
       </div>
     </div>
-    <!-- 내부 탭: 관리권 생산 계산 / 관리권 교환 계산 -->
-    <div style="display:flex;border-bottom:1px solid var(--border);">
-      <div class="inner-tab active" id="atab-base-${oId}" onclick="switchOutpostInnerTab('base','${oId}')">◈ 관리권 생산 계산</div>
-      <div class="inner-tab" id="atab-product-${oId}" onclick="switchOutpostInnerTab('product','${oId}')">🔄 관리권 교환 계산</div>
-    </div>
-    <div id="auth-inner-base-${oId}">
-      <div id="base-config-${oId}"></div>
-    </div>
-    <div id="auth-inner-product-${oId}" style="display:none;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:10px;color:var(--text-muted);">목표 분당 생산량을 입력하면 관리권 소모량과 달성 가능 여부를 계산합니다</span>
-        <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;flex-shrink:0;" onclick="autoCalcFactory('${oId}')">
-          ⚙ 공장 설비 자동 계산
-        </button>
-      </div>
-      <div id="auth-product-body-${oId}" style="padding:8px;display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
+    <div id="base-config-${oId}"></div>
   `;
   renderOutpostBaseConfig(oId);
-  renderOutpostProducts(oId);
   updateOutpostAuthSummary(oId);
 }
 
