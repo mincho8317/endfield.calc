@@ -232,8 +232,17 @@ function renderWorkspace() {
   const ws = document.getElementById('workspace');
   if (!ws) return;
   const gs = od().groups;
+
+  // 상단 그룹 추가 버튼 항상 표시
+  const addBtn = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <button class="btn btn-primary" onclick="addGroup()" style="font-size:12px;display:flex;align-items:center;gap:5px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      그룹 추가
+    </button>
+  </div>`;
+
   if (gs.length === 0) {
-    ws.innerHTML = `<div class="empty-state" style="padding:32px;">
+    ws.innerHTML = addBtn + `<div class="empty-state" style="padding:32px;">
     <div class="icon">🏭</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:8px;">아직 설비가 없어요</div>
     <div style="font-size:11px;color:var(--text-label);line-height:1.8;text-align:left;display:inline-block;">
@@ -245,7 +254,7 @@ function renderWorkspace() {
     updateActiveCount();
     return;
   }
-  ws.innerHTML = gs.map(g => renderGroupHTML(g)).join('');
+  ws.innerHTML = addBtn + gs.map(g => renderGroupHTML(g)).join('');
   updateActiveCount();
 }
 
@@ -1850,11 +1859,10 @@ function renderOutpostBadges() {
 }
 
 function switchOutpostOutpost(oId) {
-  // 협곡/무릉 뱃지 선택 → 두 거점 모두 동기화
   activeOutpostId = oId;
   activeAuthOutpostId = oId;
   renderOutpostBadges();
-  // 현재 서브탭에 맞게 렌더링
+  // 현재 열린 서브탭 내용 갱신
   switchOutpostTab(_currentOutpostTab || 'auth-produce');
 }
 
@@ -1882,13 +1890,9 @@ function switchOutpostTab(tab) {
     renderResourceInputs();
   }
   if (tab === 'auth-consume') {
-    // ③ 관리권 소모 계산
-    renderAuthConsumeOutpostTabs();
     renderAuthConsumePanelContent(activeAuthOutpostId);
   }
   if (tab === 'factory') {
-    // ④ 공장 생산 계획: 기존 공업생산품 + 결과
-    renderFactoryOutpostTabs();
     renderWorkspace();
     renderResults();
     updateFactoryAuthBar();
