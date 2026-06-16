@@ -1823,8 +1823,10 @@ var _currentOutpostTab = 'auth-produce';
 function renderOutpostBadges() {
   const el = document.getElementById('outpost-badge-wrap');
   if (!el) return;
+  // 관리권/공장 모두 activeAuthOutpostId 기준으로 표시
+  const currentId = activeAuthOutpostId || activeOutpostId;
   el.innerHTML = OUTPOSTS.map(o => {
-    const isActive = o.id === activeOutpostId;
+    const isActive = o.id === currentId;
     return `<button onclick="switchOutpostOutpost('${o.id}')"
       style="padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer;
         border-radius:9999px;border:2px solid ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.15)'};
@@ -1837,14 +1839,12 @@ function renderOutpostBadges() {
 }
 
 function switchOutpostOutpost(oId) {
+  // 협곡/무릉 뱃지 선택 → 두 거점 모두 동기화
   activeOutpostId = oId;
-  // 공장 생산도 같은 거점 사용
+  activeAuthOutpostId = oId;
   renderOutpostBadges();
-  renderResourceInputs();
-  renderWorkspace();
-  renderResults();
-  updateFactoryAuthBar();
-  renderAuthOutpostPanel();
+  // 현재 서브탭에 맞게 렌더링
+  switchOutpostTab(_currentOutpostTab || 'auth-produce');
 }
 
 function switchOutpostTab(tab) {
@@ -1857,27 +1857,28 @@ function switchOutpostTab(tab) {
     if (btn) btn.classList.toggle('active', p === tab);
   });
 
-  // 각 탭 초기화
-  if (tab === 'auth-produce') renderAuthOutpostPanel();
-  if (tab === 'resource') renderResourceInputs();
-  if (tab === 'auth-consume') renderAuthConsumePanel();
-  if (tab === 'factory') {
+  if (tab === 'auth-produce') {
+    renderAuthOutpostTabs();
+    switchAuthView('outpost', activeAuthOutpostId);
+  }
+  if (tab === 'resource') {
+    renderFactoryOutpostTabs();
+    renderResourceInputs();
+  }
+  if (tab === 'auth-consume') {
+    renderFactoryOutpostTabs();
+    renderResourceInputs();
     renderWorkspace();
     renderResults();
+    renderAuthProducts();
   }
-}
-
-function renderAuthOutpostPanel() {
-  // 기존 관리권 패널 렌더링 (auth-outpost-panel → opanel-auth-produce 안으로)
-  const panel = document.getElementById('auth-outpost-panel');
-  if (panel) renderAuthProducts();
-}
-
-function renderAuthConsumePanel() {
-  const el = document.getElementById('outpost-consume-panel');
-  if (!el) return;
-  // 기존 auth inner tab 'product' 내용 렌더링
-  renderAuthProducts();
+  if (tab === 'factory') {
+    renderFactoryOutpostTabs();
+    renderResourceInputs();
+    renderWorkspace();
+    renderResults();
+    updateFactoryAuthBar();
+  }
 }
 
 // ========== 공장 거점 선택 탭 ==========
@@ -1904,23 +1905,6 @@ function switchOutpost(oId) {
   renderWorkspace();
   renderResults();
   updateFactoryAuthBar();
-}
-
-// ========== 관리권 거점 선택 탭 ==========
-function renderAuthOutpostTabs() {
-  const tabsEl = document.getElementById('auth-outpost-tabs');
-  if (!tabsEl) return;
-  tabsEl.innerHTML = OUTPOSTS.map(o => {
-    const isActive = activeAuthOutpostId === o.id;
-    return `<button onclick="switchAuthView('outpost','${o.id}')"
-      style="padding:7px 22px;font-size:12px;font-weight:600;cursor:pointer;
-        border-radius:9999px;border:1px solid ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.1)'};
-        background:${isActive ? 'var(--accent)' : 'transparent'};
-        color:${isActive ? 'var(--accent-text)' : 'var(--text-label)'};
-        font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;">
-      ${o.name}
-    </button>`;
-  }).join('');
 }
 
 function resetAll() {
@@ -4616,22 +4600,14 @@ function dialogPrompt(message, defaultValue = '') {
 
 loadTheme();
 loadData();
-loadFromURL(); // URL 공유 파라미터가 있으면 덮어씀
+loadFromURL();
 loadCustomIcons();
 renderOutpostBadges();
-renderFactoryOutpostTabs();
-renderResourceInputs();
-renderWorkspace();
-renderResults();
-updateFactoryAuthBar();
-updateMobileStatusBtn();
-renderAuthOutpostTabs();
-switchAuthView('outpost', activeAuthOutpostId);
 renderOperatorList();
 renderOperatorConfig();
 renderOperatorTotal();
 initEssenceTab();
-// 거점 운영 탭 초기화
+// 거점 운영 탭 초기화 (관리권 생산량이 기본)
 switchOutpostTab('auth-produce');
-// 첫 방문 시 투어 시작 (약간 딜레이로 UI 완전 렌더 후)
+// 첫 방문 시 투어 시작
 setTimeout(() => startTour(), 600);
