@@ -1174,17 +1174,25 @@ select option { background: var(--bg-popup); color: var(--text); }
 
         <!-- 공업생산품 + 결과 패널 -->
         <div class="calc-layout">
-          <div class="factory-sticky-wrap">
-            <div class="panel">
-              <div class="panel-header" style="justify-content:space-between;border-top:none;">
-                <span class="badge badge-cyan" id="active-count">0개 가동</span>
-                <span style="font-size:10px;color:var(--text-muted);" id="add-equip-count"></span>
-                <button class="btn" onclick="resetAll()">초기화</button>
+
+          <!-- 왼쪽(중앙): 설비 선택 + 그룹/설비 작업 -->
+          <div>
+            <!-- 설비 선택 리스트 (sticky) -->
+            <div class="factory-sticky-wrap" style="margin-bottom:12px;">
+              <div class="panel">
+                <div class="panel-header" style="justify-content:space-between;border-top:none;">
+                  <span class="badge badge-cyan" id="active-count">0개 가동</span>
+                  <span style="font-size:10px;color:var(--text-muted);" id="add-equip-count"></span>
+                  <button class="btn" onclick="resetAll()">초기화</button>
+                </div>
+                <div class="settings-list" id="recipe-list"></div>
               </div>
-              <div class="settings-list" id="recipe-list"></div>
             </div>
+            <!-- 그룹/설비 작업 영역 -->
+            <div id="workspace"></div>
           </div>
 
+          <!-- 오른쪽: 관리권 + 재료 현황 -->
           <div class="factory-right-fixed">
             <div class="auth-status-bar" id="factory-auth-bar">
               <div style="font-size:10px;font-weight:700;color:var(--accent2);letter-spacing:0.08em;padding-bottom:6px;border-bottom:1px solid var(--border);width:100%;">
@@ -1249,11 +1257,8 @@ select option { background: var(--bg-popup); color: var(--text); }
             </div>
           </div>
 
-          <div id="workspace"></div>
         </div>
       </div>
-
-    </div>
 
     <!-- 기존 authority/factory (JS 호환성 유지) -->
     <div id="tab-authority" class="page-view" style="display:none!important;"></div>
