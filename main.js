@@ -3539,9 +3539,9 @@ function initEssenceTab() {
     t3.map(s => ({ value: s, label: s })),
     '', () => renderEssenceCheck(), '— 특성③ 선택 (고유) —');
   createCustomSelect('cs-ew-select',
-    WEAPON_DATA.map((w, i) => ({
+    (window.WEAPONS || []).map((w, i) => ({
       value: String(i),
-      label: `★${w.rarity} ${w.operator}${w.name !== '(미확인)' ? ' · ' + w.name : ''} (${w.type})`
+      label: `${w.name} (${w.type || ''})`
     })),
     '', () => renderWeaponFarming(), '— 무기 선택 —');
 }
@@ -3595,16 +3595,29 @@ function renderWeaponFarming() {
   const idx = document.getElementById('cs-ew-select')?._csSelected;
   const el  = document.getElementById('ew-result');
   if (!el || idx === '') return;
-  const w = WEAPON_DATA[parseInt(idx)];
-  if (!w) return;
+
+  // WEAPONS(공식 위키) 기반
+  const wikiWeapon = (window.WEAPONS || [])[parseInt(idx)];
+  if (!wikiWeapon) return;
+
+  // WEAPON_DATA에서 기질/오퍼레이터/등급 정보 조회
+  const w = WEAPON_DATA.find(d => d.name === wikiWeapon.name) || {
+    name: wikiWeapon.name,
+    rarity: null,
+    type: wikiWeapon.type,
+    operator: null,
+    primary: null,
+    secondary: null,
+    skill: null,
+  };
 
   if (!w.primary && !w.secondary && !w.skill) {
     el.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="icon">⚠</div>이 무기의 기질 데이터가 아직 미확인이에요<br><span style="font-size:11px;color:var(--text-label);">엑셀 DB에 입력 후 반영해주세요</span></div>`;
     return;
   }
 
-  // 0. WEAPONS(공식 위키) trait1/2/3
-  const wikiData = (window.WEAPONS || []).find(wd => wd.name === w.name);
+  // 0. WEAPONS(공식 위키) trait1/2/3 - 이미 wikiWeapon이 있으므로 직접 사용
+  const wikiData = wikiWeapon;
   const wikiTraitHtml = wikiData ? `
     <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:10px 12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.08);">
       <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;margin-bottom:8px;letter-spacing:0.08em;">무기 특성</div>
@@ -3698,10 +3711,10 @@ function renderWeaponFarming() {
   el.innerHTML = `
     <!-- 무기 헤더 -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-      <span style="font-size:18px;font-weight:700;color:${rarityColor(w.rarity)};">★${w.rarity}</span>
+      ${w.rarity ? `<span style="font-size:18px;font-weight:700;color:${rarityColor(w.rarity)};">★${w.rarity}</span>` : ''}
       <div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);">${w.operator}</div>
-        <div style="font-size:11px;color:var(--text-label);">${w.type}${w.name !== '(미확인)' ? ' · '+w.name : ''}</div>
+        ${w.operator ? `<div style="font-size:14px;font-weight:700;color:var(--text);">${w.operator}</div>` : ''}
+        <div style="font-size:${w.operator ? '11' : '14'}px;font-weight:${w.operator ? '400' : '700'};color:${w.operator ? 'var(--text-label)' : 'var(--text)'};">${wikiWeapon.type || w.type || ''}${w.name !== '(미확인)' ? ' · '+w.name : ''}</div>
       </div>
     </div>
 
