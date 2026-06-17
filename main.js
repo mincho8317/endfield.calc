@@ -3555,10 +3555,16 @@ function initEssenceTab() {
   createCustomSelect('cs-ec-skill',
     t3.map(s => ({ value: s, label: s })),
     '', () => renderEssenceCheck(), '— 스킬 속성 선택 —');
+  const sortedWeapons = [...(window.WEAPONS || [])].sort((a, b) => {
+    if ((b.rarity||0) !== (a.rarity||0)) return (b.rarity||0) - (a.rarity||0); // 등급 내림차순
+    const typeCmp = (a.type||'').localeCompare(b.type||'', 'ko');
+    if (typeCmp !== 0) return typeCmp; // 유형 가나다순
+    return (a.name||'').localeCompare(b.name||'', 'ko'); // 이름 가나다순
+  });
   createCustomSelect('cs-ew-select',
-    (window.WEAPONS || []).map((w, i) => ({
-      value: String(i),
-      label: `${w.name} (${w.type || ''})`
+    sortedWeapons.map((w) => ({
+      value: String((window.WEAPONS || []).indexOf(w)),
+      label: `★${w.rarity||'?'} ${w.name} (${w.type || ''})`
     })),
     '', () => renderWeaponFarming(), '— 무기 선택 —');
 }
@@ -3701,23 +3707,26 @@ function renderWeaponFarming() {
   const alluviumsHtml = (notFoundSkill
     ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬 속성을 드롭하는 고위 에너지 응집점이 없어요 — 데이터를 확인해주세요</div>`
     : alluviums.map(a => {
-        // 한번에 파밍 가능한 무기: 같은 고위 에너지 응집점에서 스킬 속성이 드롭되는 다른 무기
+        // 한번에 파밍하면 좋은 무기: 스킬 속성 동일 + 추가 속성이 이 응집점의 trait2 풀에 포함
         const bundleWeapons = (window.WEAPONS || []).filter(bw => {
           if (bw.name === wikiWeapon.name) return false;
           const bwSkill = bw.trait3 ? (bw.trait3.keyword || stripSize(bw.trait3.label)) : null;
-          return bwSkill && a.skills.includes(bwSkill);
+          const bwSecondary = bw.trait2 ? stripSize(bw.trait2.label) : null;
+          const skillMatch = bwSkill && a.skills.includes(bwSkill);
+          const secondaryAvailable = bwSecondary && (a.trait2 || []).includes(bwSecondary);
+          return skillMatch && secondaryAvailable;
         });
 
         const bundleHtml = bundleWeapons.length > 0
           ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.09);">
               <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:6px;">
-                📦 한번에 파밍 가능한 무기 (${bundleWeapons.length}개)
+                📦 같이 파밍하면 좋은 무기 (${bundleWeapons.length}개)
               </div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 ${bundleWeapons.map(bw => wikiWeaponCard(bw, null, null, bw.trait3?.keyword)).join('')}
               </div>
             </div>`
-          : `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);">이 장소에서 함께 파밍 가능한 다른 무기 없음</div>`;
+          : `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);">이 장소에서 같이 파밍하면 좋은 무기 없음</div>`;
 
         const isRecommended = bundleWeapons.length > 0;
 
