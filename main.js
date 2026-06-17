@@ -2729,8 +2729,8 @@ function renderOperatorConfig() {
         <span style="font-size:11px;font-weight:700;color:var(--text);">⚔ ${weaponName}</span>
         <span style="font-size:10px;color:var(--text-muted);">${weaponData.type || ''}</span>
       </div>
-      ${renderTrait(weaponData.trait1, '#4fc3f7', '1번 특성 · 능력치')}
-      ${renderTrait(weaponData.trait2, '#b39ddb', '2번 특성 · 스탯')}
+      ${renderTrait(weaponData.trait1, '#4fc3f7', '주 속성')}
+      ${renderTrait(weaponData.trait2, '#b39ddb', '추가 속성')}
       ${t3Html}`;
   })() : `<div style="color:var(--text-muted);font-size:11px;padding:4px 0;">무기 정보 없음</div>`;
 
@@ -3436,7 +3436,7 @@ function renderFarmingGuide() {
       </div>
     </div>
     <div style="margin-top:10px;font-size:10px;color:var(--text-muted);border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">
-      ※ 이성 수치는 가장 효율 좋은 파밍처 기준 추정값입니다 (하루 240이성 = 자연회복 200 + 일일퀘스트 이성회복제 40). 볼레테·희귀 재료는 이성 외 탐색 시간도 필요합니다.
+      ※ 이성 수치는 가장 효율 좋은 고위 에너지 응집점 기준 추정값입니다 (하루 240이성 = 자연회복 200 + 일일퀘스트 이성회복제 40). 볼레테·희귀 재료는 이성 외 탐색 시간도 필요합니다.
     </div>
   </div>`;
 
@@ -3444,18 +3444,35 @@ function renderFarmingGuide() {
 }
 
 // ========== 기질(Essence) 파밍 데이터 ==========
-// 파밍처 (강화 에너지 충적지) — 스킬만 장소마다 고정, 주속성·보조속성은 전체 공통
+// 고위 에너지 응집점 — 스킬 속성만 장소마다 고정, 주 속성·추가 속성은 전체 공통
+// trait1(주 속성)은 모든 고위 에너지 응집점 공통: 민첩 증가, 힘 증가, 의지 증가, 지능 증가, 주요 능력치 증가
+const ALLUVIUM_TRAIT1 = ['민첩 증가','힘 증가','의지 증가','지능 증가','주요 능력치 증가'];
+
 const ALLUVIUMS = [
-  { id:'science_park', region:'4번 협곡', name:'오리지늄 사이언스 파크',
-    skills:['강습','억압','추격','분쇄','전투','기폭','흐름','효능'] },
-  { id:'lodespring',   region:'4번 협곡', name:'오리진 로드스프링',
-    skills:['억압','추격','고무','전투','주입','치료','파열','효능'] },
-  { id:'power_plateau',region:'4번 협곡', name:'파워 플래토',
-    skills:['강습','억압','전투','잔혹','주입','기폭','황혼','효능'] },
-  { id:'the_hub',      region:'4번 협곡', name:'더 허브',
-    skills:['추격','분쇄','고무','잔혹','주입','치료','파열','흐름'] },
-  { id:'wuling_city',  region:'무릉',     name:'우링 시티',
-    skills:['강습','분쇄','잔혹','치료','파열','기폭','황혼','흐름'] },
+  { id:'base_zone',      region:'4번 협곡', name:'거점 지역',
+    trait2:['공격력 증가','열기 피해 증가','전기 피해 증가','냉기 피해 증가','자연 피해 증가','오리지늄 아츠 강도 증가','궁극기 충전 효율 증가','아츠 피해 증가'],
+    skills:['강공','억제','추격','분쇄','기예','방출','흐름','효율'] },
+  { id:'research_zone',  region:'4번 협곡', name:'오리지늄 연구 구역',
+    trait2:['공격력 증가','물리 피해 증가','전기 피해 증가','냉기 피해 증가','자연 피해 증가','치명타 확률 증가','궁극기 충전 효율 증가','아츠 피해 증가'],
+    skills:['억제','추격','사기','기예','고통','의료','골절','효율'] },
+  { id:'vein_zone',      region:'4번 협곡', name:'광맥 구역',
+    trait2:['생명력 증가','물리 피해 증가','열기 피해 증가','냉기 피해 증가','자연 피해 증가','치명타 확률 증가','오리지늄 아츠 강도 증가','치유 효율 증가'],
+    skills:['강공','억제','기예','잔혹','고통','방출','어둠','효율'] },
+  { id:'energy_plateau', region:'4번 협곡', name:'에너지 공급 고지',
+    trait2:['공격력 증가','생명력 증가','물리 피해 증가','열기 피해 증가','자연 피해 증가','치명타 확률 증가','오리지늄 아츠 강도 증가','치유 효율 증가'],
+    skills:['추격','분쇄','사기','잔혹','고통','의료','골절','흐름'] },
+  { id:'wuling_city',    region:'무릉',     name:'무릉성',
+    trait2:['공격력 증가','생명력 증가','전기 피해 증가','냉기 피해 증가','치명타 확률 증가','궁극기 충전 효율 증가','아츠 피해 증가','치유 효율 증가'],
+    skills:['강공','분쇄','잔혹','의료','골절','방출','어둠','흐름'] },
+  { id:'cheongpachae',   region:'무릉',     name:'청파채',
+    trait2:['생명력 증가','물리 피해 증가','전기 피해 증가','냉기 피해 증가','오리지늄 아츠 강도 증가','궁극기 충전 효율 증가','아츠 피해 증가','치유 효율 증가'],
+    skills:['억제','분쇄','사기','기예','의료','골절','방출','어둠'] },
+  { id:'sudon',          region:'무릉',     name:'수돈',
+    trait2:['공격력 증가','물리 피해 증가','열기 피해 증가','전기 피해 증가','자연 피해 증가','치명타 확률 증가','궁극기 충전 효율 증가','아츠 피해 증가'],
+    skills:['강공','추격','사기','잔혹','고통','어둠','흐름','효율'] },
+  { id:'lab_zone',       region:'무릉',     name:'실험 구역',
+    trait2:['생명력 증가','열기 피해 증가','전기 피해 증가','냉기 피해 증가','자연 피해 증가','오리지늄 아츠 강도 증가','궁극기 충전 효율 증가','치유 효율 증가'],
+    skills:['억제','분쇄','기예','잔혹','고통','골절','어둠','흐름'] },
 ];
 
 // 무기 데이터 — primary/secondary/skill 은 각 배열의 값 사용
@@ -3489,12 +3506,12 @@ const WEAPON_DATA = [
   { name:'O.B.J. 벨로시투스',      rarity:4, type:'아츠',    operator:'플루라이트',     primary:null, secondary:null, skill:null },
 ];
 
-// 파밍처에서 특정 스킬을 드롭하는 장소 찾기
+// 고위 에너지 응집점에서 특정 스킬 속성을 드롭하는 장소 찾기
 function getAlluviumsBySkill(skill) {
   return ALLUVIUMS.filter(a => a.skills.includes(skill));
 }
 
-// 무기와 매칭되는 파밍처 찾기
+// 무기와 매칭되는 고위 에너지 응집점 찾기
 function getBestAlluviumsForWeapon(weapon) {
   if (!weapon.skill) return [];
   return getAlluviumsBySkill(weapon.skill);
@@ -3531,13 +3548,13 @@ function initEssenceTab() {
 
   createCustomSelect('cs-ec-primary',
     t1.map(p => ({ value: p, label: p })),
-    '', () => renderEssenceCheck(), '— 특성① 선택 (능력치) —');
+    '', () => renderEssenceCheck(), '— 주 속성 선택 —');
   createCustomSelect('cs-ec-secondary',
     t2.map(s => ({ value: s, label: s })),
-    '', () => renderEssenceCheck(), '— 특성② 선택 (스탯) —');
+    '', () => renderEssenceCheck(), '— 추가 속성 선택 —');
   createCustomSelect('cs-ec-skill',
     t3.map(s => ({ value: s, label: s })),
-    '', () => renderEssenceCheck(), '— 특성③ 선택 (고유) —');
+    '', () => renderEssenceCheck(), '— 스킬 속성 선택 —');
   createCustomSelect('cs-ew-select',
     (window.WEAPONS || []).map((w, i) => ({
       value: String(i),
@@ -3609,7 +3626,7 @@ function renderEssenceCheck() {
     </div>` : ''}`;
 }
 
-// ========== ② 무기별 파밍처 + 한번에 파밍 통합 ==========
+// ========== ② 무기별 고위 에너지 응집점 + 한번에 파밍 통합 ==========
 function renderWeaponFarming() {
   const idx = document.getElementById('cs-ew-select')?._csSelected;
   const el  = document.getElementById('ew-result');
@@ -3677,14 +3694,14 @@ function renderWeaponFarming() {
       </div>
     </div>`;
 
-  // 2. 파밍처 리스트 (스킬 기준, 모든 파밍처 표시 + 추천 표시)
+  // 2. 고위 에너지 응집점 리스트 (스킬 속성 기준, 전체 표시 + 추천 표시)
   const alluviums = w.skill ? getBestAlluviumsForWeapon(w) : ALLUVIUMS;
   const notFoundSkill = w.skill && alluviums.length === 0;
 
   const alluviumsHtml = (notFoundSkill
-    ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬을 드롭하는 파밍처가 없어요 — 데이터를 확인해주세요</div>`
+    ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬 속성을 드롭하는 고위 에너지 응집점이 없어요 — 데이터를 확인해주세요</div>`
     : alluviums.map(a => {
-        // 한번에 파밍 가능한 무기: 같은 파밍처에서 스킬이 드롭되는 다른 무기
+        // 한번에 파밍 가능한 무기: 같은 고위 에너지 응집점에서 스킬 속성이 드롭되는 다른 무기
         const bundleWeapons = (window.WEAPONS || []).filter(bw => {
           if (bw.name === wikiWeapon.name) return false;
           const bwSkill = bw.trait3 ? (bw.trait3.keyword || stripSize(bw.trait3.label)) : null;
@@ -3746,12 +3763,12 @@ function renderWeaponFarming() {
     ${statsHtml}
 
     <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
-      파밍처 목록
-      ${w.skill ? `<span style="color:var(--text-muted);font-weight:400;margin-left:4px;">— 스킬 <b style="color:#80FF80;">${w.skill}</b> 기준</span>` : ''}
+      고위 에너지 응집점 목록
+      ${w.skill ? `<span style="color:var(--text-muted);font-weight:400;margin-left:4px;">— 스킬 속성 <b style="color:#80FF80;">${w.skill}</b> 기준</span>` : ''}
     </div>
     ${alluviumsHtml}
     <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">
-      ※ 주속성·보조속성은 모든 파밍처에서 랜덤 드롭돼요. 스킬 특성이 나오는 장소를 선택해야 해요.
+      ※ 주 속성·추가 속성은 모든 고위 에너지 응집점에서 랜덤 드롭돼요. 스킬 속성이 나오는 장소를 선택해야 해요.
     </div>`;
 }
 
@@ -3802,25 +3819,25 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
       ${w.trait1 ? `<div style="font-size:10px;">
         <span style="color:#4fc3f7;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(79,195,247,${t1Match?'0.15':'0.05'});border:1px solid rgba(79,195,247,${t1Match?'0.4':'0.15'});">
-          ① ${w.trait1.label}</span>
+          주 속성 ${w.trait1.label}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait1.initVal||''}</span>
       </div>` : ''}
       ${w.trait2 ? `<div style="font-size:10px;">
         <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(179,157,219,${t2Match?'0.15':'0.05'});border:1px solid rgba(179,157,219,${t2Match?'0.4':'0.15'});">
-          ② ${w.trait2.label}</span>
+          추가 속성 ${w.trait2.label}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2.initVal||''}</span>
       </div>` : ''}
       ${w.trait2b ? `<div style="font-size:10px;">
         <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(179,157,219,0.05);border:1px solid rgba(179,157,219,0.15);">
-          ② ${w.trait2b.label}</span>
+          추가 속성 ${w.trait2b.label}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2b.initVal||''}</span>
       </div>` : ''}
       ${w.trait3 ? `<div style="font-size:10px;">
         <span style="color:#ffd740;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(255,215,64,${t3Match?'0.15':'0.05'});border:1px solid rgba(255,215,64,${t3Match?'0.4':'0.15'});">
-          ③ ${w.trait3.keyword||''}</span>
+          스킬 속성 ${w.trait3.keyword||''}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${(w.trait3.initVal||'').slice(0,60)}${(w.trait3.initVal||'').length>60?'…':''}</span>
       </div>` : ''}
     </div>
