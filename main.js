@@ -3707,12 +3707,12 @@ function renderWeaponFarming() {
   const alluviumsHtml = (notFoundSkill
     ? `<div style="font-size:11px;color:var(--danger);padding:8px 0;">⚠ 이 스킬 속성을 드롭하는 고위 에너지 응집점이 없어요 — 데이터를 확인해주세요</div>`
     : alluviums.map(a => {
-        // 한번에 파밍하면 좋은 무기: 스킬 속성 동일 + 추가 속성이 이 응집점의 trait2 풀에 포함
+        // 같이 파밍하면 좋은 무기: 선택한 무기와 스킬 속성이 동일 + 추가 속성이 이 응집점의 trait2 풀에 포함
         const bundleWeapons = (window.WEAPONS || []).filter(bw => {
           if (bw.name === wikiWeapon.name) return false;
           const bwSkill = bw.trait3 ? (bw.trait3.keyword || stripSize(bw.trait3.label)) : null;
           const bwSecondary = bw.trait2 ? stripSize(bw.trait2.label) : null;
-          const skillMatch = bwSkill && a.skills.includes(bwSkill);
+          const skillMatch = bwSkill && bwSkill === w.skill;
           const secondaryAvailable = bwSecondary && (a.trait2 || []).includes(bwSecondary);
           return skillMatch && secondaryAvailable;
         });
