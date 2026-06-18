@@ -3662,26 +3662,7 @@ function renderWeaponFarming() {
     return;
   }
 
-  // 0. WEAPONS(공식 위키) trait1/2/3 - 이미 wikiWeapon이 있으므로 직접 사용
-  const wikiData = wikiWeapon;
-  const wikiTraitHtml = wikiData ? `
-    <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:10px 12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.08);">
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;margin-bottom:8px;letter-spacing:0.08em;">무기 특성</div>
-      <div style="display:flex;flex-direction:column;gap:5px;">
-        ${wikiData.trait1 ? `<div style="font-size:11px;color:rgba(255,255,255,0.8);">
-          <span style="color:#4fc3f7;font-weight:700;margin-right:4px;">① ${wikiData.trait1.label}</span>
-          <span style="color:rgba(255,255,255,0.45);font-size:10px;">${wikiData.trait1.initVal||''}</span>
-        </div>` : ''}
-        ${wikiData.trait2 ? `<div style="font-size:11px;color:rgba(255,255,255,0.8);">
-          <span style="color:#b39ddb;font-weight:700;margin-right:4px;">② ${wikiData.trait2.label}</span>
-          <span style="color:rgba(255,255,255,0.45);font-size:10px;">${wikiData.trait2.initVal||''}</span>
-        </div>` : ''}
-        ${wikiData.trait3 ? `<div style="font-size:11px;color:rgba(255,255,255,0.8);">
-          <span style="color:#ffd740;font-weight:700;margin-right:4px;">③ ${wikiData.trait3.keyword||''}</span>
-          <span style="color:rgba(255,255,255,0.45);font-size:10px;">${(wikiData.trait3.initVal||'').slice(0,80)}${(wikiData.trait3.initVal||'').length>80?'…':''}</span>
-        </div>` : ''}
-      </div>
-    </div>` : '';
+  // 0. 무기 특성 상세 박스 제거 — 아래 주속성/보조속성/스킬 박스와 중복
 
   // 1. 무기 기질 3가지 표시
   const statsHtml = `
@@ -3719,10 +3700,17 @@ function renderWeaponFarming() {
 
         const bundleHtml = bundleWeapons.length > 0
           ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.09);">
-              <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:6px;">
-                📦 같이 파밍하면 좋은 무기 (${bundleWeapons.length}개)
+              <div style="font-size:10px;font-weight:700;color:var(--accent2);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:4px;"
+                onclick="(function(el){
+                  const body = document.getElementById('bundle-${a.id}');
+                  const arrow = el.querySelector('.bundle-arrow');
+                  const collapsed = body.style.display === 'none';
+                  body.style.display = collapsed ? 'flex' : 'none';
+                  arrow.textContent = collapsed ? '▾' : '▸';
+                })(this)">
+                <span class="bundle-arrow">▸</span> 📦 같이 파밍하면 좋은 무기 (${bundleWeapons.length}개)
               </div>
-              <div style="display:flex;flex-direction:column;gap:4px;">
+              <div id="bundle-${a.id}" style="display:none;flex-direction:column;gap:4px;">
                 ${bundleWeapons.map(bw => wikiWeaponCard(bw, null, null, bw.trait3?.keyword)).join('')}
               </div>
             </div>`
@@ -3767,8 +3755,6 @@ function renderWeaponFarming() {
       </div>
     </div>
 
-    ${wikiTraitHtml}
-
     ${statsHtml}
 
     <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">
@@ -3783,7 +3769,7 @@ function renderWeaponFarming() {
 
 // ========== 공통 헬퍼 ==========
 function rarityColor(r) {
-  return r===6 ? '#ffd740' : r===5 ? '#b39ddb' : '#4fc3f7';
+  return r===6 ? '#ff5252' : r===5 ? '#ffd740' : r===4 ? '#b39ddb' : '#4fc3f7';
 }
 
 function alluviumTag(a) {
@@ -3810,9 +3796,9 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
   const t3Match = hiT3 && t3kw === hiT3;
   const allMatch = (!hiT1||t1Match) && (!hiT2||t2Match) && (!hiT3||t3Match);
 
-  // WEAPON_DATA에서 오퍼레이터, 등급 정보 찾기
+  // 등급 정보: weapons.js의 w.rarity 우선, 없으면 WEAPON_DATA fallback
   const wd = WEAPON_DATA.find(d => d.name === w.name);
-  const rarity = wd?.rarity || '';
+  const rarity = w.rarity || wd?.rarity || '';
   const operator = wd?.operator || '';
   const rc = rarity ? rarityColor(rarity) : 'var(--text-muted)';
 
@@ -3828,25 +3814,19 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
       ${w.trait1 ? `<div style="font-size:10px;">
         <span style="color:#4fc3f7;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(79,195,247,${t1Match?'0.15':'0.05'});border:1px solid rgba(79,195,247,${t1Match?'0.4':'0.15'});">
-          주 속성 ${w.trait1.label}</span>
+          ${t1}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait1.initVal||''}</span>
       </div>` : ''}
       ${w.trait2 ? `<div style="font-size:10px;">
         <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(179,157,219,${t2Match?'0.15':'0.05'});border:1px solid rgba(179,157,219,${t2Match?'0.4':'0.15'});">
-          추가 속성 ${w.trait2.label}</span>
+          ${t2}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2.initVal||''}</span>
-      </div>` : ''}
-      ${w.trait2b ? `<div style="font-size:10px;">
-        <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
-          background:rgba(179,157,219,0.05);border:1px solid rgba(179,157,219,0.15);">
-          추가 속성 ${w.trait2b.label}</span>
-        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2b.initVal||''}</span>
       </div>` : ''}
       ${w.trait3 ? `<div style="font-size:10px;">
         <span style="color:#ffd740;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(255,215,64,${t3Match?'0.15':'0.05'});border:1px solid rgba(255,215,64,${t3Match?'0.4':'0.15'});">
-          스킬 속성 ${w.trait3.keyword||''}</span>
+          ${w.trait3.keyword||''}</span>
         <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${(w.trait3.initVal||'').slice(0,60)}${(w.trait3.initVal||'').length>60?'…':''}</span>
       </div>` : ''}
     </div>
