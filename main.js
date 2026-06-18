@@ -3807,22 +3807,16 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
       <span style="font-size:10px;color:var(--text-muted);">${w.type||''}</span>
       ${operator ? `<span style="font-size:10px;color:var(--accent2);">${operator}</span>` : ''}
     </div>
-    <div style="display:flex;flex-direction:column;gap:3px;">
-      ${w.trait1 ? `<div style="font-size:10px;">
-        <span style="color:#4FC3F7;font-weight:700;padding:1px 5px;border-radius:3px;
+    <div style="display:flex;flex-wrap:wrap;gap:5px;">
+      ${w.trait1 ? `<span style="font-size:10px;color:#4FC3F7;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(79,195,247,${t1Match?'0.15':'0.05'});border:1px solid rgba(79,195,247,${t1Match?'0.4':'0.15'});">
-          ${t1}</span>
-      </div>` : ''}
-      ${w.trait2 ? `<div style="font-size:10px;">
-        <span style="color:#FFD580;font-weight:700;padding:1px 5px;border-radius:3px;
+          ${t1}</span>` : ''}
+      ${w.trait2 ? `<span style="font-size:10px;color:#FFD580;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(255,213,128,${t2Match?'0.15':'0.05'});border:1px solid rgba(255,213,128,${t2Match?'0.4':'0.15'});">
-          ${t2}</span>
-      </div>` : ''}
-      ${w.trait3 ? `<div style="font-size:10px;">
-        <span style="color:#80FF80;font-weight:700;padding:1px 5px;border-radius:3px;
+          ${t2}</span>` : ''}
+      ${w.trait3 ? `<span style="font-size:10px;color:#80FF80;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(128,255,128,${t3Match?'0.15':'0.05'});border:1px solid rgba(128,255,128,${t3Match?'0.4':'0.15'});">
-          ${w.trait3.keyword||''}</span>
-      </div>` : ''}
+          ${w.trait3.keyword||''}</span>` : ''}
     </div>
   </div>`;
 }
@@ -3972,8 +3966,24 @@ function showOverlayModal() {
 // ── 업데이트 이력 ──────────────────────────────────────────
 const CHANGELOG = [
   {
-    version: 'v1.0.5', date: '2026.06.04',
+    version: 'v1.0.6', date: '2026.06.18',
     badge: { text: '최신', cls: 'badge-cyan' }, latest: true,
+    items: [
+      { type: '+', text: '거점 운영 탭 재구성 — 관리권/공장 탭을 4개 서브탭(관리권 생산·천연자원·관리권 소모·공장 배치)으로 통합, 협곡/무릉 뱃지 하나로 전체 동기화' },
+      { type: '+', text: '고위 에너지 응집점(舊 파밍처) 데이터 8곳으로 확장 및 전면 갱신 — 장소명, 스킬 속성 8종, 추가 속성 8종 전체 재정리' },
+      { type: '+', text: '무기 특성 명칭 공식화 — trait1/2/3 → 주 속성/추가 속성/스킬 속성' },
+      { type: '+', text: '무기 데이터(71개) 등급(rarity) 필드 신설 — 주 속성 라벨 크기(소/중/대) 및 특성 개수 기준 추정 로직' },
+      { type: '+', text: '"같이 파밍하면 좋은 무기" 추천 로직 — 선택한 무기와 스킬 속성이 동일하고, 추가 속성이 해당 응집점에서 파밍 가능한 무기만 추천' },
+      { type: '+', text: '기질 파밍처 무기 선택 드롭다운에 등급별 색상(★6 빨강·★5 노랑·★4 보라·★3 파랑) 적용, 등급→유형→이름 순 정렬' },
+      { type: '+', text: '같이 파밍하면 좋은 무기 목록 접기/펼치기 토글 추가 (기본 접힌 상태)' },
+      { type: '✕', text: '무기 데이터 오류 수정 — 용조의 불꽃/장대한 염원/끝없는 방랑 특성 누락 보정, 타르 11 등 5종 스킬 속성 오분류 수정, 린수를 찾아서 3.0 데이터 누락 추가' },
+      { type: '↑', text: '기질 체커 — 3개 완전 매칭 외 2개 부분 매칭 무기도 별도 섹션으로 표시' },
+      { type: '↑', text: '무기 상세 카드 UI 정리 — 중복 특성 설명 박스 제거, 오퍼레이터 전용 무기 표기 간소화, 추천 카드 속성 뱃지 가로 정렬' },
+      { type: '✕', text: '거점 운영 탭 div 닫힘 누락으로 일부 탭이 노출되지 않던 문제 수정' },
+    ]
+  },
+  {
+    version: 'v1.0.5', date: '2026.06.04',
     items: [
       { type: '+', text: '피드백 기능 추가 (Discord 실시간 알림 + Google Sheets 자동 저장)' },
       { type: '+', text: '배치 도우미 앱 다운로드 연동 (항상 최신 버전 자동 연결)' },
