@@ -3156,7 +3156,7 @@ function toggleCustomSelect(btn) {
   options.forEach(opt => {
     const item = document.createElement('div');
     item.className = 'cs-option' + (opt.value === selected ? ' selected' : '');
-    item.textContent = opt.label;
+    item.innerHTML = opt.label;
     item.onclick = () => selectCustomOption(container, opt.value, opt.label, false);
     dropdown.appendChild(item);
   });
@@ -3210,7 +3210,7 @@ function selectCustomOption(container, value, label, isPlaceholder) {
   if (btn) {
     const labelEl = btn.querySelector('.cs-label');
     if (labelEl) {
-      labelEl.textContent = isPlaceholder ? container._csPlaceholder : label;
+      labelEl.innerHTML = isPlaceholder ? container._csPlaceholder : label;
       labelEl.style.color = isPlaceholder ? 'var(--text-muted)' : '';
       labelEl.style.fontStyle = isPlaceholder ? 'italic' : '';
     }
@@ -3564,7 +3564,7 @@ function initEssenceTab() {
   createCustomSelect('cs-ew-select',
     sortedWeapons.map((w) => ({
       value: String((window.WEAPONS || []).indexOf(w)),
-      label: `★${w.rarity||'?'} ${w.name} (${w.type || ''})`
+      label: `<span style="color:${rarityColor(w.rarity)};font-weight:700;">★${w.rarity||'?'}</span> ${w.name} (${w.type || ''})`
     })),
     '', () => renderWeaponFarming(), '— 무기 선택 —');
 }
@@ -3749,10 +3749,7 @@ function renderWeaponFarming() {
     <!-- 무기 헤더 -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
       ${w.rarity ? `<span style="font-size:18px;font-weight:700;color:${rarityColor(w.rarity)};">★${w.rarity}</span>` : ''}
-      <div>
-        ${w.operator ? `<div style="font-size:14px;font-weight:700;color:var(--text);">${w.operator}</div>` : ''}
-        <div style="font-size:${w.operator ? '11' : '14'}px;font-weight:${w.operator ? '400' : '700'};color:${w.operator ? 'var(--text-label)' : 'var(--text)'};">${wikiWeapon.type || w.type || ''}${w.name !== '(미확인)' ? ' · '+w.name : ''}</div>
-      </div>
+      ${w.operator ? `<span style="font-size:12px;color:var(--text-label);">${w.operator} 전용 무기</span>` : ''}
     </div>
 
     ${statsHtml}
@@ -3812,22 +3809,19 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
     </div>
     <div style="display:flex;flex-direction:column;gap:3px;">
       ${w.trait1 ? `<div style="font-size:10px;">
-        <span style="color:#4fc3f7;font-weight:700;padding:1px 5px;border-radius:3px;
+        <span style="color:#4FC3F7;font-weight:700;padding:1px 5px;border-radius:3px;
           background:rgba(79,195,247,${t1Match?'0.15':'0.05'});border:1px solid rgba(79,195,247,${t1Match?'0.4':'0.15'});">
           ${t1}</span>
-        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait1.initVal||''}</span>
       </div>` : ''}
       ${w.trait2 ? `<div style="font-size:10px;">
-        <span style="color:#b39ddb;font-weight:700;padding:1px 5px;border-radius:3px;
-          background:rgba(179,157,219,${t2Match?'0.15':'0.05'});border:1px solid rgba(179,157,219,${t2Match?'0.4':'0.15'});">
+        <span style="color:#FFD580;font-weight:700;padding:1px 5px;border-radius:3px;
+          background:rgba(255,213,128,${t2Match?'0.15':'0.05'});border:1px solid rgba(255,213,128,${t2Match?'0.4':'0.15'});">
           ${t2}</span>
-        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${w.trait2.initVal||''}</span>
       </div>` : ''}
       ${w.trait3 ? `<div style="font-size:10px;">
-        <span style="color:#ffd740;font-weight:700;padding:1px 5px;border-radius:3px;
-          background:rgba(255,215,64,${t3Match?'0.15':'0.05'});border:1px solid rgba(255,215,64,${t3Match?'0.4':'0.15'});">
+        <span style="color:#80FF80;font-weight:700;padding:1px 5px;border-radius:3px;
+          background:rgba(128,255,128,${t3Match?'0.15':'0.05'});border:1px solid rgba(128,255,128,${t3Match?'0.4':'0.15'});">
           ${w.trait3.keyword||''}</span>
-        <span style="color:rgba(255,255,255,0.4);margin-left:4px;font-size:9px;">${(w.trait3.initVal||'').slice(0,60)}${(w.trait3.initVal||'').length>60?'…':''}</span>
       </div>` : ''}
     </div>
   </div>`;
