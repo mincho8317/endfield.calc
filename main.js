@@ -22,14 +22,6 @@ OUTPOSTS.forEach(o => {
 function od() { return outpostData[activeOutpostId]; }
 window.od = od;
 
-// 기존 코드 호환용 프록시 (함수들이 od()를 통해 접근)
-function getResourceRates()  { return od().resourceRates; }
-function getGroups()         { return od().groups; }
-function setGroups(g)        { od().groups = g; }
-function getTargetRates()    { return od().targetRates; }
-function getNextGroupId()    { return od().nextGroupId; }
-function bumpNextGroupId()   { od().nextGroupId++; return od().nextGroupId - 1; }
-
 // 기존 변수명 유지 (함수 내부에서 od() 경유)
 // 프리셋 (거점 공통)
 let presets = [];
@@ -106,10 +98,6 @@ function loadCustomIcons() {
     const raw = localStorage.getItem('endfield_icons_v1');
     if (raw) ITEM_ICONS_CUSTOM = JSON.parse(raw);
   } catch(e) {}
-}
-
-function saveCustomIcons() {
-  try { localStorage.setItem('endfield_icons_v1', JSON.stringify(ITEM_ICONS_CUSTOM)); } catch(e) {}
 }
 
 // 아이콘 조회 (공백 차이 자동 처리)
@@ -201,14 +189,6 @@ function updateResource(key, val) {
   scheduleSave();
 }
 
-// ========== INNER TAB SWITCH ==========
-function switchInnerTab(tab) {
-  document.getElementById('inner-resource').style.display = tab === 'resource' ? 'block' : 'none';
-  document.getElementById('inner-equip').style.display   = tab === 'equip'    ? 'block' : 'none';
-  document.getElementById('itab-resource').classList.toggle('active', tab === 'resource');
-  document.getElementById('itab-equip').classList.toggle('active',    tab === 'equip');
-}
-
 // ========== RESOURCE 접기/펼치기 ==========
 let resourceCollapsed = false;
 function toggleResourceConfig() {
@@ -217,14 +197,6 @@ function toggleResourceConfig() {
   const btn  = document.getElementById('resource-toggle-btn');
   wrap.classList.toggle('collapsed', resourceCollapsed);
   btn.textContent = resourceCollapsed ? '▼ 펼치기' : '▲ 접기';
-}
-
-// ========== AUTH TAB SWITCH ==========
-function switchAuthTab(tab) {
-  document.getElementById('auth-inner-base').style.display    = tab === 'base'    ? 'block' : 'none';
-  document.getElementById('auth-inner-product').style.display = tab === 'product' ? 'block' : 'none';
-  document.getElementById('atab-base').classList.toggle('active',    tab === 'base');
-  document.getElementById('atab-product').classList.toggle('active', tab === 'product');
 }
 
 // ========== WORKSPACE ==========
@@ -560,7 +532,6 @@ function selectEquipName(name) {
 }
 
 // 구 코드 호환용
-function selectEquipTab(equip) { selectEquipName(equip); }
 
 function renderEquipModalRecipes(g) {
   const usedIds = new Set(g.equips.map(e => e.recipeId));
@@ -657,12 +628,6 @@ function buildSubEquipMap(recipeId, parentCount, visited) {
     });
   });
   return result;
-}
-
-// 배열 형태 래퍼
-function buildSubEquipList(recipeId, parentCount, visited) {
-  const map = buildSubEquipMap(recipeId, parentCount, visited);
-  return Object.entries(map).map(([rid, cnt]) => ({ recipeId: parseInt(rid), count: cnt }));
 }
 
 function confirmEquipSelect(recipeId) {
@@ -1011,57 +976,6 @@ function savePresetEdit() {
   scheduleSave();
 }
 
-// ========== 아이콘 관리 모달 ==========
-function openIconModal() {
-  renderIconList();
-  document.getElementById('modal-icons').style.display = 'block';
-}
-function closeIconModal() {
-  document.getElementById('modal-icons').style.display = 'none';
-}
-
-function renderIconList() {
-  // 계산기에 등장하는 모든 재료 이름 수집
-  const allItems = new Set();
-  RECIPES.forEach(r => {
-    r.inputs.forEach(i => allItems.add(i.name));
-    r.outputs.forEach(o => allItems.add(o.name));
-  });
-  RESOURCE_ITEMS.forEach(r => allItems.add(r.key));
-  Object.keys(currentAuthValue()).forEach(k => allItems.add(k));
-
-  const el = document.getElementById('icon-list');
-  el.innerHTML = [...allItems].sort().map(name => {
-    const custom = ITEM_ICONS_CUSTOM[name];
-    const wiki   = ITEM_ICONS_DEFAULT[name];
-    const cur    = custom || wiki || null;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.08);">
-      <!-- 현재 아이콘 미리보기 -->
-      <div style="width:32px;height:32px;border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;background:var(--bg);flex-shrink:0;overflow:hidden;">
-        ${cur ? `<img src="${cur}" width="28" height="28" style="object-fit:contain;" onerror="this.parentElement.innerHTML='?'">` : `<span style="color:var(--text-muted);font-size:12px;">?</span>`}
-      </div>
-      <!-- 이름 -->
-      <span style="flex:1;font-size:12px;">${name}</span>
-      <!-- 상태 뱃지 -->
-      ${custom ? `<span style="font-size:10px;color:var(--success);margin-right:4px;">커스텀</span>` : wiki ? `<span style="font-size:10px;color:var(--text-muted);margin-right:4px;">위키</span>` : ''}
-      <!-- 업로드 버튼 -->
-      <label style="cursor:pointer;" title="이미지 업로드">
-        <input type="file" accept="image/*" style="display:none;" onchange="handleIconUpload('${name}', this)">
-        <span class="btn" style="font-size:10px;padding:3px 8px;">업로드</span>
-      </label>
-      <!-- 커스텀 삭제 버튼 -->
-      ${custom ? `<button class="ws-del-btn" onclick="deleteCustomIcon('${name}');renderIconList();" title="커스텀 아이콘 삭제" style="font-size:14px;">×</button>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function handleIconUpload(name, input) {
-  const file = input.files[0];
-  if (!file) return;
-  uploadIcon(name, file);
-  setTimeout(renderIconList, 200); // 업로드 후 목록 갱신
-}
-
 document.getElementById('modal-equip').addEventListener('click', function(e) { if (e.target===this) closeEquipModal(); });
 
 // ========== RENDER RESULTS ==========
@@ -1114,13 +1028,6 @@ function renderResults() {
   document.getElementById('deficit-count').textContent = deficit;
   document.getElementById('surplus-count').textContent = surplus;
   document.getElementById('balanced-count').textContent = balanced;
-}
-
-function filterEquip(btn, val) {
-  document.querySelectorAll('.filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentEquipFilter = val;
-  renderRecipes();
 }
 
 function filterResult(btn, val) {
@@ -2135,112 +2042,6 @@ const CLASS_KR = {
   Guard:'가드', Striker:'스트라이커', Defender:'디펜더',
   Caster:'캐스터', Supporter:'서포터', Vanguard:'뱅가드',
 };
-
-let opFilterRarity = 'all';
-let opFilterSearch = '';
-
-// ========== 오퍼레이터 선택 모달 ==========
-function openOperatorSelectModal() {
-  opFilterRarity = 'all';
-  opFilterSearch = '';
-  const searchEl = document.getElementById('operator-search');
-  if (searchEl) searchEl.value = '';
-  document.querySelectorAll('.op-filter-btn').forEach(b => {
-    b.style.background = b.textContent.includes('전체') ? 'var(--accent)' : 'transparent';
-    b.style.color      = b.textContent.includes('전체') ? 'var(--bg)'     : b.dataset.color || 'var(--text-muted)';
-  });
-  renderOperatorSelectGrid();
-  document.getElementById('modal-operator-select').style.display = 'block';
-}
-
-function closeOperatorSelectModal() {
-  document.getElementById('modal-operator-select').style.display = 'none';
-}
-
-function filterOpRarity(btn, rarity) {
-  opFilterRarity = rarity;
-  document.querySelectorAll('.op-filter-btn').forEach(b => {
-    const isMe = b === btn;
-    b.style.background = isMe ? b.style.borderColor.replace('0.5','1').replace('rgba','rgba') : 'transparent';
-    b.style.fontWeight  = isMe ? '700' : '400';
-    b.style.opacity     = isMe ? '1' : '0.7';
-  });
-  renderOperatorSelectGrid();
-}
-
-function filterOperatorList(val) {
-  opFilterSearch = val.toLowerCase();
-  renderOperatorSelectGrid();
-}
-
-function renderOperatorSelectGrid() {
-  const grid = document.getElementById('operator-select-grid');
-  if (!grid) return;
-
-  const list = OPERATOR_ROSTER.filter(op => {
-    if (opFilterRarity !== 'all' && op.rarity !== parseInt(opFilterRarity)) return false;
-    if (opFilterSearch && !op.name.toLowerCase().includes(opFilterSearch)) return false;
-    return true;
-  });
-
-  if (list.length === 0) {
-    grid.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:12px;">검색 결과 없음</div>`;
-    return;
-  }
-
-  const addedNames = new Set(operators.map(o => o.name));
-
-  grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-    ${list.map(op => {
-      const rc = RARITY_COLOR[op.rarity];
-      const ec = ELEMENT_COLOR[op.element];
-      const isAdded = addedNames.has(op.name);
-      const thumbName = op.name === '관리자' ? '관리자(여)' : op.name;
-      const thumbUrl = `op_icons/${thumbName.replace(/\s+/g,'_')}.png`;
-      return `<div onclick="${isAdded ? '' : `selectOperatorFromRoster('${op.name}')`}"
-        style="border:1px solid ${isAdded ? 'rgba(240,200,22,0.4)' : 'rgba(255,255,255,0.12)'};border-radius:4px;padding:10px 8px;
-          background:${isAdded ? 'rgba(240,200,22,0.08)' : 'rgba(255,255,255,0.04)'};
-          cursor:${isAdded ? 'default' : 'pointer'};text-align:center;
-          opacity:${isAdded ? '0.5' : '1'};
-          transition:border-color 0.15s,background 0.15s;"
-        ${isAdded ? '' : `onmouseenter="this.style.borderColor='var(--accent)';this.style.background='rgba(240,200,22,0.08)'"
-          onmouseleave="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='rgba(255,255,255,0.04)'"` }>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span style="font-size:10px;font-weight:700;color:${rc};">★${op.rarity}</span>
-          ${isAdded
-            ? `<span style="font-size:9px;color:var(--accent);">추가됨</span>`
-            : `<span style="width:8px;height:8px;border-radius:50%;background:${ec};display:inline-block;box-shadow:0 0 4px ${ec};"></span>`}
-        </div>
-        <div style="width:56px;height:56px;margin:0 auto 6px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.06);">
-          <img src="${thumbUrl}" alt="${op.name}" width="56" height="56"
-            style="width:100%;height:100%;object-fit:cover;"
-            onerror="this.parentElement.innerHTML='<span style=\\'font-size:24px;line-height:56px;display:block;\\'>👤</span>'">
-        </div>
-        <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;">${op.name}</div>
-        <div style="font-size:10px;color:var(--text-muted);">${CLASS_KR[op.class] || op.class}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-function selectOperatorFromRoster(name) {
-  // 중복 추가 방지
-  if (operators.find(o => o.name === name)) {
-    showToast(`"${name}"은(는) 이미 목록에 있어요`, 'error');
-    return;
-  }
-  const roster = OPERATOR_ROSTER.find(o => o.name === name);
-  const op = getDefaultOperator(nextOperatorId++);
-  op.name = name;
-  if (roster) op.rarity = roster.rarity;
-  operators.push(op);
-  activeOperatorId = op.id;
-  closeOperatorSelectModal();
-  renderOperatorList();
-  renderOperatorConfig();
-  renderOperatorTotal();
-  saveData();
-}
 
 // 오퍼레이터별 육성 상태 맵 { name: opData }
 let opStates = {};
@@ -3769,20 +3570,6 @@ function rarityColor(r) {
   return r===6 ? '#ff5252' : r===5 ? '#ffd740' : r===4 ? '#b39ddb' : '#4fc3f7';
 }
 
-function alluviumTag(a) {
-  return `<div style="border:1px solid rgba(240,200,22,0.18);border-radius:4px;padding:8px 12px;background:rgba(240,200,22,0.05);">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <span style="font-size:12px;font-weight:700;color:var(--accent);">${a.name}</span>
-        <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${a.region}</span>
-      </div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
-      ${a.skills.map(s => `<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(128,255,128,0.1);color:#80FF80;border:1px solid rgba(128,255,128,0.25);">${s}</span>`).join('')}
-    </div>
-  </div>`;
-}
-
 function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
   const stripSize = s => s ? s.replace(/\xa0/g,' ').trim().replace(/\s*·\s*(대|중|소)$/, '') : '';
   const t1 = stripSize(w.trait1?.label || '');
@@ -3818,50 +3605,6 @@ function wikiWeaponCard(w, hiT1, hiT2, hiT3) {
           background:rgba(128,255,128,${t3Match?'0.15':'0.05'});border:1px solid rgba(128,255,128,${t3Match?'0.4':'0.15'});">
           ${w.trait3.keyword||''}</span>` : ''}
     </div>
-  </div>`;
-}
-
-function weaponCard(w, hiPri, hiSec, hiSk) {
-  const rc = rarityColor(w.rarity);
-  const priMatch = hiPri && w.primary === hiPri;
-  const secMatch = hiSec && w.secondary === hiSec;
-  const skMatch  = hiSk  && w.skill === hiSk;
-  const allMatch = (!hiPri || priMatch) && (!hiSec || secMatch) && (!hiSk || skMatch);
-  const isUnknown = !w.primary && !w.secondary && !w.skill;
-
-  // WEAPONS(공식 위키) 데이터에서 trait1/2/3 조회
-  const wikiData = (window.WEAPONS || []).find(wd => wd.name === w.name);
-  const traitHtml = wikiData ? `
-    <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
-      ${wikiData.trait1 ? `<div style="font-size:10px;color:rgba(255,255,255,0.6);">
-        <span style="color:#4fc3f7;font-weight:600;">①</span> ${wikiData.trait1.label}
-        <span style="color:rgba(255,255,255,0.35);"> · ${wikiData.trait1.initVal||''}</span>
-      </div>` : ''}
-      ${wikiData.trait2 ? `<div style="font-size:10px;color:rgba(255,255,255,0.6);">
-        <span style="color:#b39ddb;font-weight:600;">②</span> ${wikiData.trait2.label}
-        <span style="color:rgba(255,255,255,0.35);"> · ${wikiData.trait2.initVal||''}</span>
-      </div>` : ''}
-      ${wikiData.trait3 ? `<div style="font-size:10px;color:rgba(255,255,255,0.6);">
-        <span style="color:#ffd740;font-weight:600;">③</span> ${wikiData.trait3.keyword||wikiData.trait3.fullLabel||''}
-        <span style="color:rgba(255,255,255,0.35);"> · ${(wikiData.trait3.initVal||'').slice(0,50)}${(wikiData.trait3.initVal||'').length>50?'…':''}</span>
-      </div>` : ''}
-    </div>` : '';
-
-  return `<div style="border:1px solid rgba(30,58,95,${allMatch?'0.8':'0.4'});border-radius:4px;padding:8px 12px;
-    background:${allMatch?'rgba(240,200,22,0.05)':'rgba(255,255,255,0.04)'};">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <span style="font-size:11px;font-weight:700;color:${rc};">★${w.rarity}</span>
-      <span style="font-size:12px;font-weight:600;color:var(--text);">${w.operator}</span>
-      <span style="font-size:10px;color:var(--text-muted);">${w.type}</span>
-      ${w.name !== '(미확인)' ? `<span style="font-size:10px;color:var(--accent2);">${w.name}</span>` : ''}
-      ${isUnknown ? `<span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(255,170,0,0.15);color:var(--warning);">데이터 미확인</span>` : ''}
-    </div>
-    ${!isUnknown ? `<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;">
-      <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(79,195,247,${priMatch?'0.2':'0.06'});color:#4FC3F7;border:1px solid rgba(79,195,247,${priMatch?'0.5':'0.2'});">${w.primary||'—'}</span>
-      <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(255,213,128,${secMatch?'0.2':'0.06'});color:#FFD580;border:1px solid rgba(255,213,128,${secMatch?'0.5':'0.2'});">${w.secondary||'—'}</span>
-      <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(128,255,128,${skMatch?'0.2':'0.06'});color:#80FF80;border:1px solid rgba(128,255,128,${skMatch?'0.5':'0.2'});">${w.skill||'—'}</span>
-    </div>` : ''}
-    ${traitHtml}
   </div>`;
 }
 function toggleTheme() {
@@ -4440,13 +4183,6 @@ function syncDrawerData() {
   const dest = document.getElementById('drawer-results-grid');
   if (src && dest) dest.innerHTML = src.innerHTML;
   applyDrawerFilter(drawerCurrentFilter);
-}
-
-function filterDrawerResult(btn, type) {
-  drawerCurrentFilter = type;
-  document.querySelectorAll('#status-drawer-overlay .filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  applyDrawerFilter(type);
 }
 
 function applyDrawerFilter(type) {
