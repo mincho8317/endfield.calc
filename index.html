@@ -1495,20 +1495,33 @@ function renderEquipFootprint(ce, eq, CELL, isSel, isConn, keyPrefix){
     const px=bx+p.col*CELL, py=by+p.row*CELL;
     const cx=px+CELL/2, cy=py+CELL/2;
     const isOut=p.dir==='out';
-    // 화살표 방향: 칸 중심에서 설비 중심을 향한 단위벡터를 기준으로, 입력=바깥→안쪽, 출력=안쪽→바깥쪽
-    const eqCx=bx+w/2, eqCy=by+h/2;
-    let vx=eqCx-cx, vy=eqCy-cy; // 칸→설비중심 벡터(=입력 방향)
-    const vlen=Math.hypot(vx,vy)||1; vx/=vlen; vy/=vlen;
-    if(isOut){vx=-vx;vy=-vy;} // 출력은 반대(설비중심→바깥)
+    // 화살표 방향: 포트가 닿아있는 본체 경계 변(상/하/좌/우)에 따라 4방향 중 하나로 고정
+    // 칸이 여러 변에 동시에 닿는 모서리라면 row/col 거리가 더 짧은 쪽(가까운 변)을 우선
+    const distTop=p.row, distBottom=(sz.h-1)-p.row, distLeft=p.col, distRight=(sz.w-1)-p.col;
+    const minDist=Math.min(distTop,distBottom,distLeft,distRight);
+    let vx=0, vy=0; // '바깥쪽(설비를 빠져나가는 방향)' 단위벡터
+    if(minDist===distTop) vy=-1;
+    else if(minDist===distBottom) vy=1;
+    else if(minDist===distLeft) vx=-1;
+    else vx=1;
+    // 입력=바깥→안쪽(법선의 반대), 출력=안쪽→바깥(법선 그대로)
+    if(!isOut){vx=-vx;vy=-vy;}
     const ah=CELL*0.32; // 화살표 길이
     const tipX=cx+vx*ah, tipY=cy+vy*ah;
     const baseX=cx-vx*ah, baseY=cy-vy*ah;
     // 화살표 좌우 폭(진행방향에 수직)
     const px2=-vy, py2=vx, aw=CELL*0.22;
     if(p.type==='liquid'){
-      // 반원: 평평한 면이 칸의 "설비 중심에서 먼 쪽" 경계에 닿고, 둥근 부분이 칸 안쪽(중심방향)으로
-      const flatX1=cx-px2*CELL/2 - vx*CELL/2, flatY1=cy-py2*CELL/2 - vy*CELL/2;
-      const flatX2=cx+px2*CELL/2 - vx*CELL/2, flatY2=cy+py2*CELL/2 - vy*CELL/2;
+      // 반원: 평평한 면이 칸의 바깥쪽 경계에 닿고, 둥근 부분이 칸 안쪽으로
+      // 바깥쪽 방향 법선(outward)은 입력/출력과 무관하게 항상 minDist 기준 방향
+      let ox=0, oy=0;
+      if(minDist===distTop) oy=-1;
+      else if(minDist===distBottom) oy=1;
+      else if(minDist===distLeft) ox=-1;
+      else ox=1;
+      const op2x=-oy, op2y=ox;
+      const flatX1=cx-op2x*CELL/2 + ox*CELL/2, flatY1=cy-op2y*CELL/2 + oy*CELL/2;
+      const flatX2=cx+op2x*CELL/2 + ox*CELL/2, flatY2=cy+op2y*CELL/2 + oy*CELL/2;
       els.push(ce('path',{key:keyPrefix+'-port'+i,
         d:'M '+flatX1+' '+flatY1+' A '+(CELL/2)+' '+(CELL/2)+' 0 0 1 '+flatX2+' '+flatY2+' Z',
         fill:PORT}));
