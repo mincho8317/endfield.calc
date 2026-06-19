@@ -1471,19 +1471,53 @@ const OFFSET_CELLS=3;
 // 데이터 본체는 data/equipment_layout.js 에서 관리 (해당 파일이 index.html 하단에서 먼저 로드됨)
 const EQUIPMENT_LAYOUT = window.EQUIPMENT_LAYOUT || {};
 const DEFAULT_EQUIP_SIZE = {w:5,h:5}; // 레이아웃 데이터가 없는 설비용 기본값
-function getEquipSize(equipName){
-  return (EQUIPMENT_LAYOUT[equipName]&&EQUIPMENT_LAYOUT[equipName].size)||DEFAULT_EQUIP_SIZE;
+
+// rotation(0/90/180/270)을 반영한 실제 점유 크기. 90/270에서는 가로/세로가 스왑됨
+function getEquipSize(equipName, rotation){
+  const base=(EQUIPMENT_LAYOUT[equipName]&&EQUIPMENT_LAYOUT[equipName].size)||DEFAULT_EQUIP_SIZE;
+  const r=((rotation||0)%360+360)%360;
+  return (r===90||r===270) ? {w:base.h,h:base.w} : {w:base.w,h:base.h};
 }
-function getEquipPorts(equipName){
-  return (EQUIPMENT_LAYOUT[equipName]&&EQUIPMENT_LAYOUT[equipName].ports)||[];
+
+// rotation을 반영해 변환된 포트 목록(row,col,side가 회전된 그리드 기준)을 반환
+// 회전 공식(시계방향): 90° → (row,col) -> (col, h-1-row) / 180° → (h-1-row, w-1-col) / 270° → (w-1-col, row)
+// (h,w는 회전 전 원본 크기). side도 90도 단위로 함께 회전: top→right→bottom→left→top
+const SIDE_ROTATE_CW={top:'right',right:'bottom',bottom:'left',left:'top'};
+function rotateSide(side, steps90){ // steps90: 90도 회전 적용 횟수(1=90°,2=180°,3=270°)
+  let s=side;
+  for(let i=0;i<steps90;i++)s=SIDE_ROTATE_CW[s]||s;
+  return s;
+}
+// side('top'|'bottom'|'left'|'right')를 설비를 빠져나가는 방향의 단위벡터로 변환
+function sideToOutward(side){
+  if(side==='top')return{x:0,y:-1};
+  if(side==='bottom')return{x:0,y:1};
+  if(side==='left')return{x:-1,y:0};
+  if(side==='right')return{x:1,y:0};
+  return{x:0,y:0}; // side 미지정(구버전 데이터 호환용 fallback)
+}
+function getEquipPorts(equipName, rotation){
+  const ports=(EQUIPMENT_LAYOUT[equipName]&&EQUIPMENT_LAYOUT[equipName].ports)||[];
+  const base=(EQUIPMENT_LAYOUT[equipName]&&EQUIPMENT_LAYOUT[equipName].size)||DEFAULT_EQUIP_SIZE;
+  const r=((rotation||0)%360+360)%360;
+  if(r===0)return ports;
+  const steps=r===90?1:r===180?2:r===270?3:0;
+  return ports.map(p=>{
+    let nrow=p.row, ncol=p.col;
+    if(r===90){ nrow=p.col; ncol=base.h-1-p.row; }
+    else if(r===180){ nrow=base.h-1-p.row; ncol=base.w-1-p.col; }
+    else if(r===270){ nrow=base.w-1-p.col; ncol=p.row; }
+    return {...p,row:nrow,col:ncol,side:rotateSide(p.side,steps)};
+  });
 }
 
 // 확정 도면 스타일: 본체(연한 회색) + 포트 칸(진한 회색, 본체 내부) + 화살표(입력=바깥→안쪽, 출력=안쪽→바깥쪽)
 // + 액체 포트(반원, 평평한면이 칸 경계) + 중앙 원형 아이콘(아이템 placeholder)
 // ce: React.createElement, eq: {x,y,equip,name,rotation}, CELL: 셀 픽셀크기, isSel/isConn: 강조 상태
 function renderEquipFootprint(ce, eq, CELL, isSel, isConn, keyPrefix){
-  const sz=getEquipSize(eq.equip);
-  const ports=getEquipPorts(eq.equip);
+  const rotation=eq.rotation||0;
+  const sz=getEquipSize(eq.equip, rotation);
+  const ports=getEquipPorts(eq.equip, rotation);
   const w=sz.w*CELL, h=sz.h*CELL;
   const bx=eq.x*CELL, by=eq.y*CELL;
   const BODY='#3a3a38', PORT='#525250', STROKE=isConn?'#fff':isSel?'var(--accent)':'#6b6a66';
@@ -1495,15 +1529,9 @@ function renderEquipFootprint(ce, eq, CELL, isSel, isConn, keyPrefix){
     const px=bx+p.col*CELL, py=by+p.row*CELL;
     const cx=px+CELL/2, cy=py+CELL/2;
     const isOut=p.dir==='out';
-    // 화살표 방향: 포트가 닿아있는 본체 경계 변(상/하/좌/우)에 따라 4방향 중 하나로 고정
-    // 칸이 여러 변에 동시에 닿는 모서리라면 row/col 거리가 더 짧은 쪽(가까운 변)을 우선
-    const distTop=p.row, distBottom=(sz.h-1)-p.row, distLeft=p.col, distRight=(sz.w-1)-p.col;
-    const minDist=Math.min(distTop,distBottom,distLeft,distRight);
-    let vx=0, vy=0; // '바깥쪽(설비를 빠져나가는 방향)' 단위벡터
-    if(minDist===distTop) vy=-1;
-    else if(minDist===distBottom) vy=1;
-    else if(minDist===distLeft) vx=-1;
-    else vx=1;
+    // 화살표 방향: 포트 데이터의 side(상/하/좌/우)를 직접 사용 — 거리 추정 대신 명시값이라 모서리 모호성 없음
+    const out=sideToOutward(p.side);
+    let vx=out.x, vy=out.y; // '바깥쪽(설비를 빠져나가는 방향)' 단위벡터
     // 입력=바깥→안쪽(법선의 반대), 출력=안쪽→바깥(법선 그대로)
     if(!isOut){vx=-vx;vy=-vy;}
     const ah=CELL*0.32; // 화살표 길이
@@ -1513,12 +1541,7 @@ function renderEquipFootprint(ce, eq, CELL, isSel, isConn, keyPrefix){
     const px2=-vy, py2=vx, aw=CELL*0.22;
     if(p.type==='liquid'){
       // 반원: 평평한 면이 칸의 바깥쪽 경계에 닿고, 둥근 부분이 칸 안쪽으로
-      // 바깥쪽 방향 법선(outward)은 입력/출력과 무관하게 항상 minDist 기준 방향
-      let ox=0, oy=0;
-      if(minDist===distTop) oy=-1;
-      else if(minDist===distBottom) oy=1;
-      else if(minDist===distLeft) ox=-1;
-      else ox=1;
+      const ox=out.x, oy=out.y;
       const op2x=-oy, op2y=ox;
       const flatX1=cx-op2x*CELL/2 + ox*CELL/2, flatY1=cy-op2y*CELL/2 + oy*CELL/2;
       const flatX2=cx+op2x*CELL/2 + ox*CELL/2, flatY2=cy+op2y*CELL/2 + oy*CELL/2;
@@ -1749,6 +1772,11 @@ function FactoryLayout(){
           break;
         case 'r':
           if(selEq)setEquips(p=>p.map(q=>q.id===selEq?{...q,rotation:((q.rotation||0)+90)%360}:q));
+          else if(tool==='place'&&pendingRef.current){
+            const nr=((pendingRef.current.rotation||0)+90)%360;
+            const np={...pendingRef.current,rotation:nr};
+            pendingRef.current=np;setPending(np);
+          }
           break;
         case 'delete':case 'backspace':
           if(selEq){
@@ -1760,7 +1788,7 @@ function FactoryLayout(){
     };
     window.addEventListener('keydown',onKey);
     return ()=>window.removeEventListener('keydown',onKey);
-  },[selEq,selBelt]);
+  },[selEq,selBelt,tool]);
 
   useEffect(()=>{
     const svg=svgRef.current;if(!svg)return;
@@ -1779,7 +1807,7 @@ function FactoryLayout(){
     const s=new Set();
     equips.forEach(q=>{
       if(q.id===xid)return;
-      const sz=getEquipSize(q.equip);
+      const sz=getEquipSize(q.equip,q.rotation);
       for(let dx=0;dx<sz.w;dx++)for(let dy=0;dy<sz.h;dy++)s.add(cellKey(q.x+dx,q.y+dy));
     });
     return s;
@@ -1787,7 +1815,7 @@ function FactoryLayout(){
   function getAllOcc(xid){const s=getEquipOcc(xid);Object.keys(bmap).forEach(k=>s.add(k));return s;}
   function findEquipAt(x,y){
     return equips.find(q=>{
-      const sz=getEquipSize(q.equip);
+      const sz=getEquipSize(q.equip,q.rotation);
       return x>=q.x&&x<q.x+sz.w&&y>=q.y&&y<q.y+sz.h;
     });
   }
@@ -1807,7 +1835,8 @@ function FactoryLayout(){
     const gx=Math.floor(rx/actualCellPx);
     const gy=Math.floor(ry/actualCellPx);
     const pendingEquip=pendingRef.current?pendingRef.current.equip:null;
-    const sz=pendingEquip?getEquipSize(pendingEquip):{w:1,h:1};
+    const pendingRot=pendingRef.current?(pendingRef.current.rotation||0):0;
+    const sz=pendingEquip?getEquipSize(pendingEquip,pendingRot):{w:1,h:1};
     const half=Math.floor(sz.w/2);
     const fx=Math.max(0, gx-half);
     const fy=applyOffset
@@ -1880,15 +1909,36 @@ function FactoryLayout(){
       if(!conn&&eq){setConn(eq.id);return;}
       if(conn&&eq&&eq.id!==conn){
         const src=equips.find(e2=>e2.id===conn);
-        const srcSz=getEquipSize(src.equip),eqSz=getEquipSize(eq.equip);
-        const sx=src.x+srcSz.w,sy=src.y+Math.floor(srcSz.h/2);
-        const ex2=eq.x-1,ey2=eq.y+Math.floor(eqSz.h/2);
-        const path=findPath(sx,sy,ex2,ey2,getAllOcc());
-        if(path){
+        // 출발 설비의 물류 출력 포트들, 도착 설비의 물류 입력 포트들 — 실제 그리드 좌표로 변환(side 보존)
+        const srcPorts=getEquipPorts(src.equip,src.rotation)
+          .filter(p=>p.type==='logistics'&&p.dir==='out')
+          .map(p=>({x:src.x+p.col,y:src.y+p.row,side:p.side}));
+        const dstPorts=getEquipPorts(eq.equip,eq.rotation)
+          .filter(p=>p.type==='logistics'&&p.dir==='in')
+          .map(p=>({x:eq.x+p.col,y:eq.y+p.row,side:p.side}));
+        if(srcPorts.length===0||dstPorts.length===0){
+          setConn(null);return; // 포트 데이터가 없는 설비는 자동연결 대상 아님
+        }
+        // 포트 바깥쪽 한 칸(벨트가 실제로 지나갈 칸) — side를 직접 사용, 거리 추정 안 함
+        function getOutsideCell(port){
+          const out=sideToOutward(port.side);
+          return{x:port.x+out.x,y:port.y+out.y};
+        }
+        // 모든 출발-도착 포트 쌍 중 최단 경로를 찾는다
+        let best=null;
+        for(const sp of srcPorts){
+          const sOut=getOutsideCell(sp);
+          for(const dp of dstPorts){
+            const dOut=getOutsideCell(dp);
+            const path=findPath(sOut.x,sOut.y,dOut.x,dOut.y,getAllOcc());
+            if(path&&(!best||path.length<best.path.length))best={path,sp,sOut};
+          }
+        }
+        if(best){
           setBmap(prev=>{
             const nb={};
             for(const k of Object.keys(prev))nb[k]={...prev[k],conns:new Set(prev[k].conns)};
-            for(const c of path)addBeltCell(nb,c.x,c.y);
+            for(const c of best.path)addBeltCell(nb,c.x,c.y);
             return nb;
           });
         }
@@ -1951,7 +2001,7 @@ function FactoryLayout(){
     const dr=dragRef.current;
     const nx=raw.x-dr.offX,ny=raw.y-dr.offY;
     const movedEq=equips.find(q=>q.id===dr.id);
-    const moveSz=movedEq?getEquipSize(movedEq.equip):{w:1,h:1};
+    const moveSz=movedEq?getEquipSize(movedEq.equip,movedEq.rotation):{w:1,h:1};
     if(!inBounds(nx,ny)||!inBounds(nx+moveSz.w-1,ny+moveSz.h-1))return;
     const occ=getEquipOcc(dr.id);let ok=true;
     for(let dx=0;dx<moveSz.w&&ok;dx++)for(let dy=0;dy<moveSz.h&&ok;dy++)
@@ -1969,7 +2019,8 @@ function FactoryLayout(){
       if(cell){
         const pend=pendingRef.current;
         const occ=getAllOcc();
-        const placeSz=getEquipSize(pend.equip);
+        const placeRot=pend.rotation||0;
+        const placeSz=getEquipSize(pend.equip,placeRot);
         let ok=inBounds(cell.x+placeSz.w-1,cell.y+placeSz.h-1);
         for(let dx=0;dx<placeSz.w&&ok;dx++)for(let dy=0;dy<placeSz.h&&ok;dy++)
           if(occ.has(cellKey(cell.x+dx,cell.y+dy)))ok=false;
@@ -1977,7 +2028,7 @@ function FactoryLayout(){
           const isCalc=pend.fromCalc;
           const rem=isCalc?(remainingRef.current[pend.key||pend.recipeId]??Infinity):Infinity;
           if(rem>0){
-            setEquips(p=>[...p,{id:nid.current++,x:cell.x,y:cell.y,
+            setEquips(p=>[...p,{id:nid.current++,x:cell.x,y:cell.y,rotation:placeRot,
               recipeId:pend.recipeId,name:pend.name,equip:pend.equip,
               key:pend.key,count:1,fromCalc:isCalc}]);
             if(isCalc){
@@ -2142,7 +2193,7 @@ function FactoryLayout(){
     }),
     equips.map(eq=>{
       const isSel=eq.id===selEq,isConn=conn===eq.id;
-      const sz=getEquipSize(eq.equip);
+      const sz=getEquipSize(eq.equip,eq.rotation);
       const els=renderEquipFootprint(ce,eq,CELL,isSel,isConn,'e'+eq.id);
       els.push(ce('text',{key:'e'+eq.id+'-label',x:eq.x*CELL+sz.w*CELL/2,y:eq.y*CELL-4,
         textAnchor:'middle',fill:'rgba(255,255,255,0.85)',
@@ -2152,13 +2203,14 @@ function FactoryLayout(){
     }),
     
     hoverCell&&tool==='place'&&pending&&(()=>{
-      const sz=getEquipSize(pending.equip);
+      const pendRot=pending.rotation||0;
+      const sz=getEquipSize(pending.equip,pendRot);
       const w=sz.w*CELL,h=sz.h*CELL;
       const occ2=getAllOcc();
       let can=inBounds(hoverCell.x+sz.w-1,hoverCell.y+sz.h-1);
       for(let dx=0;dx<sz.w&&can;dx++)for(let dy=0;dy<sz.h&&can;dy++)
         if(occ2.has(cellKey(hoverCell.x+dx,hoverCell.y+dy)))can=false;
-      const previewEq={x:hoverCell.x,y:hoverCell.y,equip:pending.equip,name:pending.name};
+      const previewEq={x:hoverCell.x,y:hoverCell.y,equip:pending.equip,name:pending.name,rotation:pendRot};
       return ce('g',{style:{pointerEvents:'none',opacity:0.7}},
         renderEquipFootprint(ce,previewEq,CELL,false,false,'preview'),
         !can&&ce('rect',{x:hoverCell.x*CELL,y:hoverCell.y*CELL,width:w,height:h,
@@ -2198,7 +2250,7 @@ function FactoryLayout(){
       const actualCellPx=scaleDiv2
         ? scaleDiv2.getBoundingClientRect().width/GRID_W
         : CELL*scale;
-      const selSz=getEquipSize(eq.equip);
+      const selSz=getEquipSize(eq.equip,eq.rotation);
       const centerX=wr.left-wrap.scrollLeft+(eq.x+selSz.w/2)*actualCellPx;
       const topY   =wr.top -wrap.scrollTop +eq.y*actualCellPx;
       const btnW=44,btnH=44,gap=12;
