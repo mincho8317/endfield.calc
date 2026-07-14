@@ -4263,32 +4263,42 @@ const TOUR_STEPS = [
   },
   {
     title: '📊 전체 현황',
-    body: '모든 거점의 관리권 생산·소모·부족 품목을\n한눈에 볼 수 있어요.',
+    body: '모든 거점의 관리권 생산·소모·잉여를\n한눈에 볼 수 있어요.\n부족한 자원이 있으면 여기서 바로 확인돼요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(1)'), position: 'bottom',
   },
   {
-    title: '◈ 관리권 계산기',
-    body: '거점별 관리권 생산량을 계산해요.\n구역마다 오퍼레이터를 배치하면\n특성 매칭에 따라 보너스가 자동 적용돼요.',
+    title: '🏭 거점 운영',
+    body: '4가지 서브탭으로 구성돼요.\n① 관리권 생산량 — 거점별 오퍼레이터 배치 및 보너스 계산\n② 천연자원 생산량 — 채굴·채취 자원 관리\n③ 관리권 소모 계산 — 교환 및 소모 계획\n④ 공장 생산 계획 — 설비 추가 후 재료 수지 계산',
     target: () => document.querySelector('.tab-bar .tab:nth-child(2)'), position: 'bottom',
   },
   {
-    title: '⚙ 공장 계산기',
-    body: '설비를 추가하고 수량을 입력하면\n재료 생산·소모 수지가 실시간 계산돼요.\n\n① 그룹 추가 → ② 설비 추가 → ③ 수량 입력',
+    title: '⚙ 공장 생산 계획',
+    body: '거점 운영 탭의 ④번 서브탭이에요.\n그룹 추가 → 설비 추가 → 수량 입력 순서로\n필요한 재료와 소모 수지를 실시간으로 계산해줘요.\n프리셋으로 자주 쓰는 설비 조합을 저장할 수도 있어요.',
+    target: () => document.getElementById('otab-factory'), position: 'bottom',
+  },
+  {
+    title: '🏗 공장 배치',
+    body: '계획한 설비를 실제 그리드에 배치해보는 시뮬레이터예요.\n설비를 드래그해서 놓고, 벨트와 파이프로 연결할 수 있어요.\nR키로 설비를 회전하고, 자동연결로 경로를 자동으로 이어줘요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(3)'), position: 'bottom',
   },
   {
     title: '👤 오퍼레이터 육성',
-    body: '현재→목표 레벨·정예화·스킬을 설정하면\n필요한 재료와 파밍 이성을 자동 계산해줘요.',
+    body: '현재→목표 레벨·정예화·스킬을 설정하면\n필요한 재료와 파밍 이성을 자동 계산해줘요.\n파밍 가이드 탭에서 어디서 뭘 파밍할지 확인하세요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(4)'), position: 'bottom',
   },
   {
-    title: '💾 데이터 저장',
-    body: '입력 데이터는 브라우저에 자동 저장돼요.\n다운로드(↓)로 백업하고\n업로드(↑)로 다른 기기에서 불러올 수 있어요.',
+    title: '⚔ 무기 및 기질',
+    body: '두 가지 기능이 있어요.\n🔍 기질 체커 — 원하는 특성 조합으로 맞는 무기를 찾아요\n⚔ 기질 파밍처 — 무기를 선택하면 파밍해야 할\n고위 에너지 응집점과 같이 파밍하면 좋은 무기를 알려줘요.',
+    target: () => document.querySelector('.tab-bar .tab:nth-child(5)'), position: 'bottom',
+  },
+  {
+    title: '💾 데이터는 자동 저장돼요',
+    body: '모든 입력 데이터는 브라우저에 자동 저장돼요.\n혹시 몰라 백업이 필요하다면:\n내보내기(exportData)로 파일로 저장하고\n가져오기(importData)로 다른 기기에서 불러올 수 있어요.\n(추후 메뉴에서 지원 예정)',
     target: () => document.getElementById('theme-btn'), position: 'bottom-left',
   },
   {
     title: '🎉 준비 완료!',
-    body: '이제 직접 사용해보세요!\n헤더의 ❓ 버튼으로 언제든 다시 볼 수 있어요.',
+    body: '이제 직접 사용해보세요!\n헤더의 ❓ 버튼으로 언제든 이 가이드를 다시 볼 수 있어요.\n피드백이 있으면 우측 하단 피드백 버튼을 눌러주세요!',
     target: null, position: 'center',
   },
 ];
@@ -4346,7 +4356,7 @@ function renderTourStep() {
 }
 
 function positionTourCard(card, targetEl, position) {
-  const cw=280, ch=200, vw=window.innerWidth, vh=window.innerHeight;
+  const cw=320, ch=220, vw=window.innerWidth, vh=window.innerHeight;
   let top, left;
   if (!targetEl || position === 'center') {
     top=(vh-ch)/2; left=(vw-cw)/2;

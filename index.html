@@ -1029,6 +1029,9 @@ select option { background: var(--bg-popup); color: var(--text); }
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="resetTour()"
+        style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--text-muted);font-size:13px;font-weight:700;"
+        title="사용 가이드 다시 보기">❓</button>
       <button id="theme-btn" onclick="toggleTheme()"
         style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 8px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text-muted);font-size:11px;">
         <svg id="theme-icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
