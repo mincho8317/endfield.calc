@@ -4265,31 +4265,37 @@ const TOUR_STEPS = [
     title: '📊 전체 현황',
     body: '모든 거점의 관리권 생산·소모·잉여를\n한눈에 볼 수 있어요.\n부족한 자원이 있으면 여기서 바로 확인돼요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(1)'), position: 'bottom',
+    switchTab: 'overview',
   },
   {
     title: '🏭 거점 운영',
     body: '4가지 서브탭으로 구성돼요.\n① 관리권 생산량 — 거점별 오퍼레이터 배치 및 보너스 계산\n② 천연자원 생산량 — 채굴·채취 자원 관리\n③ 관리권 소모 계산 — 교환 및 소모 계획\n④ 공장 생산 계획 — 설비 추가 후 재료 수지 계산',
     target: () => document.querySelector('.tab-bar .tab:nth-child(2)'), position: 'bottom',
+    switchTab: 'outpost',
   },
   {
     title: '⚙ 공장 생산 계획',
     body: '거점 운영 탭의 ④번 서브탭이에요.\n그룹 추가 → 설비 추가 → 수량 입력 순서로\n필요한 재료와 소모 수지를 실시간으로 계산해줘요.\n프리셋으로 자주 쓰는 설비 조합을 저장할 수도 있어요.',
     target: () => document.getElementById('otab-factory'), position: 'bottom',
+    switchTab: 'outpost', switchOutpostTab: 'factory',
   },
   {
     title: '🏗 공장 배치',
     body: '계획한 설비를 실제 그리드에 배치해보는 시뮬레이터예요.\n설비를 드래그해서 놓고, 벨트와 파이프로 연결할 수 있어요.\nR키로 설비를 회전하고, 자동연결로 경로를 자동으로 이어줘요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(3)'), position: 'bottom',
+    switchTab: 'layout',
   },
   {
     title: '👤 오퍼레이터 육성',
     body: '현재→목표 레벨·정예화·스킬을 설정하면\n필요한 재료와 파밍 이성을 자동 계산해줘요.\n파밍 가이드 탭에서 어디서 뭘 파밍할지 확인하세요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(4)'), position: 'bottom',
+    switchTab: 'operator',
   },
   {
     title: '⚔ 무기 및 기질',
     body: '두 가지 기능이 있어요.\n🔍 기질 체커 — 원하는 특성 조합으로 맞는 무기를 찾아요\n⚔ 기질 파밍처 — 무기를 선택하면 파밍해야 할\n고위 에너지 응집점과 같이 파밍하면 좋은 무기를 알려줘요.',
     target: () => document.querySelector('.tab-bar .tab:nth-child(5)'), position: 'bottom',
+    switchTab: 'essence',
   },
   {
     title: '💾 데이터는 자동 저장돼요',
@@ -4317,13 +4323,20 @@ function renderTourStep() {
   cleanTour();
   if (!tourActive || tourStep >= TOUR_STEPS.length) { endTour(); return; }
 
-  const step     = TOUR_STEPS[tourStep];
+  const step = TOUR_STEPS[tourStep];
+
+  // 타겟 탭이 필요한 스텝은 해당 탭을 먼저 열어줌
+  if (step.switchTab) switchTab(step.switchTab);
+  if (step.switchOutpostTab) switchOutpostTab(step.switchOutpostTab);
+
   const targetEl = step.target ? step.target() : null;
 
   // 백드롭
   const bd = document.createElement('div');
   bd.className = 'tour-backdrop'; bd.id = 'tour-backdrop';
   bd.onclick = () => nextTourStep();
+  // 타겟이 없는 중앙 스텝은 backdrop에 배경색 적용
+  if (!targetEl) bd.style.background = 'rgba(0,0,0,0.75)';
   document.body.appendChild(bd);
 
   // 하이라이트
